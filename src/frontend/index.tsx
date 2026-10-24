@@ -1,5 +1,5 @@
 import { useEffect, type ComponentType } from "react";
-import { Server } from "lucide-react";
+import { Server, SquareTerminal } from "lucide-react";
 import {
   useHosts,
   type TabProps,
@@ -7,6 +7,7 @@ import {
 } from "@termix-ssh/plugin-sdk/frontend";
 import { isPveHost, setApp } from "./api";
 import { PveTab } from "./components/PveTab";
+import { CONSOLE_TAB, ConsoleTab } from "./guests/console/ConsoleTab";
 
 const TAB_ID = "pve";
 
@@ -23,6 +24,15 @@ export function activate(app: TermixApp): void {
     titleKey: "nav.title",
     hostless: true,
     singleton: true,
+  });
+
+  // Opened from a guest's Console button, bound to the node's Termix host.
+  app.registerTab(CONSOLE_TAB, ConsoleTab, {
+    icon: SquareTerminal,
+    titleKey: "console.tabTitle",
+    requiresHost: true,
+    session: true,
+    ownBackground: true,
   });
 
   // The Proxmox tool sits in the rail's Tools band, and only once a host is

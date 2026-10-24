@@ -134,6 +134,7 @@ export function TextInput({
   type = "text",
   min,
   max,
+  disabled,
 }: {
   value: string | number;
   onChange: (value: string) => void;
@@ -141,6 +142,7 @@ export function TextInput({
   type?: "text" | "number" | "password";
   min?: number;
   max?: number;
+  disabled?: boolean;
 }) {
   return (
     <Input
@@ -148,6 +150,7 @@ export function TextInput({
       type={type}
       min={min}
       max={max}
+      disabled={disabled}
       value={value}
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
@@ -160,17 +163,20 @@ export function SelectInput({
   onChange,
   options,
   placeholder,
+  disabled,
 }: {
   value: string;
   onChange: (value: string) => void;
   options: Array<{ value: string; label: string }>;
   placeholder?: string;
+  disabled?: boolean;
 }) {
   return (
     <Select2
       value={value}
+      disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
-      className="h-8 w-full border border-border bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
+      className="h-8 w-full border border-border bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
     >
       {placeholder !== undefined && <option value="">{placeholder}</option>}
       {options.map((option) => (

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildFolderTree,
   buildResourceTree,
+  buildServerTree,
   guestCounts,
   guestLabel,
 } from "../../src/frontend/tree";
@@ -86,5 +88,63 @@ describe("helpers", () => {
     expect(percent(undefined, undefined)).toBeNull();
     expect(formatUptime(90061)).toBe("1d 1h");
     expect(formatUptime(3720)).toBe("1h 2m");
+  });
+});
+
+describe("folder and server views", () => {
+  const all: PveResource[] = [
+    ...resources,
+    {
+      id: "sdn/pve1/localnetwork",
+      type: "sdn",
+      node: "pve1",
+      status: "ok",
+      sdn: "localnetwork",
+    } as PveResource,
+    { id: "/pool/prod", type: "pool", pool: "prod" },
+  ];
+
+  it("groups by kind under the datacenter, like Proxmox's Folder View", () => {
+    const [dc] = buildFolderTree(all);
+    expect(dc.label).toBe("tree.datacenter");
+    expect(dc.children?.map((f) => f.label)).toEqual([
+      "tree.folders.lxc",
+      "tree.folders.qemu",
+      "tree.folders.node",
+      "tree.folders.pool",
+      "tree.folders.sdn",
+      "tree.folders.storage",
+    ]);
+    const folder = (key: string) =>
+      dc.children!.find((f) => f.key === `folder/${key}`)!;
+    expect(folder("qemu").children!.map((c) => c.label)).toEqual([
+      "101 (win)",
+      "900 (tpl)",
+    ]);
+    expect(folder("storage").children!.map((c) => c.label)).toEqual([
+      "local (pve1)",
+    ]);
+    expect(folder("sdn").children!.map((c) => c.label)).toEqual([
+      "localnetwork (pve1)",
+    ]);
+    expect(folder("node").children!.map((c) => c.label)).toEqual([
+      "pve1",
+      "pve2",
+    ]);
+  });
+
+  it("leaves out empty folders when searching", () => {
+    const [dc] = buildFolderTree(all, "npm");
+    expect(dc.children!.map((f) => f.key)).toEqual(["folder/lxc"]);
+  });
+
+  it("keeps nodes with their guests in Server View", () => {
+    const tree = buildServerTree(all);
+    expect(tree.map((n) => n.label)).toEqual(["pve1", "pve2"]);
+    expect(tree[0].children!.map((c) => c.label)).toEqual([
+      "101 (win)",
+      "300 (npm)",
+      "local",
+    ]);
   });
 });

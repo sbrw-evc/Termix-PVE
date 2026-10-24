@@ -151,6 +151,26 @@ export const RULES: PveRule[] = [
   { method: "GET", pattern: "nodes/:node/disks/list", permission: "view" },
   { method: "GET", pattern: "nodes/:node/disks/smart", permission: "view" },
   { method: "POST", pattern: "nodes/:node/status", permission: "administer" },
+
+  // Node network. Changes go to interfaces.new until applied.
+  { method: "GET", pattern: "nodes/:node/network/:iface", permission: "view" },
+  { method: "POST", pattern: "nodes/:node/network", permission: "administer" },
+  { method: "PUT", pattern: "nodes/:node/network", permission: "administer" },
+  {
+    method: "DELETE",
+    pattern: "nodes/:node/network",
+    permission: "administer",
+  },
+  {
+    method: "PUT",
+    pattern: "nodes/:node/network/:iface",
+    permission: "administer",
+  },
+  {
+    method: "DELETE",
+    pattern: "nodes/:node/network/:iface",
+    permission: "administer",
+  },
 ];
 
 function segmentMatches(rule: string, value: string): boolean {

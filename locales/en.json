@@ -16,6 +16,10 @@
       "title": "Operate Proxmox guests",
       "description": "Start, stop, shut down, reboot, suspend and resume VMs and containers. Needs edit access to the host."
     },
+    "console": {
+      "title": "Open Proxmox consoles",
+      "description": "Open the screen of a VM and a root shell in a container. Needs edit access to the host."
+    },
     "configure": {
       "title": "Configure Proxmox",
       "description": "Create, clone, migrate, convert and delete VMs and containers. Needs edit access to the host."
@@ -59,6 +63,28 @@
       "label": "CA certificate",
       "description": "API directly only. The node's CA in PEM, from /etc/pve/pve-root-ca.pem. Leave empty if the API has a publicly trusted certificate.",
       "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Imported guests",
+    "importSync": {
+      "label": "Keep imported guests in sync",
+      "description": "Updates names, addresses and tags of the guests imported from this node, and tags the ones removed from Proxmox as proxmox-missing."
+    },
+    "importInterval": {
+      "label": "Sync every (minutes)",
+      "description": "At least 5 minutes."
+    },
+    "importAddNew": {
+      "label": "Add new guests on sync",
+      "description": "Imports guests created in Proxmox after the first import, with the defaults last used in the import dialog."
+    },
+    "importDefaults": {
+      "label": "Import defaults"
+    },
+    "importState": {
+      "label": "Last guest sync"
+    },
+    "source": {
+      "label": "Proxmox guest"
     }
   },
   "app": {
@@ -91,13 +117,28 @@
   "tree": {
     "nothingFound": "Nothing matches the search.",
     "expand": "Expand",
-    "collapse": "Collapse"
+    "collapse": "Collapse",
+    "datacenter": "Datacenter",
+    "folders": {
+      "lxc": "LXC Container",
+      "qemu": "Virtual Machine",
+      "node": "Nodes",
+      "pool": "Pools",
+      "sdn": "Network",
+      "storage": "Storage"
+    },
+    "views": {
+      "folder": "Folder view",
+      "server": "Server view"
+    }
   },
   "types": {
     "node": "Node",
     "qemu": "VM",
     "lxc": "Container",
-    "storage": "Storage"
+    "storage": "Storage",
+    "pool": "Pool",
+    "sdn": "SDN zone"
   },
   "states": {
     "running": "Running",
@@ -116,7 +157,8 @@
     "rootDisk": "Root disk",
     "usage": "Usage",
     "cores_one": "{{count}} core",
-    "cores_other": "{{count}} cores"
+    "cores_other": "{{count}} cores",
+    "swap": "Swap"
   },
   "summary": {
     "title": "Summary",
@@ -157,7 +199,17 @@
       "month": "Month",
       "year": "Year"
     },
-    "noData": "No data for this period"
+    "noData": "No data for this period",
+    "serverLoad": "Server load",
+    "loadAverage": "Load average",
+    "swap": "Swap",
+    "pressureCpu": "CPU pressure stall",
+    "pressureMemory": "Memory pressure stall",
+    "pressureIo": "IO pressure stall",
+    "some": "Some",
+    "full": "Full",
+    "average": "Average",
+    "maximum": "Maximum"
   },
   "tasks": {
     "title": "Tasks",
@@ -520,6 +572,12 @@
       "description": "This deletes the file from the storage. It can't be undone.",
       "submit": "Delete",
       "done": "{{name}} deleted"
+    },
+    "upload": {
+      "button": "Upload",
+      "cancel": "Cancel upload",
+      "done": "{{name}} uploaded",
+      "failed": "{{name}} failed to upload: {{error}}"
     }
   },
   "nodes": {
@@ -528,7 +586,8 @@
       "services": "Services",
       "updates": "Updates",
       "disks": "Disks",
-      "log": "Log"
+      "log": "Log",
+      "network": "Network"
     },
     "services": {
       "start": "Start",
@@ -582,6 +641,151 @@
         "warning_one": "{{count}} running guest goes down with it, and nothing starts it again until someone powers the node on.",
         "warning_other": "{{count}} running guests go down with it, and nothing starts them again until someone powers the node on."
       }
+    },
+    "shell": "Shell",
+    "shellHint": "Opens this host's SSH terminal in Termix."
+  },
+  "console": {
+    "open": "Console",
+    "openHint": "Opens the guest's Termix host, or offers to add it to Termix first.",
+    "tabTitle": "Proxmox console",
+    "tabLabel": "{{name}} — Console",
+    "pick": "Open a console from a running VM or container in the Proxmox tool.",
+    "connect": "Connect",
+    "reconnect": "Connect again",
+    "disconnect": "Disconnect",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Full screen",
+    "notRunning": "Start the guest to open its console.",
+    "lost": "The console connection was lost.",
+    "ended": "Console closed.",
+    "status": {
+      "idle": "Not connected",
+      "connecting": "Connecting...",
+      "connected": "Connected",
+      "closed": "Disconnected",
+      "error": "Could not connect"
+    },
+    "proxmox": "Proxmox console",
+    "proxmoxHint": "Proxmox's own console through the node: the screen of a VM, a shell in a container. For a guest with no network yet."
+  },
+  "pool": {
+    "members": "Members",
+    "empty": "Nothing is in this pool."
+  },
+  "sdn": {
+    "hint": "SDN zones, VNets and subnets come with cluster management in a later release."
+  },
+  "network": {
+    "add": "Create",
+    "apply": "Apply",
+    "revert": "Revert",
+    "pending": "Not applied yet",
+    "hint": "Changes are saved to /etc/network/interfaces.new and take effect on Apply, which reloads the node's network.",
+    "type": "Type",
+    "name": "Name",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Gateway (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Gateway (IPv6)",
+    "ports": "Bridge ports",
+    "slaves": "Slaves",
+    "portsHint": "Interface names, separated by spaces.",
+    "bondMode": "Mode",
+    "vlanDevice": "VLAN raw device",
+    "mtu": "MTU",
+    "comments": "Comment",
+    "autostart": "Autostart",
+    "vlanAware": "VLAN aware",
+    "vlanAwareHint": "Lets guests on this bridge use VLAN tags.",
+    "inactive": "Inactive",
+    "create": "Create",
+    "createTitle": "Create interface",
+    "editTitle": "Edit {{iface}}",
+    "types": {
+      "bridge": "Bridge",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Port",
+      "OVSBridge": "OVS bridge",
+      "alias": "Alias"
+    },
+    "nameHint": {
+      "bridge": "vmbr followed by a number, like vmbr1.",
+      "bond": "bond followed by a number, like bond0.",
+      "vlan": "device.tag like vmbr0.10, or vlan10 with a raw device."
+    },
+    "addressWarning": "This interface carries the address Termix reaches the node on. A mistake can cut Termix off until someone fixes the node at its console.",
+    "removeTitle": "Remove {{iface}}?",
+    "removeDescription": "The interface is removed when the change is applied.",
+    "applyTitle": "Apply network changes on {{node}}?",
+    "applyDescription": "The node reloads its network. If the new settings are wrong, the node and Termix's connection to it can go offline.",
+    "applyLabel": "Apply network on {{node}}",
+    "reverted": "Network changes reverted",
+    "problem": {
+      "cidr": "Enter the address like 10.10.0.1/24.",
+      "gateway": "A gateway needs an IPv4 address and a valid gateway IP.",
+      "cidr6": "Enter the address like fd00::1/64.",
+      "ports": "Enter interface names separated by spaces.",
+      "slaves": "A bond needs at least one slave.",
+      "vlanDevice": "Name the raw device for a vlanN interface.",
+      "mtu": "MTU goes from 1280 to 65520.",
+      "name": {
+        "bridge": "A bridge is named vmbr and a number.",
+        "bond": "A bond is named bond and a number.",
+        "vlan": "A VLAN is named device.tag or vlan and a number."
+      }
     }
+  },
+  "import": {
+    "open": "Import to Termix",
+    "title": "Import guests as Termix hosts",
+    "hint": "Each chosen VM or container becomes a Termix host, tagged proxmox. Importing also refreshes the names, addresses and tags of guests imported before, and tags the ones gone from Proxmox as proxmox-missing.",
+    "loading": "Looking for guests and their addresses…",
+    "counts": "{{total}} guests, {{imported}} already imported",
+    "selectAll": "Select all",
+    "selectNone": "Select none",
+    "none": "This cluster has no VMs or containers.",
+    "imported": "Imported",
+    "noAddress": "no address",
+    "folder": "Folder",
+    "folderDefault": "Folder named {{node}}",
+    "folderSearch": "Search or create, / for a subfolder",
+    "folderCreate": "Create \"{{folder}}\"",
+    "folderNone": "No folders yet",
+    "connection": "Connect with",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Container runtime",
+    "runtimeOff": "No Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "Unknown OS"
+    },
+    "sshLogin": "SSH login",
+    "desktopLogin": "RDP and VNC login",
+    "desktopHint": "Needs the Remote Desktop plugin to connect.",
+    "login": {
+      "nodeCredential": "The node's credential",
+      "nodeUser": "The node's username",
+      "username": "Username only",
+      "none": "No login"
+    },
+    "username": "Username",
+    "submit_one": "Import {{count}} guest",
+    "submit_other": "Import {{count}} guests",
+    "refresh": "Refresh imported",
+    "done": "Created {{created}}, updated {{updated}}, marked missing {{markedMissing}}",
+    "lastSync": "Last sync {{when}}.",
+    "lastSyncFailed": "Last sync {{when}} failed: {{error}}",
+    "syncHint": "Turn on Keep imported guests in sync in the host's Proxmox settings to refresh them on a schedule.",
+    "addTitle": "Add {{name}} to Termix",
+    "addHint": "This guest is not a Termix host yet. Add it to open its terminal, then Console opens it straight away.",
+    "addSubmit": "Add and connect",
+    "gone": "Proxmox no longer lists this guest."
   }
 }

@@ -3,20 +3,25 @@ import { useTranslation } from "@termix-ssh/plugin-sdk/frontend";
 import { cn } from "@termix-ssh/plugin-sdk/ui";
 import {
   Box,
+  Boxes,
+  Building2,
   ChevronDown,
   ChevronRight,
   Database,
+  Folder,
   Monitor,
+  Network,
   Server,
+  type LucideIcon,
 } from "lucide-react";
-import type { PveResource } from "../api";
-import { guestLabel, type NodeBranch } from "../tree";
+import type { TreeItem, TreeKind } from "../tree";
 
 export function statusColor(status: string | undefined): string {
   switch (status) {
     case "running":
     case "online":
     case "available":
+    case "ok":
       return "bg-emerald-500";
     case "paused":
     case "suspended":
@@ -28,44 +33,78 @@ export function statusColor(status: string | undefined): string {
   }
 }
 
+const ICONS: Record<TreeKind, LucideIcon> = {
+  datacenter: Building2,
+  folder: Folder,
+  node: Server,
+  qemu: Monitor,
+  lxc: Box,
+  storage: Database,
+  pool: Boxes,
+  sdn: Network,
+};
+
 function Row({
-  resource,
-  label,
-  icon,
+  item,
   depth,
   selected,
+  open,
   onSelect,
-  toggle,
+  onToggle,
 }: {
-  resource: PveResource;
-  label: string;
-  icon: ReactNode;
+  item: TreeItem;
   depth: number;
   selected: boolean;
+  open: boolean;
   onSelect: (id: string) => void;
-  toggle?: ReactNode;
+  onToggle: (key: string) => void;
 }) {
+  const { t } = useTranslation();
+  const Icon = ICONS[item.kind];
+  const resource = item.resource;
+  // Folders and the datacenter carry translation keys.
+  const label = resource ? item.label : t(item.label);
+  const hasChildren = !!item.children?.length;
+  const Chevron = open ? ChevronDown : ChevronRight;
+  let toggle: ReactNode = <span className="size-3.5 shrink-0" />;
+  if (hasChildren) {
+    toggle = (
+      <span
+        role="button"
+        aria-label={t(open ? "tree.collapse" : "tree.expand")}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle(item.key);
+        }}
+      >
+        <Chevron className="size-3.5 shrink-0" />
+      </span>
+    );
+  }
   return (
     <button
       type="button"
-      onClick={() => onSelect(resource.id)}
+      onClick={() => (resource ? onSelect(resource.id) : onToggle(item.key))}
       className={cn(
         "flex w-full items-center gap-1.5 py-1 pr-2 text-left text-xs hover:bg-accent",
         selected && "bg-accent text-accent-foreground",
-        resource.template ? "opacity-70" : "",
+        resource?.template ? "opacity-70" : "",
+        !resource && "font-medium",
       )}
       style={{ paddingLeft: 8 + depth * 14 }}
-      title={resource.lock ? `${label} (${resource.lock})` : label}
+      title={resource?.lock ? `${label} (${resource.lock})` : label}
     >
-      {toggle ?? <span className="size-3.5 shrink-0" />}
-      {icon}
+      {toggle}
+      <Icon className="size-3.5 shrink-0" />
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      <span
-        className={cn(
-          "size-1.5 shrink-0 rounded-full",
-          statusColor(resource.status),
-        )}
-      />
+      {resource?.status && (
+        <span
+          className={cn(
+            "size-1.5 shrink-0 rounded-full",
+            statusColor(resource.status),
+          )}
+        />
+      )}
     </button>
   );
 }
@@ -75,14 +114,23 @@ export function ResourceTree({
   selectedId,
   onSelect,
 }: {
-  tree: NodeBranch[];
+  tree: TreeItem[];
   selectedId: string | null;
   onSelect: (id: string) => void;
 }) {
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
-  if (!tree.length) {
+  const toggle = (key: string) =>
+    setCollapsed((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+
+  const empty = tree.every((i) => !i.resource && !i.children?.length);
+  if (empty) {
     return (
       <p className="px-3 py-4 text-xs text-muted-foreground">
         {t("tree.nothingFound")}
@@ -90,76 +138,31 @@ export function ResourceTree({
     );
   }
 
-  const toggleNode = (id: string) =>
-    setCollapsed((current) => {
-      const next = new Set(current);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+  const render = (items: TreeItem[], depth: number): ReactNode =>
+    items.map((item) => {
+      const open = !collapsed.has(item.key);
+      return (
+        <div
+          key={item.key}
+          role="treeitem"
+          aria-expanded={item.children ? open : undefined}
+        >
+          <Row
+            item={item}
+            depth={depth}
+            selected={!!item.resource && item.resource.id === selectedId}
+            open={open}
+            onSelect={onSelect}
+            onToggle={toggle}
+          />
+          {open && item.children && render(item.children, depth + 1)}
+        </div>
+      );
     });
 
   return (
     <div className="py-1" role="tree">
-      {tree.map(({ node, guests, storage }) => {
-        const open = !collapsed.has(node.id);
-        const Chevron = open ? ChevronDown : ChevronRight;
-        return (
-          <div key={node.id} role="treeitem" aria-expanded={open}>
-            <Row
-              resource={node}
-              label={node.node ?? node.id}
-              icon={<Server className="size-3.5 shrink-0" />}
-              depth={0}
-              selected={selectedId === node.id}
-              onSelect={onSelect}
-              toggle={
-                <span
-                  role="button"
-                  aria-label={t(open ? "tree.collapse" : "tree.expand")}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleNode(node.id);
-                  }}
-                >
-                  <Chevron className="size-3.5 shrink-0" />
-                </span>
-              }
-            />
-            {open && (
-              <>
-                {guests.map((guest) => (
-                  <Row
-                    key={guest.id}
-                    resource={guest}
-                    label={guestLabel(guest)}
-                    icon={
-                      guest.type === "lxc" ? (
-                        <Box className="size-3.5 shrink-0" />
-                      ) : (
-                        <Monitor className="size-3.5 shrink-0" />
-                      )
-                    }
-                    depth={1}
-                    selected={selectedId === guest.id}
-                    onSelect={onSelect}
-                  />
-                ))}
-                {storage.map((pool) => (
-                  <Row
-                    key={pool.id}
-                    resource={pool}
-                    label={pool.storage ?? pool.id}
-                    icon={<Database className="size-3.5 shrink-0" />}
-                    depth={1}
-                    selected={selectedId === pool.id}
-                    onSelect={onSelect}
-                  />
-                ))}
-              </>
-            )}
-          </div>
-        );
-      })}
+      {render(tree, 0)}
     </div>
   );
 }

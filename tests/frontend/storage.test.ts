@@ -107,14 +107,16 @@ describe("node services", () => {
 });
 
 describe("node log", () => {
-  it("drops the journal's cursors", () => {
+  it("drops the journal's cursors and puts the newest first", () => {
     expect(
       journalLines([
         "s=8755e885;i=463822;b=61ec;m=108c;t=65e8;x=36ce",
         "Oct 24 05:32:11 proxmox systemd[1]: Started session-15017.scope",
+        "Oct 24 05:32:12 proxmox sshd[2]: Accepted publickey",
         "s=8755e885;i=463824;b=61ec;m=108d;t=65e9;x=36cf",
       ]),
     ).toEqual([
+      "Oct 24 05:32:12 proxmox sshd[2]: Accepted publickey",
       "Oct 24 05:32:11 proxmox systemd[1]: Started session-15017.scope",
     ]);
     expect(journalLines(null)).toEqual([]);

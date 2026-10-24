@@ -29,6 +29,15 @@ Done in 0.1.0:
 - CPU, memory, network and disk charts for nodes and guests, by hour, day, week, month or year
 - Recent cluster tasks with their logs
 
+Added in 0.2:
+
+- Hardware, options and cloud-init of guests; disks and network adapters
+- ISO images and CT templates: download, upload from the browser, delete
+- Node services, updates, disks, log, network, reboot and shutdown
+- VM and container consoles
+- Import VMs and containers as Termix hosts and keep them in sync
+- Load, swap and pressure stall charts; Folder and Server views
+
 Next: see [ROADMAP.md](ROADMAP.md).
 
 <br />

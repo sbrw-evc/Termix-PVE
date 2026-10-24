@@ -1,7 +1,7 @@
 {
   "id": "pve",
   "name": "Proxmox VE",
-  "version": "0.2.1",
+  "version": "0.2.9",
   "description": "Manage Proxmox VE from Termix: virtual machines, containers, storage, network, backups, firewall, access and the cluster.",
   "author": {
     "name": "Дмитрий Ляхов"
@@ -17,8 +17,12 @@
     "Create, clone, migrate, convert to template and delete VMs and containers",
     "Edit processors, memory, disks, network adapters, options and cloud-init",
     "Download ISO images and CT templates, and delete storage content",
+    "Open a VM console (noVNC) or a container shell (xterm.js) in Termix",
+    "Upload ISO images and CT templates from the browser",
+    "Create, edit and apply node network bridges, bonds and VLANs",
+    "Import VMs and containers as Termix hosts and keep them in sync",
     "Node services, updates, disks with SMART, log, reboot and shutdown",
-    "CPU, memory, network and disk charts for nodes and guests",
+    "CPU, load, memory, swap, network, disk and pressure stall charts for nodes and guests",
     "Connect through the Proxmox API over SSH, straight to the API, or with pvesh over SSH"
   ],
   "env": [],
@@ -28,12 +32,14 @@
   },
   "capabilities": [
     "hosts:read",
+    "hosts:write",
     "credentials:use",
     "credentials:read",
     "ssh:connect",
     "network:serve",
     "network:outbound",
-    "ui:surface"
+    "ui:surface",
+    "users:impersonate"
   ],
   "contributes": {
     "tabs": [
@@ -42,6 +48,12 @@
         "titleKey": "nav.title",
         "icon": "Server",
         "openFrom": ["rail", "palette", "host-context-menu"]
+      },
+      {
+        "id": "pve-console",
+        "titleKey": "console.tabTitle",
+        "icon": "SquareTerminal",
+        "openFrom": ["palette"]
       }
     ],
     "permissions": [
@@ -56,6 +68,12 @@
         "titleKey": "permissions.operate.title",
         "descriptionKey": "permissions.operate.description",
         "defaultRoles": ["admin", "user"]
+      },
+      {
+        "name": "console",
+        "titleKey": "permissions.console.title",
+        "descriptionKey": "permissions.console.description",
+        "defaultRoles": ["admin"]
       },
       {
         "name": "configure",
@@ -144,6 +162,61 @@
             "descriptionKey": "settings.caCert.description",
             "placeholderKey": "settings.caCert.placeholder",
             "defaultable": false
+          },
+          {
+            "key": "pveImportSync",
+            "type": "boolean",
+            "labelKey": "settings.importSync.label",
+            "descriptionKey": "settings.importSync.description",
+            "default": false,
+            "defaultable": false,
+            "ownerOnly": true,
+            "group": "settings.importGroup"
+          },
+          {
+            "key": "pveImportInterval",
+            "type": "number",
+            "labelKey": "settings.importInterval.label",
+            "descriptionKey": "settings.importInterval.description",
+            "default": 15,
+            "min": 5,
+            "max": 1440,
+            "requires": "pveImportSync",
+            "defaultable": false,
+            "ownerOnly": true,
+            "group": "settings.importGroup"
+          },
+          {
+            "key": "pveImportAddNew",
+            "type": "boolean",
+            "labelKey": "settings.importAddNew.label",
+            "descriptionKey": "settings.importAddNew.description",
+            "default": false,
+            "requires": "pveImportSync",
+            "defaultable": false,
+            "ownerOnly": true,
+            "group": "settings.importGroup"
+          },
+          {
+            "key": "pveImportDefaults",
+            "type": "json",
+            "hidden": true,
+            "defaultable": false,
+            "labelKey": "settings.importDefaults.label"
+          },
+          {
+            "key": "pveImportState",
+            "type": "json",
+            "hidden": true,
+            "defaultable": false,
+            "labelKey": "settings.importState.label"
+          },
+          {
+            "key": "pveSource",
+            "type": "json",
+            "hidden": true,
+            "defaultable": false,
+            "labelKey": "settings.source.label"
           }
         ]
       }

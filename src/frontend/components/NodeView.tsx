@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { useTranslation } from "@termix-ssh/plugin-sdk/frontend";
+import {
+  useHosts,
+  useTabs,
+  useTranslation,
+} from "@termix-ssh/plugin-sdk/frontend";
 import {
   Badge,
   Button,
@@ -10,7 +14,7 @@ import {
   GroupHeading,
   Segmented,
 } from "@termix-ssh/plugin-sdk/ui";
-import { Box, Monitor, Power } from "lucide-react";
+import { Box, Monitor, Power, SquareTerminal } from "lucide-react";
 import { pve, type PveResource } from "../api";
 import { formatBytes, formatUptime, percent } from "../format";
 import { isGuest } from "../tree";
@@ -20,6 +24,7 @@ import { RrdCharts } from "./RrdCharts";
 import { Field, FormDialog, TextInput } from "./forms";
 import { CreateCtDialog, CreateVmDialog } from "../guests/CreateDialogs";
 import { DisksTab, LogTab, ServicesTab, UpdatesTab } from "../nodes/NodeTabs";
+import { NetworkTab } from "../nodes/NetworkTab";
 
 interface NodeStatus {
   pveversion?: string;
@@ -27,10 +32,18 @@ interface NodeStatus {
   loadavg?: string[];
   cpuinfo?: { model?: string; cpus?: number; sockets?: number };
   uptime?: number;
+  swap?: { used?: number; total?: number };
 }
 
-type NodeTab = "summary" | "services" | "updates" | "disks" | "log";
-const TABS: NodeTab[] = ["summary", "services", "updates", "disks", "log"];
+type NodeTab = "summary" | "network" | "services" | "updates" | "disks" | "log";
+const TABS: NodeTab[] = [
+  "summary",
+  "network",
+  "services",
+  "updates",
+  "disks",
+  "log",
+];
 
 /**
  * Rebooting or shutting a node down stops every guest on it, and may take
@@ -102,6 +115,9 @@ export function NodeView({
   >(null);
   const [tab, setTab] = useState<NodeTab>("summary");
   const online = node.status === "online";
+  const tabs = useTabs();
+  // The node's shell is the Termix host's own SSH terminal.
+  const termixHost = useHosts().hosts.find((h) => Number(h.id) === hostId);
 
   useEffect(() => {
     if (!isVisible || !online) return;
@@ -132,6 +148,17 @@ export function NodeView({
           </Badge>
         )}
         <div className="ml-auto flex flex-wrap gap-1">
+          {termixHost && (
+            <Button
+              size="sm"
+              variant="outline"
+              title={t("nodes.shellHint")}
+              onClick={() => tabs.connectHost(termixHost)}
+            >
+              <SquareTerminal className="mr-1 size-3.5" />
+              {t("nodes.shell")}
+            </Button>
+          )}
           <Button
             size="sm"
             variant="outline"
@@ -178,6 +205,7 @@ export function NodeView({
 
       {online && (
         <Segmented
+          className="max-w-full overflow-x-auto [&>*]:shrink-0 [&>*]:whitespace-nowrap"
           value={tab}
           onChange={(v) => setTab(v as NodeTab)}
           options={TABS.map((value) => ({
@@ -207,6 +235,13 @@ export function NodeView({
               value={percent(node.disk, node.maxdisk)}
               detail={`${formatBytes(node.disk)} / ${formatBytes(node.maxdisk)}`}
             />
+            {!!status?.swap?.total && (
+              <Usage
+                label={t("usage.swap")}
+                value={percent(status.swap.used, status.swap.total)}
+                detail={`${formatBytes(status.swap.used)} / ${formatBytes(status.swap.total)}`}
+              />
+            )}
           </div>
 
           <div>
@@ -241,6 +276,7 @@ export function NodeView({
           )}
         </>
       )}
+      {tab === "network" && <NetworkTab {...tabProps} />}
       {tab === "services" && <ServicesTab {...tabProps} />}
       {tab === "updates" && <UpdatesTab {...tabProps} />}
       {tab === "disks" && <DisksTab {...tabProps} />}

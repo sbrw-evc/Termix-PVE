@@ -24,6 +24,8 @@ function matches(resource: PveResource, query: string): boolean {
     resource.name,
     resource.node,
     resource.storage,
+    resource.pool,
+    (resource as PveResource & { sdn?: string }).sdn,
     resource.tags,
     resource.vmid !== undefined ? String(resource.vmid) : undefined,
   ].some((value) => value?.toLowerCase().includes(q));
@@ -94,4 +96,111 @@ export function guestCounts(resources: PveResource[]): {
     running: guests.filter((g) => g.status === "running").length,
     total: guests.length,
   };
+}
+
+/** What a row draws: a resource, or a folder that only groups others. */
+export type TreeKind =
+  | "datacenter"
+  | "folder"
+  | "node"
+  | "qemu"
+  | "lxc"
+  | "storage"
+  | "pool"
+  | "sdn";
+
+export interface TreeItem {
+  key: string;
+  label: string;
+  kind: TreeKind;
+  /** Set on rows that are a resource; folders have none. */
+  resource?: PveResource;
+  children?: TreeItem[];
+}
+
+export type TreeView = "folder" | "server";
+
+const FOLDERS: Array<{ type: string; label: string }> = [
+  { type: "lxc", label: "tree.folders.lxc" },
+  { type: "qemu", label: "tree.folders.qemu" },
+  { type: "node", label: "tree.folders.node" },
+  { type: "pool", label: "tree.folders.pool" },
+  { type: "sdn", label: "tree.folders.sdn" },
+  { type: "storage", label: "tree.folders.storage" },
+];
+
+function resourceLabel(r: PveResource, withNode: boolean): string {
+  if (isGuest(r)) return guestLabel(r);
+  if (r.type === "node") return r.node ?? r.id;
+  const name =
+    r.type === "storage"
+      ? r.storage
+      : r.type === "pool"
+        ? r.pool
+        : ((r as PveResource & { sdn?: string }).sdn ?? r.id);
+  return withNode && r.node ? `${name} (${r.node})` : (name ?? r.id);
+}
+
+function item(r: PveResource, withNode: boolean): TreeItem {
+  return {
+    key: r.id,
+    label: resourceLabel(r, withNode),
+    kind: r.type as TreeKind,
+    resource: r,
+  };
+}
+
+const byLabel = (a: TreeItem, b: TreeItem) => {
+  const va = a.resource?.vmid;
+  const vb = b.resource?.vmid;
+  if (va !== undefined && vb !== undefined) return va - vb;
+  return a.label.localeCompare(b.label);
+};
+
+/**
+ * Proxmox's Folder View: one folder per kind of resource under the
+ * datacenter. Labels are translation keys; the caller translates them.
+ * Empty folders are left out.
+ */
+export function buildFolderTree(
+  resources: PveResource[],
+  query = "",
+): TreeItem[] {
+  const folders: TreeItem[] = [];
+  for (const folder of FOLDERS) {
+    const children = resources
+      .filter((r) => r.type === folder.type && matches(r, query))
+      .map((r) => item(r, folder.type !== "node" && !isGuest(r)))
+      .sort(byLabel);
+    if (children.length) {
+      folders.push({
+        key: `folder/${folder.type}`,
+        label: folder.label,
+        kind: "folder",
+        children,
+      });
+    }
+  }
+  return [
+    {
+      key: "datacenter",
+      label: "tree.datacenter",
+      kind: "datacenter",
+      children: folders,
+    },
+  ];
+}
+
+/** Proxmox's Server View: nodes with their guests and storage. */
+export function buildServerTree(
+  resources: PveResource[],
+  query = "",
+): TreeItem[] {
+  return buildResourceTree(resources, query).map((branch) => ({
+    ...item(branch.node, false),
+    children: [
+      ...branch.guests.map((g) => item(g, false)),
+      ...branch.storage.map((s) => item(s, false)),
+    ],
+  }));
 }

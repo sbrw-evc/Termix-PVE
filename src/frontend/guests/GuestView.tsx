@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { useToast, useTranslation } from "@termix-ssh/plugin-sdk/frontend";
+import {
+  useHosts,
+  useTabs,
+  useToast,
+  useTranslation,
+} from "@termix-ssh/plugin-sdk/frontend";
 import {
   Badge,
   Button,
@@ -21,6 +26,8 @@ import {
   Power,
   RotateCcw,
   Square,
+  SquareTerminal,
+  MonitorPlay,
   Trash2,
   Zap,
   type LucideIcon,
@@ -43,14 +50,19 @@ import { HardwareTab } from "./hardware/HardwareTab";
 import { OptionsTab } from "./options/OptionsTab";
 import { CloudInitTab } from "./options/CloudInitTab";
 import { useGuestIps } from "./ips";
+import { CONSOLE_TAB, type ConsoleTabData } from "./console/ConsoleTab";
+import { ImportDialog } from "../components/ImportDialog";
 
 type GuestTab = "summary" | "hardware" | "options" | "cloudinit";
 
-/** Cloud-init only exists for VMs; templates have no running state to show. */
-function tabsFor(guest: { type: GuestType }): GuestTab[] {
-  return guest.type === "qemu"
-    ? ["summary", "hardware", "options", "cloudinit"]
-    : ["summary", "hardware", "options"];
+/** Cloud-init only exists for VMs. */
+function tabsFor(guest: { type: GuestType; template?: number }): GuestTab[] {
+  return [
+    "summary",
+    "hardware",
+    "options",
+    ...(guest.type === "qemu" ? (["cloudinit"] as const) : []),
+  ];
 }
 
 const ICONS: Record<PowerAction, LucideIcon> = {
@@ -70,6 +82,9 @@ interface GuestStatus {
   uptime?: number;
   pid?: number;
   ha?: { managed?: number; state?: string };
+  /** Containers only. */
+  swap?: number;
+  maxswap?: number;
 }
 
 type Guest = PveResource & { type: GuestType; node: string; vmid: number };
@@ -98,6 +113,52 @@ export function GuestView({
   );
   const [busy, setBusy] = useState<string | null>(null);
   const base = ["nodes", guest.node, guest.type, guest.vmid];
+  const tabs = useTabs();
+  const { hosts } = useHosts();
+  const termixHost = hosts.find((h) => Number(h.id) === hostId);
+  const [offerImport, setOfferImport] = useState(false);
+  // A host just imported from here, opened once the host list has it.
+  const [pending, setPending] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (pending === null) return;
+    const host = hosts.find((h) => Number(h.id) === pending);
+    if (!host) return;
+    setPending(null);
+    tabs.connectHost(host);
+  }, [hosts, pending, tabs]);
+
+  // The guest's own Termix host, opened like any host: its terminal, or the
+  // remote desktop it was imported with. Not imported yet: offer it.
+  const openConsole = async () => {
+    try {
+      const { data } = await app().api.get<{ links: Record<string, number> }>(
+        `/hosts/${hostId}/import/links`,
+      );
+      const linked = data.links[`${guest.type}:${guest.vmid}`];
+      const host = hosts.find((h) => Number(h.id) === linked);
+      if (host) tabs.connectHost(host);
+      else setOfferImport(true);
+    } catch (err) {
+      toast.error(toCallError(err).message);
+    }
+  };
+
+  // Proxmox's own console, through the node: for a guest with no network yet.
+  // A tab of its own each time, as Proxmox opens a console window.
+  const openProxmoxConsole = () => {
+    if (!termixHost) return;
+    const data: ConsoleTabData = {
+      node: guest.node,
+      type: guest.type,
+      vmid: guest.vmid,
+    };
+    tabs.openTab(termixHost, CONSOLE_TAB, {
+      label: t("console.tabLabel", { name: guestLabel(guest) }),
+      forceNewTab: true,
+      data: { ...data },
+    });
+  };
 
   const loadStatus = useCallback(() => {
     pve<GuestStatus>(hostId, "GET", [
@@ -188,6 +249,18 @@ export function GuestView({
           </Badge>
         )}
         <div className="ml-auto flex flex-wrap items-center gap-1">
+          {!guest.template && (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={!running}
+              title={t(running ? "console.openHint" : "console.notRunning")}
+              onClick={() => void openConsole()}
+            >
+              <SquareTerminal className="mr-1 size-3.5" />
+              {t("console.open")}
+            </Button>
+          )}
           {actions.map((action) => {
             const Icon = ICONS[action];
             return (
@@ -213,7 +286,20 @@ export function GuestView({
                 <MoreHorizontal className="size-3.5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent
+              align="end"
+              className="min-w-44 whitespace-nowrap"
+            >
+              {!guest.template && termixHost && (
+                <DropdownMenuItem
+                  disabled={!running}
+                  title={t("console.proxmoxHint")}
+                  onClick={openProxmoxConsole}
+                >
+                  <MonitorPlay className="mr-2 size-3.5" />
+                  {t("console.proxmox")}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => setDialog("clone")}>
                 <Copy className="mr-2 size-3.5" />
                 {t("guests.clone.menu")}
@@ -245,6 +331,7 @@ export function GuestView({
       </div>
 
       <Segmented
+        className="max-w-full overflow-x-auto [&>*]:shrink-0 [&>*]:whitespace-nowrap"
         value={tab}
         onChange={(value) => setTab(value as GuestTab)}
         options={tabsFor(guest).map((value) => ({
@@ -273,6 +360,13 @@ export function GuestView({
               value={percent(guest.disk, guest.maxdisk)}
               detail={`${formatBytes(guest.disk)} / ${formatBytes(guest.maxdisk)}`}
             />
+            {!!status?.maxswap && (
+              <Usage
+                label={t("usage.swap")}
+                value={running ? percent(status.swap, status.maxswap) : null}
+                detail={`${running ? formatBytes(status.swap) : "-"} / ${formatBytes(status.maxswap)}`}
+              />
+            )}
           </div>
 
           <div>
@@ -323,6 +417,21 @@ export function GuestView({
         <CloudInitTab guest={ref} isVisible={isVisible} />
       )}
 
+      {offerImport && (
+        <ImportDialog
+          hostId={hostId}
+          only={{
+            type: guest.type,
+            vmid: guest.vmid,
+            name: guestLabel(guest),
+          }}
+          onImported={(created) => {
+            const id = created[`${guest.type}:${guest.vmid}`];
+            if (id) setPending(id);
+          }}
+          onClose={() => setOfferImport(false)}
+        />
+      )}
       {dialog === "clone" && (
         <CloneDialog
           hostId={hostId}

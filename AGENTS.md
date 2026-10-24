@@ -80,4 +80,21 @@ aren't obvious from the code, and anything that has bitten you before.
   become `delete`, and the config's `digest` makes PVE refuse a change someone else beat us to.
   Property strings ("local-lvm:vm-1-disk-0,size=8G") are parsed in `guests/config.ts`.
 - `/nodes/{node}/journal` returns its cursors as the first and last lines; `journalLines` drops them.
+- Console (`src/backend/console.ts`, `ctx.ws.route("/console")`): VMs run `LC_PVE_TICKET=<pw> qm vncproxy`
+  over SSH exec, which sets that ticket as the VNC password; noVNC is handed the open socket and the
+  password. Containers run `pct enter` on a PTY, relayed to xterm.js as JSON frames. Non-root users go
+  through `sudo -n env`. No console over API directly.
+- Uploads (`src/backend/upload.ts`) stream the raw body over SSH `tee` into the path `pvesm path` gives,
+  then `mv -n`: core parses only JSON and form bodies, so the route reads the request itself.
+- Node network edits land in `interfaces.new`; PUT `nodes/{node}/network` applies, DELETE reverts.
+  pvesh drops the `changes` attribute, so the UI tracks pending changes itself.
+- Import detection (`src/backend/guest-probe.ts`): OS from `ostype` (old Windows types are w2k*, wxp, wvista,
+  not win*), refined by `agent/get-osinfo`. Docker/Podman via one `sh -c` script of `pct exec` / `qm guest
+exec` over SSH, local node only; each answer starts with `+` so a failed exec reads as unknown. RDP/VNC hosts
+  set `remote-desktop` settings (`enableRdp`/`rdpPort`, `enableVnc`/`vncPort`) and their login in
+  `protocolAuth`; Docker is `pluginEnable.docker` plus `containerRuntime`.
+- Uploads: read the SSH channel (`resume()`) or it never emits `close` and the request hangs at 100%.
+- Import (`src/backend/import.ts`): imported guests carry the hidden `pveSource` host setting; sync
+  finds them with `listHostValues`. Scheduled sync runs every minute through `ctx.schedule` and
+  `ctx.asUser` (users:impersonate) for nodes with `pveImportSync` on.
 - Roadmap: `ROADMAP.md`.

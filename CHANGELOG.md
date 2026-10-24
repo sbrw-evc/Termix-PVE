@@ -1,5 +1,76 @@
 # Changelog
 
+## 0.2.9
+
+### Fixed
+
+- Tab buttons keep their labels on one line and the row scrolls, instead of wrapping "Cloud-Init" inside its button
+- The guest's ... menu is wide enough for Proxmox console on one line
+
+## 0.2.8
+
+### Fixed
+
+- Node, guest and storage tabs scroll sideways instead of running past the edge in a narrow pane
+- The per-guest connection picker in the import dialog is only as wide as it needs
+
+## 0.2.7
+
+### Changed
+
+- The Console button opens the guest's own Termix host, in Termix's own terminal or remote desktop. A guest that is not in Termix yet gets an offer to add it, then opens
+- Proxmox's own console (noVNC for VMs, a terminal for containers) moves to the guest's ... menu as Proxmox console, for guests with no network yet
+
+## 0.2.6
+
+### Changed
+
+- A guest's console opens from a Console button in its header, in a new Termix tab of its own, and connects at once, as Proxmox opens its console window. The Console tab inside the guest is gone
+
+## 0.2.5
+
+### Added
+
+- Import to Termix shows each guest's OS, from Proxmox's OS type or the QEMU guest agent, and picks RDP for Windows and SSH for the rest
+- Pick SSH, RDP or VNC per guest before importing; RDP and VNC hosts get the Remote Desktop plugin's settings
+- Sign imported guests in with one of your saved credentials, a username only, or no login, with separate logins for SSH and for RDP and VNC
+- Import finds Docker and Podman in running guests on the node and turns on the Docker plugin with that runtime
+
+### Fixed
+
+- Uploads no longer stop at 100%: the file was written but never moved into place
+- Older Windows VMs (2008, Vista, XP, 2003, 2000) are recognized as Windows
+
+## 0.2.4
+
+### Added
+
+- Import to Termix picks the folder from your existing Termix folders, or creates a new one, with `/` for a subfolder
+
+## 0.2.3
+
+### Fixed
+
+- Creating or editing a bridge with VLAN aware unchecked no longer turns it on: Proxmox reads the setting as on whenever it is sent, so off is now left out or cleared
+- Bridge comments no longer gain an empty line each time they are saved
+- Name and type are locked when editing a network interface
+
+## 0.2.2
+
+### Added
+
+- Console tab on guests: noVNC for VMs, with Ctrl+Alt+Del, and a terminal for containers, through `qm vncproxy` and `pct enter` over SSH
+- Upload ISO images and CT templates from the browser, with progress
+- Node Network tab: create, edit and remove bridges, bonds and VLANs, then Apply or Revert
+- Import to Termix: turn VMs and containers into Termix hosts, tagged proxmox, with their addresses, and keep them in sync on a schedule
+- Charts: server load, swap, and CPU, memory and IO pressure stall, with Average or Maximum
+- Folder view in the tree, by kind as in Proxmox: containers, VMs, nodes, pools, SDN and storage; Server view keeps the node layout
+- Swap use on node and guest summaries, and a Shell button on nodes
+
+### Changed
+
+- The node log shows the newest lines first
+
 ## 0.2.1
 
 ### Fixed

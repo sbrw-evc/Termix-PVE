@@ -67,6 +67,7 @@ async function start(options: { permissions: string[]; enabled?: boolean }) {
     router: () => router,
     capabilities: [
       "hosts:read",
+      "hosts:write",
       "credentials:use",
       "credentials:read",
       "ssh:connect",
@@ -90,7 +91,7 @@ async function start(options: { permissions: string[]; enabled?: boolean }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-  return { mock, node, call };
+  return { mock, node, call, port };
 }
 
 describe("POST /hosts/:hostId/call", () => {
@@ -174,5 +175,50 @@ describe("POST /hosts/:hostId/call", () => {
     expect((await call({ method: "PATCH", path: ["version"] })).status).toBe(
       400,
     );
+  });
+});
+
+describe("GET /hosts/:hostId/import/links", () => {
+  it("maps the guests imported from a node to their Termix hosts", async () => {
+    const { mock, port, node } = await start({ permissions: ["pve.view"] });
+    const ctx = mock.ctx;
+    const npm = await ctx.hosts.create({
+      name: "npm",
+      ip: "192.168.0.100",
+      port: 22,
+      username: "root",
+      authType: "none",
+    });
+    const other = await ctx.hosts.create({
+      name: "x",
+      ip: "10.0.0.1",
+      port: 22,
+      username: "root",
+      authType: "none",
+    });
+    const source = {
+      sourceHostId: 1,
+      type: "lxc",
+      vmid: 300,
+      node: "pve1",
+      lastSeenAt: "now",
+      lastStatus: "running",
+      missingSince: null,
+    };
+    await ctx.settings.setHost(npm.id, "pveSource", source);
+    // Imported from another node: not this one's.
+    await ctx.settings.setHost(other.id, "pveSource", {
+      ...source,
+      sourceHostId: 5,
+      vmid: 301,
+    });
+    const res = await fetch(`http://127.0.0.1:${port}/hosts/1/import/links`);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ links: { "lxc:300": npm.id } });
+    // Termix only: nothing asked of the node.
+    expect(node.commands).toEqual([]);
+    expect(
+      (await fetch(`http://127.0.0.1:${port}/hosts/99/import/links`)).status,
+    ).toBe(404);
   });
 });

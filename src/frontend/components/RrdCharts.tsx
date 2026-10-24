@@ -16,7 +16,10 @@ export interface ChartSpec {
   series: Array<{ field: string; labelKey: string; color: string }>;
   /** Percent of a field, against its maximum field. */
   ratioOf?: string;
-  format: "percent" | "bytes" | "rate" | "plain";
+  /** psi: pressure stall, which PVE already gives in percent. */
+  format: "percent" | "psi" | "bytes" | "rate" | "plain";
+  /** Left out when PVE sends nothing for it, like pressure stall before PVE 9. */
+  optional?: boolean;
 }
 
 const C1 = "var(--chart-1)";
@@ -34,8 +37,8 @@ export const NODE_CHARTS: ChartSpec[] = [
   },
   {
     key: "load",
-    titleKey: "charts.load",
-    series: [{ field: "loadavg", labelKey: "charts.load", color: C1 }],
+    titleKey: "charts.serverLoad",
+    series: [{ field: "loadavg", labelKey: "charts.loadAverage", color: C1 }],
     format: "plain",
   },
   {
@@ -48,6 +51,16 @@ export const NODE_CHARTS: ChartSpec[] = [
     format: "bytes",
   },
   {
+    key: "swap",
+    titleKey: "charts.swap",
+    series: [
+      { field: "swapused", labelKey: "charts.used", color: C1 },
+      { field: "swaptotal", labelKey: "charts.total", color: C2 },
+    ],
+    format: "bytes",
+    optional: true,
+  },
+  {
     key: "network",
     titleKey: "charts.network",
     series: [
@@ -55,6 +68,33 @@ export const NODE_CHARTS: ChartSpec[] = [
       { field: "netout", labelKey: "charts.out", color: C2 },
     ],
     format: "rate",
+  },
+  {
+    key: "pressureCpu",
+    titleKey: "charts.pressureCpu",
+    series: [{ field: "pressurecpusome", labelKey: "charts.some", color: C1 }],
+    format: "psi",
+    optional: true,
+  },
+  {
+    key: "pressureMemory",
+    titleKey: "charts.pressureMemory",
+    series: [
+      { field: "pressurememorysome", labelKey: "charts.some", color: C1 },
+      { field: "pressurememoryfull", labelKey: "charts.full", color: C2 },
+    ],
+    format: "psi",
+    optional: true,
+  },
+  {
+    key: "pressureIo",
+    titleKey: "charts.pressureIo",
+    series: [
+      { field: "pressureiosome", labelKey: "charts.some", color: C1 },
+      { field: "pressureiofull", labelKey: "charts.full", color: C2 },
+    ],
+    format: "psi",
+    optional: true,
   },
 ];
 
@@ -92,6 +132,36 @@ export const GUEST_CHARTS: ChartSpec[] = [
     ],
     format: "rate",
   },
+  {
+    key: "pressureCpu",
+    titleKey: "charts.pressureCpu",
+    series: [
+      { field: "pressurecpusome", labelKey: "charts.some", color: C1 },
+      { field: "pressurecpufull", labelKey: "charts.full", color: C2 },
+    ],
+    format: "psi",
+    optional: true,
+  },
+  {
+    key: "pressureMemory",
+    titleKey: "charts.pressureMemory",
+    series: [
+      { field: "pressurememorysome", labelKey: "charts.some", color: C1 },
+      { field: "pressurememoryfull", labelKey: "charts.full", color: C2 },
+    ],
+    format: "psi",
+    optional: true,
+  },
+  {
+    key: "pressureIo",
+    titleKey: "charts.pressureIo",
+    series: [
+      { field: "pressureiosome", labelKey: "charts.some", color: C1 },
+      { field: "pressureiofull", labelKey: "charts.full", color: C2 },
+    ],
+    format: "psi",
+    optional: true,
+  },
 ];
 
 /** Values a chart plots: CPU comes from PVE as a 0..1 share. */
@@ -113,6 +183,8 @@ export function chartDomain(
 ): [number, number] {
   if (format === "percent") return [0, 100];
   const max = Math.max(0, ...values.filter((v): v is number => v !== null));
+  // Pressure stall is mostly near 0%; a 1% floor keeps noise from looking like a spike.
+  if (format === "psi") return [0, Math.max(1, max * 1.1)];
   if (max > 0) return [0, max * 1.1];
   // All zero: a byte axis up to 1 would label every tick "1 B".
   return [0, format === "bytes" || format === "rate" ? 1024 : 1];
@@ -125,6 +197,7 @@ export function hasData(values: Array<number | null>): boolean {
 
 function formatter(format: ChartSpec["format"]): (v: number) => string {
   if (format === "percent") return (v) => `${v.toFixed(0)}%`;
+  if (format === "psi") return (v) => `${v.toFixed(2)}%`;
   if (format === "bytes") return (v) => formatBytes(v);
   if (format === "rate") return (v) => formatRate(v);
   return (v) => v.toFixed(2);
@@ -143,6 +216,8 @@ export function RrdCharts({
 }) {
   const { t } = useTranslation();
   const [timeframe, setTimeframe] = useState<Timeframe>("hour");
+  // PVE keeps both per sample: the average, and the peak, which shows spikes.
+  const [cf, setCf] = useState<"AVERAGE" | "MAX">("AVERAGE");
   const [points, setPoints] = useState<RrdPoint[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const specs = guest ? GUEST_CHARTS : NODE_CHARTS;
@@ -155,7 +230,7 @@ export function RrdCharts({
       ? ["nodes", node, guest.type, guest.vmid, "rrddata"]
       : ["nodes", node, "rrddata"];
     const load = () =>
-      pve<RrdPoint[]>(hostId, "GET", path, { timeframe, cf: "AVERAGE" }).then(
+      pve<RrdPoint[]>(hostId, "GET", path, { timeframe, cf }).then(
         (data) => {
           if (cancelled) return;
           setPoints((data ?? []).filter((p) => typeof p.time === "number"));
@@ -174,7 +249,7 @@ export function RrdCharts({
     };
     // guestKey stands in for the guest object, which is new on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hostId, node, guestKey, timeframe, isVisible]);
+  }, [hostId, node, guestKey, timeframe, cf, isVisible]);
 
   const timestamps = (points ?? []).map((p) =>
     new Date(p.time * 1000).toISOString(),
@@ -185,14 +260,24 @@ export function RrdCharts({
       <GroupHeading
         title={t("charts.title")}
         action={
-          <Segmented
-            value={timeframe}
-            onChange={(value) => setTimeframe(value as Timeframe)}
-            options={TIMEFRAMES.map((value) => ({
-              value,
-              label: t(`charts.timeframe.${value}`),
-            }))}
-          />
+          <div className="flex flex-wrap gap-1">
+            <Segmented
+              value={timeframe}
+              onChange={(value) => setTimeframe(value as Timeframe)}
+              options={TIMEFRAMES.map((value) => ({
+                value,
+                label: t(`charts.timeframe.${value}`),
+              }))}
+            />
+            <Segmented
+              value={cf}
+              onChange={(value) => setCf(value as "AVERAGE" | "MAX")}
+              options={[
+                { value: "AVERAGE", label: t("charts.average") },
+                { value: "MAX", label: t("charts.maximum") },
+              ]}
+            />
+          </div>
         }
       />
       {error && <p className="text-xs text-destructive">{error}</p>}
@@ -209,6 +294,7 @@ export function RrdCharts({
               data: seriesValues(points, s.field, spec.format),
             }));
             const all = series.flatMap((s) => s.data);
+            if (spec.optional && !hasData(all)) return null;
             return (
               <div key={spec.key} className="border border-border p-2.5">
                 <div className="mb-1 text-xs text-muted-foreground">

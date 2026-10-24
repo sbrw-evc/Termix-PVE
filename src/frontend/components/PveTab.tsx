@@ -16,9 +16,10 @@ import {
   PanelSearch,
   PanelShell,
   ScrollArea,
+  Segmented,
   Select2,
 } from "@termix-ssh/plugin-sdk/ui";
-import { RefreshCw, Server } from "lucide-react";
+import { Download, RefreshCw, Server } from "lucide-react";
 import {
   isPveHost,
   pve,
@@ -27,13 +28,41 @@ import {
   type PveCallError,
   type PveResource,
 } from "../api";
-import { buildResourceTree, guestCounts, isGuest } from "../tree";
+import {
+  buildFolderTree,
+  buildServerTree,
+  guestCounts,
+  isGuest,
+  type TreeView,
+} from "../tree";
+
+import { ImportDialog } from "./ImportDialog";
+
+const VIEW_KEY = "pve.treeView";
+
+/** The tree layout this browser last used; Folder View like Proxmox's by default. */
+function readView(): TreeView {
+  try {
+    return localStorage.getItem(VIEW_KEY) === "server" ? "server" : "folder";
+  } catch {
+    return "folder";
+  }
+}
+
+function saveView(view: TreeView) {
+  try {
+    localStorage.setItem(VIEW_KEY, view);
+  } catch {
+    // Storage off: the choice lasts until the tab closes.
+  }
+}
 import { errorText } from "../error-text";
 import { TaskProvider } from "../tasks";
 import { ResourceTree } from "./ResourceTree";
 import { TasksPanel } from "./TasksPanel";
 import { NodeView } from "./NodeView";
 import { StorageView } from "../storage/StorageView";
+import { PoolView, SdnView } from "./GroupViews";
 import { GuestView } from "../guests/GuestView";
 
 const REFRESH_MS = 10000;
@@ -82,6 +111,9 @@ function Details({
       <StorageView hostId={hostId} storage={selected} isVisible={isVisible} />
     );
   }
+  if (selected.type === "pool")
+    return <PoolView pool={selected} resources={resources} />;
+  if (selected.type === "sdn") return <SdnView zone={selected} />;
   return null;
 }
 
@@ -100,6 +132,7 @@ function ClusterView({
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -128,9 +161,17 @@ function ClusterView({
     return () => clearInterval(timer);
   }, [isVisible, load]);
 
+  const [view, setView] = useState<TreeView>(readView);
   const tree = useMemo(
-    () => buildResourceTree(resources ?? [], query),
-    [resources, query],
+    () =>
+      view === "folder"
+        ? buildFolderTree(resources ?? [], query)
+        : buildServerTree(resources ?? [], query),
+    [resources, query, view],
+  );
+  const nodeCount = useMemo(
+    () => (resources ?? []).filter((r) => r.type === "node").length,
+    [resources],
   );
   const selected = useMemo(
     () => resources?.find((r) => r.id === selectedId) ?? null,
@@ -153,7 +194,7 @@ function ClusterView({
         status={
           resources
             ? t("app.status", {
-                nodes: tree.length,
+                nodes: nodeCount,
                 running: counts.running,
                 total: counts.total,
               })
@@ -162,25 +203,49 @@ function ClusterView({
         scroll={false}
         leading={hostPicker}
         actions={
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => void load()}
-            disabled={loading}
-            title={t("app.refresh")}
-          >
-            <RefreshCw
-              className={loading ? "size-3.5 animate-spin" : "size-3.5"}
-            />
-          </Button>
+          <>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setImporting(true)}
+              title={t("import.open")}
+            >
+              <Download className="mr-1 size-3.5" />
+              {t("import.open")}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => void load()}
+              disabled={loading}
+              title={t("app.refresh")}
+            >
+              <RefreshCw
+                className={loading ? "size-3.5 animate-spin" : "size-3.5"}
+              />
+            </Button>
+          </>
         }
         toolbar={
-          <PanelSearch
-            value={query}
-            onChange={setQuery}
-            placeholder={t("app.search")}
-            fill
-          />
+          <div className="flex w-full items-center gap-2">
+            <PanelSearch
+              value={query}
+              onChange={setQuery}
+              placeholder={t("app.search")}
+              fill
+            />
+            <Segmented
+              value={view}
+              onChange={(next) => {
+                setView(next as TreeView);
+                saveView(next as TreeView);
+              }}
+              options={[
+                { value: "folder", label: t("tree.views.folder") },
+                { value: "server", label: t("tree.views.server") },
+              ]}
+            />
+          </div>
         }
       >
         {error && !resources ? (
@@ -227,6 +292,12 @@ function ClusterView({
               </div>
             </div>
             <TasksPanel hostId={hostId} isVisible={isVisible} />
+            {importing && (
+              <ImportDialog
+                hostId={hostId}
+                onClose={() => setImporting(false)}
+              />
+            )}
           </div>
         )}
       </PanelShell>

@@ -34,7 +34,7 @@ afterEach(async () => {
 describe(`${manifest.id} activate`, () => {
   it("registers the tab, a Tools rail item and the host action", async () => {
     rendered = await renderWithApp(plugin, { manifest, locales });
-    expect(rendered.registered.tabs()).toEqual(["pve"]);
+    expect(rendered.registered.tabs()).toEqual(["pve", "pve-console"]);
     expect(rendered.registered.railItems()).toEqual([
       expect.objectContaining({ id: "pve", permission: "pve.view" }),
     ]);

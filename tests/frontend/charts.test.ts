@@ -24,6 +24,16 @@ describe("rrd charts", () => {
     expect(chartDomain([10, 90], "percent")).toEqual([0, 100]);
     expect(chartDomain([0, 1000, null], "bytes")).toEqual([0, 1100]);
     expect(chartDomain([null], "rate")).toEqual([0, 1024]);
+    // Pressure stall is already a percent, with a 1% floor so noise stays flat.
+    expect(
+      seriesValues(
+        [{ time: 1, pressurecpusome: 0.19 }],
+        "pressurecpusome",
+        "psi",
+      ),
+    ).toEqual([0.19]);
+    expect(chartDomain([0.05, 0.2], "psi")).toEqual([0, 1]);
+    expect(chartDomain([0, 4], "psi")[1]).toBeCloseTo(4.4);
     expect(chartDomain([0, 0], "plain")).toEqual([0, 1]);
   });
 

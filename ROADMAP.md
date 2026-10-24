@@ -18,11 +18,19 @@ Each phase is a release, checked on a real node before it ships. Every new Proxm
 - ISO images and CT templates: download from URL, template catalog, delete
 - Nodes: services, updates, disks with SMART, log, reboot and shutdown
 
-## 0.2.x: console and the rest of 0.2
+## 0.2.x: console and the rest of 0.2 (done in 0.2.2)
 
 - Console: noVNC for VMs, xterm.js for containers and node shells over the `/plugin-ws` proxy
 - Upload ISO images and templates from the browser
 - Node network: bridges, bonds, VLANs, with apply
+- Import guests as Termix hosts, with sync
+
+## Node menu still to come
+
+- System: DNS, Hosts, Time, Certificates
+- Updates: Repositories
+- Disks: LVM, LVM-Thin, Directory, ZFS
+- Ceph, Replication and Firewall (with 0.3), Task History per node
 
 ## 0.3: data and safety
 
@@ -38,7 +46,5 @@ Each phase is a release, checked on a real node before it ships. Every new Proxm
 
 ## Open questions
 
-- Console traffic needs a WebSocket to the node. Over the SSH tunnel this works; with API directly the
-  plugin opens `wss` itself, outside `ctx.fetch`.
-- Volume ids contain `/` (`local:iso/debian.iso`). Paths that carry one as a segment need encoding per
-  transport before storage content can be deleted.
+- The console runs `qm vncproxy` / `pct enter` over SSH, so it needs an SSH transport and a user that
+  is root or has passwordless sudo. API directly has no console yet.

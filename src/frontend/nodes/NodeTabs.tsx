@@ -412,9 +412,14 @@ export function DisksTab({ hostId, node, isVisible }: NodeTabProps) {
 
 // Log
 
-/** /journal puts its start and end cursors around the lines; they aren't log. */
+/**
+ * /journal puts its start and end cursors around the lines; they aren't log.
+ * The newest line comes first, so what just happened is on top.
+ */
 export function journalLines(data: string[] | null): string[] {
-  return (data ?? []).filter((line) => !/^s=[0-9a-f]+;i=[0-9a-f]+;/.test(line));
+  return (data ?? [])
+    .filter((line) => !/^s=[0-9a-f]+;i=[0-9a-f]+;/.test(line))
+    .reverse();
 }
 
 export function LogTab({ hostId, node, isVisible }: NodeTabProps) {

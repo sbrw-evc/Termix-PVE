@@ -11,6 +11,7 @@ import { Download, LibraryBig, Trash2 } from "lucide-react";
 import { app, pve, toCallError, type PveResource } from "../api";
 import { formatBytes, percent } from "../format";
 import { useTasks } from "../tasks";
+import { UploadButton } from "./Upload";
 import { Fact, Usage } from "../components/Usage";
 import {
   CheckField,
@@ -366,6 +367,13 @@ function ContentList({
             <Download className="mr-1 size-3.5" />
             {t("storage.download.button")}
           </Button>
+          <UploadButton
+            hostId={hostId}
+            node={node}
+            storage={storage}
+            content={kind}
+            onDone={() => void load()}
+          />
           {kind === "vztmpl" && (
             <Button
               size="sm"
@@ -497,6 +505,7 @@ export function StorageView({
       </div>
       {tabs.length > 1 && (
         <Segmented
+          className="max-w-full overflow-x-auto [&>*]:shrink-0 [&>*]:whitespace-nowrap"
           value={tab}
           onChange={(v) => setTab(v as Tab)}
           options={tabs.map((v) => ({
