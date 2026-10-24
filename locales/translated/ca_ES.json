@@ -1,0 +1,1030 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Gestioneu Proxmox VE des de Termix: màquines virtuals, contenidors, emmagatzematge, xarxa, còpies de seguretat, tallafoc, accés i el clúster."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Obre a Proxmox"
+  },
+  "permissions": {
+    "view": {
+      "title": "Veure Proxmox",
+      "description": "Vegeu nodes, convidats, emmagatzematge, gràfics i tasques dels hosts Proxmox als quals us podeu connectar."
+    },
+    "operate": {
+      "title": "Operar convidats de Proxmox",
+      "description": "Inicieu, atureu, apagueu, reinicieu, suspeneu i repreneu VM i contenidors. Cal accés d'edició al host."
+    },
+    "console": {
+      "title": "Obrir consoles de Proxmox",
+      "description": "Obriu la pantalla d'una VM i un shell de root en un contenidor. Cal accés d'edició al host."
+    },
+    "configure": {
+      "title": "Configurar Proxmox",
+      "description": "Creeu, cloneu, migreu, convertiu i suprimiu VM i contenidors. Cal accés d'edició al host."
+    },
+    "administer": {
+      "title": "Administrar Proxmox",
+      "description": "Gestioneu usuaris, grups, rols, pools, 2FA, testimonis, dominis i el clúster. Cal accés d'edició al host."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Node Proxmox",
+      "description": "Marqueu aquest host com a node de Proxmox VE. Després apareix a l'eina Proxmox, a Eines."
+    },
+    "transport": {
+      "label": "Connecta mitjançant",
+      "description": "Automàtic fa servir l'API per un túnel SSH un cop s'ha desat un testimoni, i pvesh per SSH fins aleshores.",
+      "auto": "Automàtic",
+      "tunnel": "API per túnel SSH",
+      "direct": "API directament",
+      "pvesh": "pvesh per SSH"
+    },
+    "tokenId": {
+      "label": "ID del testimoni de l'API",
+      "description": "Es crea a Proxmox a Centre de dades, Permisos, Testimonis de l'API. Té l'aspecte usuari@domini!nom.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "Secret del testimoni de l'API",
+      "description": "Es mostra una sola vegada en crear el testimoni. Es desa xifrat."
+    },
+    "apiHost": {
+      "label": "Adreça de l'API",
+      "description": "Només per a API directament. Deixeu-ho buit per fer servir l'adreça d'aquest host."
+    },
+    "apiPort": {
+      "label": "Port de l'API",
+      "description": "8006 si no l'heu canviat."
+    },
+    "caCert": {
+      "label": "Certificat de la CA",
+      "description": "Només per a API directament. La CA del node en PEM, de /etc/pve/pve-root-ca.pem. Deixeu-ho buit si l'API té un certificat de confiança pública.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Convidats importats",
+    "importSync": {
+      "label": "Mantén sincronitzats els convidats importats",
+      "description": "Actualitza noms, adreces i etiquetes dels convidats importats d'aquest node, i etiqueta com a proxmox-missing els que s'han eliminat de Proxmox."
+    },
+    "importInterval": {
+      "label": "Sincronitza cada (minuts)",
+      "description": "Com a mínim 5 minuts."
+    },
+    "importAddNew": {
+      "label": "Afegeix convidats nous en sincronitzar",
+      "description": "Importa els convidats creats a Proxmox després de la primera importació, amb els valors usats per última vegada al diàleg d'importació."
+    },
+    "importDefaults": {
+      "label": "Valors per defecte de la importació"
+    },
+    "importState": {
+      "label": "Última sincronització de convidats"
+    },
+    "source": {
+      "label": "Convidat de Proxmox"
+    }
+  },
+  "app": {
+    "loading": "S'està carregant...",
+    "loadFailed": "No s'ha pogut carregar el clúster",
+    "refreshFailed": "No s'ha pogut actualitzar: {{message}}",
+    "retry": "Torna-ho a provar",
+    "refresh": "Actualitza",
+    "search": "Cerca convidats, nodes i emmagatzematge...",
+    "status": "{{nodes}} nodes, {{running}} de {{total}} convidats en execució",
+    "pickHost": "Host Proxmox",
+    "pickResource": "Trieu un node, un convidat o un emmagatzematge a l'esquerra",
+    "noHosts": "Encara no hi ha hosts Proxmox",
+    "noHostsHint": "Obriu la configuració d'un host, activeu Node Proxmox a SSH i trieu com connectar-vos. El node apareixerà aquí.",
+    "cancel": "Cancel·la",
+    "working": "S'està treballant...",
+    "save": "Desa",
+    "reset": "Restableix",
+    "close": "Tanca",
+    "yes": "Sí",
+    "no": "No",
+    "edit": "Edita"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix no confia en el certificat del node. A la configuració Proxmox del host, enganxeu la CA del node de /etc/pve/pve-root-ca.pem a Certificat de la CA, o trieu API per túnel SSH.",
+    "tlsHostname": "El certificat del node és per a un altre nom. Definiu l'Adreça de l'API amb un nom o una adreça que figuri al certificat.",
+    "tlsExpired": "El certificat del node ha caducat o encara no és vàlid. Renoveu-lo a Proxmox, al node, Sistema, Certificats.",
+    "notEnabled": "Aquest host no està marcat com a node Proxmox. Activeu Node Proxmox a la configuració del host.",
+    "hostAccess": "Necessiteu accés d'edició a aquest host per modificar-lo."
+  },
+  "tree": {
+    "nothingFound": "Res no coincideix amb la cerca.",
+    "expand": "Desplega",
+    "collapse": "Plega",
+    "datacenter": "Centre de dades",
+    "folders": {
+      "lxc": "Contenidor LXC",
+      "qemu": "Màquina virtual",
+      "node": "Nodes",
+      "pool": "Pools",
+      "sdn": "Xarxa",
+      "storage": "Emmagatzematge"
+    },
+    "views": {
+      "folder": "Vista de carpetes",
+      "server": "Vista de servidor"
+    }
+  },
+  "types": {
+    "node": "Node",
+    "qemu": "VM",
+    "lxc": "Contenidor",
+    "storage": "Emmagatzematge",
+    "pool": "Pool",
+    "sdn": "Zona SDN"
+  },
+  "states": {
+    "running": "En execució",
+    "stopped": "Aturat",
+    "paused": "En pausa",
+    "suspended": "Suspès",
+    "online": "En línia",
+    "offline": "Fora de línia",
+    "available": "Disponible",
+    "unknown": "Desconegut"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Memòria",
+    "disk": "Disc",
+    "rootDisk": "Disc arrel",
+    "usage": "Ús",
+    "cores_one": "{{count}} nucli",
+    "cores_many": "{{count}} nuclis",
+    "cores_other": "{{count}} nuclis",
+    "swap": "Intercanvi"
+  },
+  "summary": {
+    "title": "Resum",
+    "node": "Node",
+    "vmid": "ID",
+    "uptime": "Temps en funcionament",
+    "pool": "Pool",
+    "ha": "HA",
+    "tags": "Etiquetes",
+    "guests": "Convidats",
+    "guestsRunning": "{{running}} de {{total}} en execució",
+    "cpuModel": "CPU",
+    "sockets": "sòcols",
+    "load": "Càrrega mitjana",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Nucli",
+    "ips": "Adreces"
+  },
+  "charts": {
+    "title": "Gràfics",
+    "cpu": "CPU",
+    "load": "Càrrega mitjana",
+    "memory": "Memòria",
+    "network": "Xarxa",
+    "diskIo": "E/S de disc",
+    "cpuUsage": "Ús de CPU",
+    "ioDelay": "Retard d'E/S",
+    "used": "Usat",
+    "total": "Total",
+    "in": "Entrada",
+    "out": "Sortida",
+    "read": "Lectura",
+    "write": "Escriptura",
+    "timeframe": {
+      "hour": "Hora",
+      "day": "Dia",
+      "week": "Setmana",
+      "month": "Mes",
+      "year": "Any"
+    },
+    "noData": "No hi ha dades per a aquest període",
+    "serverLoad": "Càrrega del servidor",
+    "loadAverage": "Càrrega mitjana",
+    "swap": "Intercanvi",
+    "pressureCpu": "Bloqueig per pressió de CPU",
+    "pressureMemory": "Bloqueig per pressió de memòria",
+    "pressureIo": "Bloqueig per pressió d'E/S",
+    "some": "Parcial",
+    "full": "Total",
+    "average": "Mitjana",
+    "maximum": "Màxim"
+  },
+  "tasks": {
+    "title": "Tasques",
+    "started": "Iniciada",
+    "node": "Node",
+    "user": "Usuari",
+    "task": "Tasca",
+    "status": "Estat",
+    "running": "En execució",
+    "ok": "D'acord",
+    "logTitle": "{{type}} {{id}} a {{node}}",
+    "done": "{{label}}: fet",
+    "failed": "{{label}} ha fallat: {{reason}}"
+  },
+  "guests": {
+    "more": "Més accions",
+    "isTemplate": "Plantilla",
+    "locked": "Bloquejat: {{lock}}",
+    "power": {
+      "start": "Inicia",
+      "shutdown": "Apaga",
+      "stop": "Atura",
+      "reboot": "Reinicia",
+      "suspend": "Suspèn",
+      "resume": "Reprèn",
+      "reset": "Restableix",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Voleu aturar {{name}} ara?",
+        "reset": "Voleu restablir {{name}} ara?",
+        "description": "Això talla l'alimentació com si estiréssiu el cable. La feina no desada al convidat es perd."
+      }
+    },
+    "clone": {
+      "menu": "Clona",
+      "title": "Clona {{name}}",
+      "submit": "Clona",
+      "label": "Clona {{source}} a {{id}}",
+      "full": "Clon complet",
+      "fullHint": "Copia tots els discs, de manera que el clon no depèn de l'original.",
+      "linkedHint": "Desactivat crea un clon enllaçat que comparteix els discs de la plantilla i es fa en segons.",
+      "sameStorage": "El mateix emmagatzematge que l'original"
+    },
+    "migrate": {
+      "menu": "Migra",
+      "title": "Migra {{name}}",
+      "submit": "Migra",
+      "label": "Migra {{name}} a {{target}}",
+      "noOtherNodes": "No hi ha cap altre node en línia en aquest clúster on moure'l.",
+      "onlineHint": "La VM està en execució i es mou en calent, sense aturar-se.",
+      "restartHint": "El contenidor està en execució. S'atura, es mou i torna a iniciar-se al destí."
+    },
+    "template": {
+      "menu": "Converteix en plantilla",
+      "confirm": "Voleu convertir {{name}} en una plantilla?",
+      "description": "Una plantilla no es pot iniciar, només clonar. Això no es pot desfer.",
+      "submit": "Converteix",
+      "label": "Converteix {{name}} en una plantilla"
+    },
+    "delete": {
+      "menu": "Suprimeix",
+      "title": "Suprimeix {{name}}",
+      "submit": "Suprimeix",
+      "label": "Suprimeix {{name}}",
+      "warning": "Això suprimeix el convidat {{vmid}} i els seus discs. No es pot desfer.",
+      "stopFirst": "Atureu el convidat abans de suprimir-lo.",
+      "typeId": "Escriviu {{vmid}} per confirmar",
+      "purge": "Elimina'l de les tasques de còpia de seguretat, la replicació i HA",
+      "purgeHint": "No deixa tasques que apuntin a un convidat que ja no existeix.",
+      "unreferenced": "Suprimeix també els discs no referenciats",
+      "unreferencedHint": "Discs en emmagatzematges habilitats amb aquest ID que la configuració no inclou."
+    },
+    "create": {
+      "vmButton": "Crea una VM",
+      "ctButton": "Crea un CT",
+      "vmTitle": "Crea una màquina virtual",
+      "ctTitle": "Crea un contenidor",
+      "submit": "Crea",
+      "vmLabel": "Crea la VM {{id}} ({{name}})",
+      "ctLabel": "Crea el CT {{id}} ({{name}})",
+      "noTemplates": "No hi ha plantilles de contenidor en aquest node. Baixeu-ne una a Proxmox, en un emmagatzematge, Plantilles CT.",
+      "noIso": "No hi ha mitjans d'instal·lació",
+      "unprivilegedHint": "Més segur: el root del contenidor no és root al node.",
+      "loginHint": "Definiu una contrasenya de root, claus SSH o totes dues.",
+      "problem": {
+        "vmid": "Trieu un ID de 100 o més.",
+        "hostname": "Introduïu un nom d'amfitrió: lletres, xifres i guions.",
+        "name": "Introduïu un nom: lletres, xifres i guions.",
+        "template": "Trieu una plantilla.",
+        "storage": "Trieu un emmagatzematge.",
+        "disk": "Introduïu una mida de disc.",
+        "cores": "Introduïu quants nuclis.",
+        "sockets": "Introduïu quants sòcols.",
+        "memory": "Introduïu com a mínim 16 MiB de memòria.",
+        "swap": "Introduïu l'intercanvi en MiB, 0 per a cap.",
+        "network": "Trieu un pont i, per a una adreça estàtica, introduïu-la com 192.168.0.60/24.",
+        "login": "Definiu una contrasenya de root o claus SSH per poder iniciar la sessió.",
+        "password": "La contrasenya necessita com a mínim 5 caràcters."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Altre"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Nom",
+      "hostname": "Nom d'amfitrió",
+      "node": "Node",
+      "targetNode": "Node de destinació",
+      "targetStorage": "Emmagatzematge de destinació",
+      "storage": "Emmagatzematge",
+      "template": "Plantilla",
+      "iso": "Mitjà d'instal·lació",
+      "ostype": "SO del convidat",
+      "rootPassword": "Contrasenya de root",
+      "sshKeys": "Claus públiques SSH",
+      "unprivileged": "Contenidor sense privilegis",
+      "diskGiB": "Disc (GiB)",
+      "cores": "Nuclis",
+      "sockets": "Sòcols",
+      "memoryMiB": "Memòria (MiB)",
+      "swapMiB": "Intercanvi (MiB)",
+      "bridge": "Pont de xarxa",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Estàtica",
+      "cidr": "Adreça/prefix",
+      "gateway": "Passarel·la",
+      "startAfter": "Inicia després de crear",
+      "pick": "Trieu-ne un"
+    },
+    "tabs": {
+      "summary": "Resum",
+      "hardware": "Maquinari",
+      "options": "Opcions",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Edita",
+    "add": "Afegeix",
+    "remove": "Elimina",
+    "removed": "{{key}} eliminat",
+    "pending": "Pendent",
+    "pendingHint": "Els canvis marcats com a Pendent s'apliquen quan el convidat es reinicia des de Proxmox: un reinici dins del convidat no n'hi ha prou.",
+    "processors": "Processadors",
+    "processorsValue": "{{sockets}} sòcol × {{cores}} nuclis, {{cpu}}",
+    "allCores": "Tots",
+    "swap": "Intercanvi",
+    "balloonShort": "mín.",
+    "cpuMemory": {
+      "heading": "Processador i memòria",
+      "title": "Processador i memòria"
+    },
+    "cpuType": "Tipus de CPU",
+    "cpulimit": "Límit de CPU",
+    "cpulimitHint": "0 per a sense límit. 1,5 és el temps d'un nucli i mig.",
+    "balloon": "Memòria mínima (MiB)",
+    "balloonHint": "Amb el controlador balloon, el convidat retorna memòria fins a aquest valor. Igual a la memòria el desactiva; 0 elimina el controlador.",
+    "disks": "Discs",
+    "volumes": "Disc arrel i punts de muntatge",
+    "bus": "Bus",
+    "slot": "Serà {{key}}",
+    "iothread": "Fil d'E/S",
+    "discard": "Discard",
+    "discardHint": "Permet al convidat alliberar blocs no usats en emmagatzematge thin.",
+    "ssd": "Emulació SSD",
+    "mountPath": "Ruta de muntatge al contenidor",
+    "backup": "Inclou a les còpies de seguretat",
+    "addDisk": {
+      "button": "Afegeix un disc",
+      "title": "Afegeix un disc",
+      "label": "Afegeix {{key}}"
+    },
+    "addMount": {
+      "button": "Afegeix un punt de muntatge",
+      "title": "Afegeix un punt de muntatge"
+    },
+    "resize": {
+      "menu": "Redimensiona",
+      "title": "Amplia {{key}}",
+      "grow": "Afegeix (GiB)",
+      "result": "{{from}} GiB passa a {{to}} GiB",
+      "noShrink": "Els discs només poden créixer. Després cal ampliar la partició i el sistema de fitxers dins del convidat, tret que ho faci en arrencar.",
+      "submit": "Amplia",
+      "label": "Amplia {{key}} en {{size}} GiB"
+    },
+    "move": {
+      "menu": "Mou a un emmagatzematge",
+      "title": "Mou {{key}}",
+      "submit": "Mou",
+      "deleteSource": "Suprimeix l'original",
+      "deleteSourceHint": "Desactivat el conserva com a disc no usat.",
+      "label": "Mou {{key}} a {{storage}}"
+    },
+    "detach": {
+      "menu": "Desconnecta",
+      "title": "Voleu desconnectar {{key}}?",
+      "description": "El disc es queda al seu emmagatzematge com a disc no usat i es pot suprimir o tornar a connectar."
+    },
+    "unused": {
+      "delete": "Suprimeix",
+      "title": "Voleu suprimir {{volume}}?",
+      "description": "Això suprimeix el disc i tot el que conté. No es pot desfer."
+    },
+    "cd": {
+      "heading": "Unitats de CD/DVD",
+      "title": "Mitjà a {{key}}",
+      "empty": "Sense mitjà"
+    },
+    "nic": {
+      "heading": "Adaptadors de xarxa",
+      "add": "Afegeix un adaptador",
+      "addTitle": "Afegeix {{key}}",
+      "editTitle": "Edita {{key}}",
+      "none": "No hi ha adaptadors de xarxa.",
+      "model": "Model",
+      "name": "Nom al contenidor",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Estàtica",
+        "none": "Cap",
+        "auto": "SLAAC"
+      },
+      "tag": "Etiqueta VLAN",
+      "tagHint": "Buit per a sense etiqueta.",
+      "rate": "Límit de velocitat (MB/s)",
+      "rateHint": "Buit per a sense límit.",
+      "firewall": "Tallafoc",
+      "firewallShort": "tallafoc",
+      "removeTitle": "Voleu eliminar {{key}}?",
+      "removeDescription": "El convidat perd aquest adaptador i la seva adreça."
+    },
+    "problem": {
+      "cpu": "Introduïu com a mínim un sòcol i un nucli.",
+      "cpulimit": "El límit de CPU va de 0 a 8192.",
+      "memory": "Introduïu com a mínim 16 MiB de memòria.",
+      "balloon": "La memòria mínima no pot superar la memòria.",
+      "swap": "Introduïu l'intercanvi en MiB, 0 per a cap.",
+      "noSlot": "Totes les ranures d'aquest tipus estan ocupades.",
+      "storage": "Trieu un emmagatzematge.",
+      "size": "Introduïu una mida en GiB enters.",
+      "path": "Introduïu una ruta absoluta com /data, no / mateix.",
+      "bridge": "Trieu un pont.",
+      "tag": "Una etiqueta VLAN va de 1 a 4094.",
+      "rate": "Introduïu una velocitat superior a 0 o deixeu-ho buit.",
+      "name": "Introduïu un nom com eth0.",
+      "ip4": "Introduïu l'adreça com 192.168.0.60/24 i una passarel·la vàlida.",
+      "ip6": "Introduïu l'adreça com fd00::10/64."
+    },
+    "detached": "{{key}} desconnectat; es queda com a disc no usat",
+    "coresHint": "Buit fa servir tots els nuclis del node."
+  },
+  "options": {
+    "general": "General",
+    "tags": "Etiquetes",
+    "tagsHint": "Separades per comes.",
+    "onboot": "Inicia quan arrenca el node",
+    "protection": "Protecció",
+    "protectionHint": "Impedeix suprimir el convidat i els seus discs fins que es desactivi.",
+    "agent": "Agent de convidat QEMU",
+    "agentHint": "Activeu-lo quan l'agent s'executi al convidat, per obtenir-ne les adreces i aturades netes.",
+    "startup": "Ordre d'inici i aturada",
+    "startupOrder": "Ordre",
+    "startupUp": "Retard després de l'inici (s)",
+    "startupDown": "Temps d'espera d'aturada (s)",
+    "dns": "DNS",
+    "nameserver": "Servidors DNS",
+    "searchdomain": "Domini de cerca",
+    "useHost": "Buit fa servir el del node.",
+    "notes": "Notes",
+    "saved": "Opcions desades",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Altre"
+    },
+    "problem": {
+      "name": "Introduïu un nom.",
+      "startup": "L'ordre i els retards són nombres enters.",
+      "tags": "Les etiquetes fan servir lletres, xifres, guions, punts i guions baixos.",
+      "nameserver": "Introduïu adreces IP separades per espais."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "Aquesta VM no té unitat cloud-init. Afegiu-ne una i després definiu aquí l'usuari, les claus i la xarxa; la imatge del convidat ha d'admetre cloud-init.",
+    "addDrive": "Afegeix una unitat cloud-init",
+    "driveAdded": "Unitat cloud-init afegida",
+    "user": "Usuari",
+    "username": "Nom d'usuari",
+    "usernameHint": "Buit fa servir l'usuari per defecte de la imatge.",
+    "password": "Contrasenya",
+    "passwordHint": "Buit conserva l'actual. Proxmox la desa amb hash.",
+    "network": "Xarxa",
+    "saved": "Configuració de cloud-init desada",
+    "regenerate": "Regenera la imatge",
+    "regenerated": "Imatge cloud-init regenerada",
+    "regenerateHint": "Escriu la configuració a {{drive}}. El convidat la llegeix en la propera arrencada."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Resum",
+      "iso": "Imatges ISO",
+      "vztmpl": "Plantilles CT",
+      "backup": "Còpies de seguretat",
+      "images": "Imatges de disc"
+    },
+    "content": "Conté",
+    "contentTypes": {
+      "images": "Discs de VM",
+      "rootdir": "Discs de contenidor",
+      "iso": "Imatges ISO",
+      "vztmpl": "Plantilles CT",
+      "backup": "Còpies de seguretat",
+      "snippets": "Fragments",
+      "import": "Importació"
+    },
+    "shared": "Compartit",
+    "empty": "Encara no hi ha res aquí.",
+    "owner": "convidat {{vmid}}",
+    "protected": "Protegit",
+    "download": {
+      "button": "Baixa des d'un URL",
+      "title": {
+        "iso": "Baixa una imatge ISO a {{storage}}",
+        "vztmpl": "Baixa una plantilla CT a {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Nom del fitxer",
+      "algorithm": "Tipus de suma de verificació",
+      "noChecksum": "Cap",
+      "checksum": "Suma de verificació",
+      "verify": "Comprova el certificat del servidor",
+      "submit": "Baixa",
+      "label": "Baixa {{name}}",
+      "problem": {
+        "url": "Introduïu un URL http o https.",
+        "filename": "El nom del fitxer fa servir lletres, xifres, punts, guions i guions baixos.",
+        "extension": "Les imatges ISO acaben en .iso o .img; les plantilles en .tar.gz, .tar.xz o .tar.zst.",
+        "checksum": "Trieu un tipus de suma de verificació i introduïu-la en hexadecimal, o deixeu tots dos buits."
+      }
+    },
+    "catalog": {
+      "button": "Plantilles",
+      "title": "Plantilles de contenidor per a {{storage}}",
+      "search": "Cerca plantilles...",
+      "have": "Baixada",
+      "label": "Baixa {{name}}"
+    },
+    "delete": {
+      "title": "Voleu suprimir {{name}}?",
+      "description": "Això suprimeix el fitxer de l'emmagatzematge. No es pot desfer.",
+      "submit": "Suprimeix",
+      "done": "{{name}} suprimit"
+    },
+    "upload": {
+      "button": "Puja",
+      "cancel": "Cancel·la la pujada",
+      "done": "{{name}} pujat",
+      "failed": "No s'ha pogut pujar {{name}}: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Resum",
+      "network": "Xarxa",
+      "system": "Sistema",
+      "services": "Serveis",
+      "updates": "Actualitzacions",
+      "disks": "Discs",
+      "tasks": "Tasques",
+      "log": "Registre"
+    },
+    "services": {
+      "start": "Inicia",
+      "stop": "Atura",
+      "restart": "Reinicia",
+      "reload": "Recarrega",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Voleu aturar {{name}}?",
+        "restart": "Voleu reiniciar {{name}}?",
+        "description": "Els serveis propis de Proxmox mantenen en funcionament el node i la seva API; aturar-ne un pot deixar aquesta eina sense accés fins que torni a iniciar-se."
+      }
+    },
+    "updates": {
+      "refresh": "Actualitza les llistes de paquets",
+      "refreshLabel": "Actualitza les llistes de paquets a {{node}}",
+      "count_one": "Es pot actualitzar {{count}} paquet",
+      "count_many": "Es poden actualitzar {{count}} paquets",
+      "count_other": "Es poden actualitzar {{count}} paquets",
+      "none": "Tot està al dia",
+      "installHint": "Instal·leu les actualitzacions des del terminal del node amb apt full-upgrade; Proxmox no actualitza mitjançant la seva API.",
+      "views": {
+        "packages": "Paquets",
+        "repositories": "Repositoris"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART de {{disk}}",
+      "health": "Salut",
+      "usedBy": "usat per {{used}}",
+      "unused": "no usat",
+      "wearout": "{{value}}% de vida restant",
+      "views": {
+        "disks": "Discs",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Directori",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "{{count}} volum lògic",
+        "lvCount_many": "{{count}} volums lògics",
+        "lvCount_other": "{{count}} volums lògics",
+        "metadata": "metadades {{used}} / {{size}}",
+        "frag": "{{value}}% fragmentat",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "No hi ha grups de volums LVM.",
+          "lvmthin": "No hi ha pools LVM-Thin.",
+          "directory": "No hi ha emmagatzematge de directori en un disc propi.",
+          "zfs": "No hi ha pools ZFS."
+        },
+        "create": {
+          "lvm": "Crea un grup de volums LVM",
+          "lvmthin": "Crea un pool LVM-Thin",
+          "directory": "Crea un directori",
+          "zfs": "Crea un pool ZFS"
+        },
+        "createSubmit": "Crea",
+        "createLabel": "Crea {{name}} a {{node}}",
+        "wipeWarning": "Els discs triats es particionen i es formaten. Només s'ofereixen discs que no contenen res.",
+        "name": "Nom",
+        "device": "Disc",
+        "devices": "Discs",
+        "pickDisk": "Trieu un disc",
+        "noUnused": "No hi ha cap disc no usat. Primer netegeu-ne un a Discs, si el que conté es pot perdre.",
+        "filesystem": "Sistema de fitxers",
+        "raidlevel": "Nivell RAID",
+        "raid": {
+          "single": "Disc únic",
+          "mirror": "Mirall",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Compressió",
+        "addStorage": "Afegeix com a emmagatzematge",
+        "addStorageHint": "El converteix en un emmagatzematge de Proxmox amb el mateix nom, per a discs, contenidors o còpies de seguretat.",
+        "problem": {
+          "name": "Un nom comença amb una lletra i conté lletres, xifres, -, _ o .",
+          "device": "Trieu un disc.",
+          "oneDevice": "Trieu un sol disc.",
+          "tooFew": "Aquest nivell RAID necessita com a mínim {{count}} discs.",
+          "even": "RAID10 necessita un nombre parell de discs.",
+          "ashift": "ashift és entre 9 i 16."
+        },
+        "remove": "Elimina",
+        "removeTitle": "Voleu eliminar {{name}}?",
+        "removeWarning": "Els convidats amb discs aquí els perden. Eliminar no en treu res abans.",
+        "removeLabel": "Elimina {{name}} a {{node}}",
+        "cleanupConfig": "Elimina també l'entrada d'emmagatzematge",
+        "cleanupDisks": "Neteja els seus discs",
+        "cleanupDisksHint": "Esborra els discs perquè es puguin tornar a fer servir.",
+        "inUse": {
+          "lvm": "Encara té volums lògics. Elimina'ls primer; aquest grup pot contenir el sistema del node.",
+          "lvmthin": "Encara conté dades. Mou o elimina primer els discs dels convidats que hi ha."
+        }
+      },
+      "gpt": "Inicialitza amb GPT",
+      "gptTitle": "Voleu inicialitzar {{disk}} amb GPT?",
+      "gptDescription": "Escriu una taula de particions GPT buida al disc.",
+      "gptLabel": "Inicialitza {{disk}} a {{node}}",
+      "wipe": "Neteja",
+      "wipeTitle": "Voleu netejar {{disk}}?",
+      "wipeWarning": "Esborra la taula de particions i totes les signatures de sistema de fitxers, LVM i ZFS del disc (ara: {{used}}). El que conté es perd per sempre.",
+      "wipeLabel": "Neteja {{disk}} a {{node}}",
+      "typePath": "Escriviu {{disk}} per confirmar"
+    },
+    "log": {
+      "search": "Filtra el registre...",
+      "empty": "Cap línia no coincideix."
+    },
+    "power": {
+      "menu": "Alimentació del node",
+      "termixWarning": "Si Termix s'executa en aquest node, també caurà fins que el node torni.",
+      "typeName": "Escriviu {{node}} per confirmar",
+      "reboot": {
+        "menu": "Reinicia el node",
+        "title": "Voleu reiniciar {{node}}?",
+        "submit": "Reinicia",
+        "label": "Reinicia {{node}}",
+        "warning_one": "{{count}} convidat en execució s'atura o s'apaga primer, segons la seva configuració d'inici.",
+        "warning_many": "{{count}} convidats en execució s'aturen o s'apaguen primer, segons la seva configuració d'inici.",
+        "warning_other": "{{count}} convidats en execució s'aturen o s'apaguen primer, segons la seva configuració d'inici."
+      },
+      "shutdown": {
+        "menu": "Apaga el node",
+        "title": "Voleu apagar {{node}}?",
+        "submit": "Apaga",
+        "label": "Apaga {{node}}",
+        "warning_one": "{{count}} convidat en execució cau amb ell, i res no el torna a iniciar fins que algú encengui el node.",
+        "warning_many": "{{count}} convidats en execució cauen amb ell, i res no els torna a iniciar fins que algú encengui el node.",
+        "warning_other": "{{count}} convidats en execució cauen amb ell, i res no els torna a iniciar fins que algú encengui el node."
+      }
+    },
+    "shell": "Shell",
+    "shellHint": "Obre el terminal SSH d'aquest host a Termix.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Domini de cerca",
+        "server": "Servidor DNS {{n}}",
+        "editTitle": "DNS de {{node}}",
+        "saved": "DNS desat",
+        "problem": {
+          "search": "Introduïu un domini de cerca, com ara example.com.",
+          "server": "Un servidor DNS és una adreça IPv4 o IPv6.",
+          "noServer": "Introduïu com a mínim un servidor DNS."
+        }
+      },
+      "time": {
+        "title": "Hora",
+        "zone": "Zona horària",
+        "local": "Hora local",
+        "editTitle": "Zona horària de {{node}}",
+        "hint": "El rellotge el manté NTP (chrony) al node.",
+        "saved": "Zona horària establerta a {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "/etc/hosts de {{node}}",
+        "warning": "El nom propi del node ha de continuar resolent-se a la seva adreça, o el clúster i la seva interfície web deixaran de funcionar.",
+        "saved": "/etc/hosts desat"
+      },
+      "certs": {
+        "title": "Certificats",
+        "issuer": "emès per {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Vàlid fins al {{date}}",
+          "expiring": "Caduca el {{date}}",
+          "expired": "Va caducar el {{date}}",
+          "notYet": "Encara no és vàlid"
+        },
+        "upload": "Puja un personalitzat",
+        "uploadTitle": "Certificat personalitzat per a {{node}}",
+        "uploaded": "Certificat pujat",
+        "chain": "Cadena de certificats",
+        "chainHint": "PEM: primer el certificat del node, després els intermedis.",
+        "key": "Clau privada",
+        "keyHint": "PEM, sense xifrar. Deixeu-ho buit per conservar la clau que ja hi ha al node.",
+        "fromFile": "Llegeix des d'un fitxer",
+        "badCert": "Això no és un certificat PEM.",
+        "badKey": "Això no és una clau privada PEM.",
+        "restart": "Reinicia la interfície web per fer-lo servir",
+        "restartHint": "pveproxy es reinicia; Termix perd l'API durant uns segons.",
+        "remove": "Elimina el personalitzat",
+        "removeTitle": "Voleu eliminar el certificat personalitzat?",
+        "removeDescription": "El node torna al seu certificat autosignat i la interfície web es reinicia.",
+        "removed": "Certificat personalitzat eliminat"
+      }
+    },
+    "repos": {
+      "on": "Habilitat",
+      "off": "Inhabilitat",
+      "enable": "Habilita",
+      "disable": "Inhabilita",
+      "enableTitle": "Voleu habilitar aquest repositori?",
+      "enabled": "Repositori habilitat",
+      "disabled": "Repositori inhabilitat",
+      "add": "Afegeix:",
+      "added": "Repositori {{name}} afegit",
+      "hint": "Executeu Actualitza les llistes de paquets a Paquets després d'un canvi. Els repositoris Enterprise necessiten una subscripció."
+    },
+    "taskHistory": {
+      "type": "Tipus, com ara vzdump",
+      "vmid": "ID de VM/CT",
+      "user": "Usuari",
+      "errorsOnly": "Només tasques fallides",
+      "none": "Cap tasca no coincideix.",
+      "more": "Carrega'n més",
+      "state": {
+        "running": "En execució",
+        "ok": "D'acord"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Demana un certificat",
+      "renew": "Renova",
+      "orderLabel": "Demana un certificat ACME per a {{node}}",
+      "renewLabel": "Renova el certificat ACME de {{node}}",
+      "usesAccount": "Compte: {{account}}",
+      "none": "cap",
+      "noDomains": "Encara no hi ha dominis. Editeu per afegir els noms als quals respon aquest node.",
+      "viaHttp": "Repte HTTP",
+      "viaDns": "Repte DNS mitjançant {{plugin}}",
+      "accounts": "Comptes",
+      "plugins": "Connectors de repte DNS",
+      "remove": "Elimina",
+      "domainsTitle": "Dominis ACME de {{node}}",
+      "domainsSaved": "Dominis ACME desats",
+      "domain": "Domini",
+      "challenge": "Repte",
+      "alias": "Àlies",
+      "addDomain": "Afegeix un domini",
+      "httpHint": "El repte HTTP necessita que el port 80 d'aquest node sigui accessible des d'internet amb el domini. DNS funciona sense això, i també per a comodins.",
+      "hint": "Els comptes i els connectors es comparteixen a tot el clúster; els dominis són per node.",
+      "problem": {
+        "noDomain": "Afegiu com a mínim un domini.",
+        "tooMany": "Un node té com a màxim sis dominis ACME.",
+        "domain": "Un domini és un nom complet com ara pve.example.com.",
+        "wildcard": "Un domini comodí necessita un connector de repte DNS."
+      },
+      "account": {
+        "title": "Compte",
+        "pick": "Trieu un compte",
+        "add": "Registra un compte",
+        "addTitle": "Registra un compte ACME",
+        "register": "Registra",
+        "registerLabel": "Registra el compte ACME {{name}}",
+        "name": "Nom",
+        "email": "Correu electrònic",
+        "directory": "Directori ACME",
+        "customDirectory": "URL personalitzat",
+        "directoryUrl": "URL del directori",
+        "acceptTos": "Accepto les condicions del servei",
+        "eabKid": "ID de clau EAB",
+        "eabHmac": "Clau HMAC d'EAB",
+        "eabHint": "Només per a CA que demanen External Account Binding.",
+        "none": "Encara no hi ha cap compte ACME.",
+        "needOne": "Primer registreu un compte ACME.",
+        "removeTitle": "Voleu desactivar el compte {{name}}?",
+        "removeDescription": "El compte es desactiva a la CA i s'elimina d'aquí. Els certificats ja emesos continuen funcionant.",
+        "removeLabel": "Desactiva el compte ACME {{name}}",
+        "problem": {
+          "name": "Un nom conté lletres, xifres, -, _ o .",
+          "email": "Introduïu una adreça de correu electrònic.",
+          "directory": "El directori és un URL http o https.",
+          "tos": "Accepteu les condicions del servei per registrar-vos.",
+          "eab": "EAB necessita tant l'ID de clau com la clau HMAC."
+        }
+      },
+      "plugin": {
+        "add": "Afegeix un connector",
+        "addTitle": "Afegeix un connector de repte DNS",
+        "id": "ID del connector",
+        "api": "API DNS",
+        "pickApi": "Trieu un proveïdor DNS",
+        "delay": "Retard de validació (s)",
+        "delayHint": "Quant cal esperar que el registre TXT es propagui.",
+        "noFields": "Proxmox no indica camps per a aquest proveïdor; consulteu la documentació d'acme.sh per a les variables que llegeix.",
+        "none": "No hi ha connectors DNS. HTTP funciona sense cap.",
+        "disabled": "Inhabilitat",
+        "removeTitle": "Voleu eliminar el connector {{name}}?",
+        "removeDescription": "Els dominis que el fan servir ja no es podran validar."
+      }
+    }
+  },
+  "console": {
+    "open": "Consola",
+    "openHint": "Obre el host Termix del convidat, o ofereix afegir-lo primer a Termix.",
+    "tabTitle": "Consola de Proxmox",
+    "tabLabel": "{{name}} — Consola",
+    "pick": "Obriu una consola des d'una VM o un contenidor en execució a l'eina Proxmox.",
+    "connect": "Connecta",
+    "reconnect": "Torna a connectar",
+    "disconnect": "Desconnecta",
+    "ctrlAltDel": "Ctrl+Alt+Supr",
+    "fullscreen": "Pantalla completa",
+    "notRunning": "Inicieu el convidat per obrir-ne la consola.",
+    "lost": "S'ha perdut la connexió de la consola.",
+    "ended": "Consola tancada.",
+    "status": {
+      "idle": "No connectat",
+      "connecting": "S'està connectant...",
+      "connected": "Connectat",
+      "closed": "Desconnectat",
+      "error": "No s'ha pogut connectar"
+    },
+    "proxmox": "Consola de Proxmox",
+    "proxmoxHint": "La consola pròpia de Proxmox a través del node: la pantalla d'una VM, un shell en un contenidor. Per a un convidat que encara no té xarxa."
+  },
+  "pool": {
+    "members": "Membres",
+    "empty": "No hi ha res en aquest pool."
+  },
+  "sdn": {
+    "hint": "Les zones SDN, les VNet i les subxarxes arribaran amb la gestió del clúster en una versió posterior."
+  },
+  "network": {
+    "add": "Crea",
+    "apply": "Aplica",
+    "revert": "Reverteix",
+    "pending": "Encara no aplicat",
+    "hint": "Els canvis es desen a /etc/network/interfaces.new i tenen efecte en Aplicar, que recarrega la xarxa del node.",
+    "type": "Tipus",
+    "name": "Nom",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Passarel·la (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Passarel·la (IPv6)",
+    "ports": "Ports del pont",
+    "slaves": "Esclaus",
+    "portsHint": "Noms d'interfície, separats per espais.",
+    "bondMode": "Mode",
+    "vlanDevice": "Dispositiu VLAN en brut",
+    "mtu": "MTU",
+    "comments": "Comentari",
+    "autostart": "Inici automàtic",
+    "vlanAware": "Compatible amb VLAN",
+    "vlanAwareHint": "Permet als convidats d'aquest pont fer servir etiquetes VLAN.",
+    "inactive": "Inactiva",
+    "create": "Crea",
+    "createTitle": "Crea una interfície",
+    "editTitle": "Edita {{iface}}",
+    "types": {
+      "bridge": "Pont",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Port",
+      "OVSBridge": "Pont OVS",
+      "alias": "Àlies"
+    },
+    "nameHint": {
+      "bridge": "vmbr seguit d'un número, com vmbr1.",
+      "bond": "bond seguit d'un número, com bond0.",
+      "vlan": "dispositiu.etiqueta com vmbr0.10, o vlan10 amb un dispositiu en brut."
+    },
+    "addressWarning": "Aquesta interfície porta l'adreça per la qual Termix arriba al node. Un error pot deixar Termix sense accés fins que algú arregli el node des de la seva consola.",
+    "removeTitle": "Voleu eliminar {{iface}}?",
+    "removeDescription": "La interfície s'elimina quan s'aplica el canvi.",
+    "applyTitle": "Voleu aplicar els canvis de xarxa a {{node}}?",
+    "applyDescription": "El node recarrega la seva xarxa. Si la configuració nova és incorrecta, el node i la connexió de Termix amb ell poden quedar fora de línia.",
+    "applyLabel": "Aplica la xarxa a {{node}}",
+    "reverted": "Canvis de xarxa revertits",
+    "problem": {
+      "cidr": "Introduïu l'adreça com 10.10.0.1/24.",
+      "gateway": "Una passarel·la necessita una adreça IPv4 i una IP de passarel·la vàlida.",
+      "cidr6": "Introduïu l'adreça com fd00::1/64.",
+      "ports": "Introduïu noms d'interfície separats per espais.",
+      "slaves": "Un bond necessita com a mínim un esclau.",
+      "vlanDevice": "Indiqueu el dispositiu en brut per a una interfície vlanN.",
+      "mtu": "L'MTU va de 1280 a 65520.",
+      "name": {
+        "bridge": "Un pont s'anomena vmbr i un número.",
+        "bond": "Un bond s'anomena bond i un número.",
+        "vlan": "Una VLAN s'anomena dispositiu.etiqueta o vlan i un número."
+      }
+    }
+  },
+  "import": {
+    "open": "Importa a Termix",
+    "title": "Importa convidats com a hosts de Termix",
+    "hint": "Cada VM o contenidor triat es converteix en un host de Termix, amb l'etiqueta proxmox. Importar també actualitza els noms, adreces i etiquetes dels convidats importats abans, i etiqueta com a proxmox-missing els que ja no són a Proxmox.",
+    "loading": "S'estan cercant convidats i les seves adreces…",
+    "counts": "{{total}} convidats, {{imported}} ja importats",
+    "selectAll": "Selecciona-ho tot",
+    "selectNone": "No en seleccionis cap",
+    "none": "Aquest clúster no té VM ni contenidors.",
+    "imported": "Importat",
+    "noAddress": "sense adreça",
+    "folder": "Carpeta",
+    "folderDefault": "Carpeta anomenada {{node}}",
+    "folderSearch": "Cerca o crea; / per a una subcarpeta",
+    "folderCreate": "Crea «{{folder}}»",
+    "folderNone": "Encara no hi ha carpetes",
+    "connection": "Connecta amb",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Entorn d'execució de contenidors",
+    "runtimeOff": "Sense Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "SO desconegut"
+    },
+    "sshLogin": "Inici de sessió SSH",
+    "desktopLogin": "Inici de sessió RDP i VNC",
+    "desktopHint": "Cal el connector Remote Desktop per connectar-se.",
+    "login": {
+      "nodeCredential": "La credencial del node",
+      "nodeUser": "El nom d'usuari del node",
+      "username": "Només el nom d'usuari",
+      "none": "Sense inici de sessió"
+    },
+    "username": "Nom d'usuari",
+    "submit_one": "Importa {{count}} convidat",
+    "submit_many": "Importa {{count}} convidats",
+    "submit_other": "Importa {{count}} convidats",
+    "refresh": "Actualitza els importats",
+    "done": "Creats {{created}}, actualitzats {{updated}}, marcats com a absents {{markedMissing}}",
+    "lastSync": "Última sincronització {{when}}.",
+    "lastSyncFailed": "L'última sincronització {{when}} ha fallat: {{error}}",
+    "syncHint": "Activeu Mantén sincronitzats els convidats importats a la configuració Proxmox del host per actualitzar-los periòdicament.",
+    "addTitle": "Afegeix {{name}} a Termix",
+    "addHint": "Aquest convidat encara no és un host de Termix. Afegiu-lo per obrir-ne el terminal; després Consola l'obre directament.",
+    "addSubmit": "Afegeix i connecta",
+    "gone": "Proxmox ja no inclou aquest convidat."
+  }
+}

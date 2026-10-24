@@ -1,0 +1,1024 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Bestuur Proxmox VE vanuit Termix: virtuele masjiene, houers, berging, netwerk, rugsteun, brandmuur, toegang en die groepering."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Maak oop in Proxmox"
+  },
+  "permissions": {
+    "view": {
+      "title": "Bekyk Proxmox",
+      "description": "Sien nodusse, gaste, berging, grafieke en take op Proxmox-gashere waaraan jy kan koppel."
+    },
+    "operate": {
+      "title": "Bedryf Proxmox-gaste",
+      "description": "Begin, stop, sit af, herbegin, skors en hervat VM's en houers. Vereis wysigingstoegang tot die gasheer."
+    },
+    "console": {
+      "title": "Maak Proxmox-konsoles oop",
+      "description": "Maak die skerm van 'n VM en 'n root-dop in 'n houer oop. Vereis wysigingstoegang tot die gasheer."
+    },
+    "configure": {
+      "title": "Stel Proxmox op",
+      "description": "Skep, kloon, migreer, omskep en skrap VM's en houers. Vereis wysigingstoegang tot die gasheer."
+    },
+    "administer": {
+      "title": "Administreer Proxmox",
+      "description": "Bestuur gebruikers, groepe, rolle, poele, 2FA, tokens, ryke en die groepering. Vereis wysigingstoegang tot die gasheer."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Proxmox-nodus",
+      "description": "Merk hierdie gasheer as 'n Proxmox VE-nodus. Dit verskyn dan in die Proxmox-hulpmiddel onder Hulpmiddels."
+    },
+    "transport": {
+      "label": "Koppel via",
+      "description": "Outomaties gebruik die API oor 'n SSH-tonnel sodra 'n token gestoor is, en tot dan pvesh oor SSH.",
+      "auto": "Outomaties",
+      "tunnel": "API oor SSH-tonnel",
+      "direct": "API direk",
+      "pvesh": "pvesh oor SSH"
+    },
+    "tokenId": {
+      "label": "API-token-ID",
+      "description": "Word in Proxmox geskep onder Datasentrum, Toestemmings, API-tokens. Lyk soos user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "API-token-geheim",
+      "description": "Word een keer gewys wanneer die token geskep word. Word geënkripteer gestoor."
+    },
+    "apiHost": {
+      "label": "API-adres",
+      "description": "Slegs vir API direk. Laat leeg om hierdie gasheer se adres te gebruik."
+    },
+    "apiPort": {
+      "label": "API-poort",
+      "description": "8006 tensy jy dit verander het."
+    },
+    "caCert": {
+      "label": "CA-sertifikaat",
+      "description": "Slegs vir API direk. Die nodus se CA in PEM, van /etc/pve/pve-root-ca.pem. Laat leeg as die API 'n publiek vertroude sertifikaat het.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Ingevoerde gaste",
+    "importSync": {
+      "label": "Hou ingevoerde gaste gesinchroniseer",
+      "description": "Werk name, adresse en etikette by van die gaste wat van hierdie nodus ingevoer is, en etiketteer dié wat uit Proxmox verwyder is as proxmox-missing."
+    },
+    "importInterval": {
+      "label": "Sinchroniseer elke (minute)",
+      "description": "Minstens 5 minute."
+    },
+    "importAddNew": {
+      "label": "Voeg nuwe gaste by tydens sinchronisering",
+      "description": "Voer gaste in wat ná die eerste invoer in Proxmox geskep is, met die verstekke wat laas in die invoerdialoog gebruik is."
+    },
+    "importDefaults": {
+      "label": "Invoerverstekke"
+    },
+    "importState": {
+      "label": "Laaste gastesinchronisering"
+    },
+    "source": {
+      "label": "Proxmox-gas"
+    }
+  },
+  "app": {
+    "loading": "Laai tans...",
+    "loadFailed": "Kon nie die groepering laai nie",
+    "refreshFailed": "Verfris het misluk: {{message}}",
+    "retry": "Probeer weer",
+    "refresh": "Verfris",
+    "search": "Soek gaste, nodusse en berging...",
+    "status": "{{nodes}} nodusse, {{running}} van {{total}} gaste loop",
+    "pickHost": "Proxmox-gasheer",
+    "pickResource": "Kies 'n nodus, gas of berging aan die linkerkant",
+    "noHosts": "Nog geen Proxmox-gashere nie",
+    "noHostsHint": "Maak 'n gasheer se instellings oop, skakel Proxmox-nodus onder SSH aan en kies hoe om te koppel. Die nodus verskyn dan hier.",
+    "cancel": "Kanselleer",
+    "working": "Besig...",
+    "save": "Stoor",
+    "reset": "Stel terug",
+    "close": "Maak toe",
+    "yes": "Ja",
+    "no": "Nee",
+    "edit": "Wysig"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix vertrou nie die nodus se sertifikaat nie. Plak in die gasheer se Proxmox-instellings die nodus se CA van /etc/pve/pve-root-ca.pem in CA-sertifikaat, of kies API oor SSH-tonnel.",
+    "tlsHostname": "Die nodus se sertifikaat is vir 'n ander naam. Stel API-adres op 'n naam of adres wat die sertifikaat lys.",
+    "tlsExpired": "Die nodus se sertifikaat het verval of is nog nie geldig nie. Hernu dit in Proxmox onder die nodus, Stelsel, Sertifikate.",
+    "notEnabled": "Hierdie gasheer is nie as 'n Proxmox-nodus gemerk nie. Skakel Proxmox-nodus aan in die gasheer se instellings.",
+    "hostAccess": "Jy het wysigingstoegang tot hierdie gasheer nodig om dit te verander."
+  },
+  "tree": {
+    "nothingFound": "Niks pas by die soektog nie.",
+    "expand": "Vou uit",
+    "collapse": "Vou in",
+    "datacenter": "Datasentrum",
+    "folders": {
+      "lxc": "LXC-houer",
+      "qemu": "Virtuele masjien",
+      "node": "Nodusse",
+      "pool": "Poele",
+      "sdn": "Netwerk",
+      "storage": "Berging"
+    },
+    "views": {
+      "folder": "Gidsaansig",
+      "server": "Bedieneraansig"
+    }
+  },
+  "types": {
+    "node": "Nodus",
+    "qemu": "VM",
+    "lxc": "Houer",
+    "storage": "Berging",
+    "pool": "Poel",
+    "sdn": "SDN-sone"
+  },
+  "states": {
+    "running": "Loop",
+    "stopped": "Gestop",
+    "paused": "Onderbreek",
+    "suspended": "Geskors",
+    "online": "Aanlyn",
+    "offline": "Vanlyn",
+    "available": "Beskikbaar",
+    "unknown": "Onbekend"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Geheue",
+    "disk": "Skyf",
+    "rootDisk": "Wortelskyf",
+    "usage": "Gebruik",
+    "cores_one": "{{count}} kern",
+    "cores_other": "{{count}} kerne",
+    "swap": "Ruil"
+  },
+  "summary": {
+    "title": "Opsomming",
+    "node": "Nodus",
+    "vmid": "ID",
+    "uptime": "Looptyd",
+    "pool": "Poel",
+    "ha": "HA",
+    "tags": "Etikette",
+    "guests": "Gaste",
+    "guestsRunning": "{{running}} van {{total}} loop",
+    "cpuModel": "CPU",
+    "sockets": "sokke",
+    "load": "Gemiddelde las",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Kern",
+    "ips": "Adresse"
+  },
+  "charts": {
+    "title": "Grafieke",
+    "cpu": "CPU",
+    "load": "Gemiddelde las",
+    "memory": "Geheue",
+    "network": "Netwerk",
+    "diskIo": "Skyf-I/O",
+    "cpuUsage": "CPU-gebruik",
+    "ioDelay": "IO-vertraging",
+    "used": "Gebruik",
+    "total": "Totaal",
+    "in": "In",
+    "out": "Uit",
+    "read": "Lees",
+    "write": "Skryf",
+    "timeframe": {
+      "hour": "Uur",
+      "day": "Dag",
+      "week": "Week",
+      "month": "Maand",
+      "year": "Jaar"
+    },
+    "noData": "Geen data vir hierdie tydperk nie",
+    "serverLoad": "Bedienerlas",
+    "loadAverage": "Gemiddelde las",
+    "swap": "Ruil",
+    "pressureCpu": "CPU-drukstilstand",
+    "pressureMemory": "Geheue-drukstilstand",
+    "pressureIo": "IO-drukstilstand",
+    "some": "Sommige",
+    "full": "Volledig",
+    "average": "Gemiddeld",
+    "maximum": "Maksimum"
+  },
+  "tasks": {
+    "title": "Take",
+    "started": "Begin",
+    "node": "Nodus",
+    "user": "Gebruiker",
+    "task": "Taak",
+    "status": "Status",
+    "running": "Loop",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} op {{node}}",
+    "done": "{{label}}: klaar",
+    "failed": "{{label}} het misluk: {{reason}}"
+  },
+  "guests": {
+    "more": "Meer aksies",
+    "isTemplate": "Sjabloon",
+    "locked": "Gesluit: {{lock}}",
+    "power": {
+      "start": "Begin",
+      "shutdown": "Sit af",
+      "stop": "Stop",
+      "reboot": "Herbegin",
+      "suspend": "Skors",
+      "resume": "Hervat",
+      "reset": "Stel terug",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Stop {{name}} nou?",
+        "reset": "Stel {{name}} nou terug?",
+        "description": "Dit sny die krag af soos om die prop uit te trek. Werk wat nie in die gas gestoor is nie, gaan verlore."
+      }
+    },
+    "clone": {
+      "menu": "Kloon",
+      "title": "Kloon {{name}}",
+      "submit": "Kloon",
+      "label": "Kloon {{source}} na {{id}}",
+      "full": "Volledige kloon",
+      "fullHint": "Kopieer elke skyf, sodat die kloon nie van die oorspronklike afhang nie.",
+      "linkedHint": "Af maak 'n gekoppelde kloon wat die sjabloon se skywe deel en binne sekondes gemaak word.",
+      "sameStorage": "Dieselfde berging as die oorspronklike"
+    },
+    "migrate": {
+      "menu": "Migreer",
+      "title": "Migreer {{name}}",
+      "submit": "Migreer",
+      "label": "Migreer {{name}} na {{target}}",
+      "noOtherNodes": "Daar is geen ander aanlyn nodus in hierdie groepering om dit na toe te skuif nie.",
+      "onlineHint": "Die VM loop en skuif lewendig, sonder om te stop.",
+      "restartHint": "Die houer loop. Dit stop, skuif en begin weer op die teiken."
+    },
+    "template": {
+      "menu": "Omskep na sjabloon",
+      "confirm": "Omskep {{name}} na 'n sjabloon?",
+      "description": "'n Sjabloon kan nie begin word nie, net gekloon. Dit kan nie ongedaan gemaak word nie.",
+      "submit": "Omskep",
+      "label": "Omskep {{name}} na 'n sjabloon"
+    },
+    "delete": {
+      "menu": "Skrap",
+      "title": "Skrap {{name}}",
+      "submit": "Skrap",
+      "label": "Skrap {{name}}",
+      "warning": "Dit skrap gas {{vmid}} en sy skywe. Dit kan nie ongedaan gemaak word nie.",
+      "stopFirst": "Stop die gas voordat jy dit skrap.",
+      "typeId": "Tik {{vmid}} om te bevestig",
+      "purge": "Verwyder uit rugsteuntake, replisering en HA",
+      "purgeHint": "Laat geen take agter wat na 'n gas wys wat weg is nie.",
+      "unreferenced": "Skrap ook onverwysde skywe",
+      "unreferencedHint": "Skywe op geaktiveerde berging met hierdie ID wat die konfigurasie nie lys nie."
+    },
+    "create": {
+      "vmButton": "Skep VM",
+      "ctButton": "Skep CT",
+      "vmTitle": "Skep virtuele masjien",
+      "ctTitle": "Skep houer",
+      "submit": "Skep",
+      "vmLabel": "Skep VM {{id}} ({{name}})",
+      "ctLabel": "Skep CT {{id}} ({{name}})",
+      "noTemplates": "Geen houersjablone op hierdie nodus nie. Laai een af in Proxmox onder 'n berging, CT-sjablone.",
+      "noIso": "Geen installasiemedia nie",
+      "unprivilegedHint": "Veiliger: root in die houer is nie root op die nodus nie.",
+      "loginHint": "Stel 'n root-wagwoord, SSH-sleutels of albei.",
+      "problem": {
+        "vmid": "Kies 'n ID van 100 of meer.",
+        "hostname": "Voer 'n gasheernaam in: letters, syfers en strepies.",
+        "name": "Voer 'n naam in: letters, syfers en strepies.",
+        "template": "Kies 'n sjabloon.",
+        "storage": "Kies 'n berging.",
+        "disk": "Voer 'n skyfgrootte in.",
+        "cores": "Voer in hoeveel kerne.",
+        "sockets": "Voer in hoeveel sokke.",
+        "memory": "Voer minstens 16 MiB geheue in.",
+        "swap": "Voer ruil in MiB in, 0 vir geen.",
+        "network": "Kies 'n brug en voer 'n statiese adres in soos 192.168.0.60/24.",
+        "login": "Stel 'n root-wagwoord of SSH-sleutels sodat jy kan aanmeld.",
+        "password": "Die wagwoord benodig minstens 5 karakters."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Ander"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Naam",
+      "hostname": "Gasheernaam",
+      "node": "Nodus",
+      "targetNode": "Teikennodus",
+      "targetStorage": "Teikenberging",
+      "storage": "Berging",
+      "template": "Sjabloon",
+      "iso": "Installasiemedia",
+      "ostype": "Gas-bedryfstelsel",
+      "rootPassword": "Root-wagwoord",
+      "sshKeys": "Publieke SSH-sleutels",
+      "unprivileged": "Onbevoorregte houer",
+      "diskGiB": "Skyf (GiB)",
+      "cores": "Kerne",
+      "sockets": "Sokke",
+      "memoryMiB": "Geheue (MiB)",
+      "swapMiB": "Ruil (MiB)",
+      "bridge": "Netwerkbrug",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Staties",
+      "cidr": "Adres/voorvoegsel",
+      "gateway": "Poort",
+      "startAfter": "Begin ná skep",
+      "pick": "Kies een"
+    },
+    "tabs": {
+      "summary": "Opsomming",
+      "hardware": "Hardeware",
+      "options": "Opsies",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Wysig",
+    "add": "Voeg by",
+    "remove": "Verwyder",
+    "removed": "{{key}} verwyder",
+    "pending": "Hangend",
+    "pendingHint": "Veranderinge gemerk as Hangend tree in werking wanneer die gas vanuit Proxmox herbegin: 'n herbegin binne die gas is nie genoeg nie.",
+    "processors": "Verwerkers",
+    "processorsValue": "{{sockets}} sok × {{cores}} kerne, {{cpu}}",
+    "allCores": "Almal",
+    "swap": "Ruil",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "Verwerker en geheue",
+      "title": "Verwerker en geheue"
+    },
+    "cpuType": "CPU-tipe",
+    "cpulimit": "CPU-limiet",
+    "cpulimitHint": "0 vir geen limiet nie. 1.5 is anderhalf kern se tyd.",
+    "balloon": "Minimum geheue (MiB)",
+    "balloonHint": "Met die ballondrywer gee die gas geheue terug tot hierdie waarde. Gelyk aan geheue skakel dit af, 0 verwyder die drywer.",
+    "disks": "Skywe",
+    "volumes": "Wortelskyf en hegpunte",
+    "bus": "Bus",
+    "slot": "Sal {{key}} wees",
+    "iothread": "IO-draad",
+    "discard": "Discard",
+    "discardHint": "Laat die gas ongebruikte blokke op dun berging vrystel.",
+    "ssd": "SSD-emulasie",
+    "mountPath": "Hegpad in die houer",
+    "backup": "Sluit in by rugsteun",
+    "addDisk": {
+      "button": "Voeg skyf by",
+      "title": "Voeg skyf by",
+      "label": "Voeg {{key}} by"
+    },
+    "addMount": {
+      "button": "Voeg hegpunt by",
+      "title": "Voeg hegpunt by"
+    },
+    "resize": {
+      "menu": "Verander grootte",
+      "title": "Vergroot {{key}}",
+      "grow": "Voeg by (GiB)",
+      "result": "{{from}} GiB word {{to}} GiB",
+      "noShrink": "Skywe kan net groei. Die gas se partisie en lêerstelsel moet daarna binne die gas vergroot word, tensy dit dit tydens opstart doen.",
+      "submit": "Vergroot",
+      "label": "Vergroot {{key}} met {{size}} GiB"
+    },
+    "move": {
+      "menu": "Skuif na berging",
+      "title": "Skuif {{key}}",
+      "submit": "Skuif",
+      "deleteSource": "Skrap die oorspronklike",
+      "deleteSourceHint": "Af hou dit as 'n ongebruikte skyf.",
+      "label": "Skuif {{key}} na {{storage}}"
+    },
+    "detach": {
+      "menu": "Ontkoppel",
+      "title": "Ontkoppel {{key}}?",
+      "description": "Die skyf bly op sy berging as 'n ongebruikte skyf en kan geskrap of weer gekoppel word."
+    },
+    "unused": {
+      "delete": "Skrap",
+      "title": "Skrap {{volume}}?",
+      "description": "Dit skrap die skyf en alles daarop. Dit kan nie ongedaan gemaak word nie."
+    },
+    "cd": {
+      "heading": "CD/DVD-aandrywers",
+      "title": "Media in {{key}}",
+      "empty": "Geen media nie"
+    },
+    "nic": {
+      "heading": "Netwerkadapters",
+      "add": "Voeg adapter by",
+      "addTitle": "Voeg {{key}} by",
+      "editTitle": "Wysig {{key}}",
+      "none": "Geen netwerkadapters nie.",
+      "model": "Model",
+      "name": "Naam in die houer",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Staties",
+        "none": "Geen",
+        "auto": "SLAAC"
+      },
+      "tag": "VLAN-etiket",
+      "tagHint": "Leeg vir sonder etiket.",
+      "rate": "Spoedlimiet (MB/s)",
+      "rateHint": "Leeg vir geen limiet nie.",
+      "firewall": "Brandmuur",
+      "firewallShort": "brandmuur",
+      "removeTitle": "Verwyder {{key}}?",
+      "removeDescription": "Die gas verloor hierdie adapter en sy adres."
+    },
+    "problem": {
+      "cpu": "Voer minstens een sok en kern in.",
+      "cpulimit": "Die CPU-limiet is van 0 tot 8192.",
+      "memory": "Voer minstens 16 MiB geheue in.",
+      "balloon": "Minimum geheue kan nie meer as geheue wees nie.",
+      "swap": "Voer ruil in MiB in, 0 vir geen.",
+      "noSlot": "Elke gleuf van hierdie soort is beset.",
+      "storage": "Kies 'n berging.",
+      "size": "Voer 'n grootte in heel GiB in.",
+      "path": "Voer 'n absolute pad in soos /data, nie / self nie.",
+      "bridge": "Kies 'n brug.",
+      "tag": "'n VLAN-etiket is van 1 tot 4094.",
+      "rate": "Voer 'n spoed bo 0 in, of laat dit leeg.",
+      "name": "Voer 'n naam in soos eth0.",
+      "ip4": "Voer die adres in soos 192.168.0.60/24 en 'n geldige poort.",
+      "ip6": "Voer die adres in soos fd00::10/64."
+    },
+    "detached": "{{key}} ontkoppel; dit bly as 'n ongebruikte skyf",
+    "coresHint": "Leeg gebruik elke kern van die nodus."
+  },
+  "options": {
+    "general": "Algemeen",
+    "tags": "Etikette",
+    "tagsHint": "Geskei deur kommas.",
+    "onboot": "Begin wanneer die nodus opstart",
+    "protection": "Beskerming",
+    "protectionHint": "Verhoed dat die gas en sy skywe geskrap word totdat dit afgeskakel word.",
+    "agent": "QEMU-gasagent",
+    "agentHint": "Skakel aan sodra die agent in die gas loop, vir sy adresse en skoon afsluitings.",
+    "startup": "Begin- en afsluitvolgorde",
+    "startupOrder": "Volgorde",
+    "startupUp": "Vertraging ná begin (s)",
+    "startupDown": "Afsluit-uittelling (s)",
+    "dns": "DNS",
+    "nameserver": "DNS-bedieners",
+    "searchdomain": "Soekdomein",
+    "useHost": "Leeg gebruik die nodus s'n.",
+    "notes": "Notas",
+    "saved": "Opsies gestoor",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Ander"
+    },
+    "problem": {
+      "name": "Voer 'n naam in.",
+      "startup": "Volgorde en vertragings is heelgetalle.",
+      "tags": "Etikette gebruik letters, syfers, strepies, punte en onderstrepe.",
+      "nameserver": "Voer IP-adresse in, geskei deur spasies."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "Hierdie VM het geen cloud-init-aandrywer nie. Voeg een by en stel dan die gebruiker, sleutels en netwerk hier; die gasbeeld moet cloud-init ondersteun.",
+    "addDrive": "Voeg cloud-init-aandrywer by",
+    "driveAdded": "Cloud-init-aandrywer bygevoeg",
+    "user": "Gebruiker",
+    "username": "Gebruikersnaam",
+    "usernameHint": "Leeg gebruik die beeld se verstekgebruiker.",
+    "password": "Wagwoord",
+    "passwordHint": "Leeg behou die huidige een. Word deur Proxmox gehash gestoor.",
+    "network": "Netwerk",
+    "saved": "Cloud-init-instellings gestoor",
+    "regenerate": "Herskep beeld",
+    "regenerated": "Cloud-init-beeld herskep",
+    "regenerateHint": "Skryf die instellings na {{drive}}. Die gas lees dit by sy volgende opstart."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Opsomming",
+      "iso": "ISO-beelde",
+      "vztmpl": "CT-sjablone",
+      "backup": "Rugsteun",
+      "images": "Skyfbeelde"
+    },
+    "content": "Inhoud",
+    "contentTypes": {
+      "images": "VM-skywe",
+      "rootdir": "Houerskywe",
+      "iso": "ISO-beelde",
+      "vztmpl": "CT-sjablone",
+      "backup": "Rugsteun",
+      "snippets": "Brokkies",
+      "import": "Invoer"
+    },
+    "shared": "Gedeel",
+    "empty": "Nog niks hier nie.",
+    "owner": "gas {{vmid}}",
+    "protected": "Beskerm",
+    "download": {
+      "button": "Laai af vanaf URL",
+      "title": {
+        "iso": "Laai 'n ISO-beeld af na {{storage}}",
+        "vztmpl": "Laai 'n CT-sjabloon af na {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Lêernaam",
+      "algorithm": "Kontrolesomtipe",
+      "noChecksum": "Geen",
+      "checksum": "Kontrolesom",
+      "verify": "Kontroleer die bediener se sertifikaat",
+      "submit": "Laai af",
+      "label": "Laai {{name}} af",
+      "problem": {
+        "url": "Voer 'n http- of https-URL in.",
+        "filename": "Die lêernaam gebruik letters, syfers, punte, strepies en onderstrepe.",
+        "extension": "ISO-beelde eindig op .iso of .img; sjablone op .tar.gz, .tar.xz of .tar.zst.",
+        "checksum": "Kies 'n kontrolesomtipe en voer die kontrolesom in hex in, of laat albei leeg."
+      }
+    },
+    "catalog": {
+      "button": "Sjablone",
+      "title": "Houersjablone vir {{storage}}",
+      "search": "Soek sjablone...",
+      "have": "Afgelaai",
+      "label": "Laai {{name}} af"
+    },
+    "delete": {
+      "title": "Skrap {{name}}?",
+      "description": "Dit skrap die lêer uit die berging. Dit kan nie ongedaan gemaak word nie.",
+      "submit": "Skrap",
+      "done": "{{name}} geskrap"
+    },
+    "upload": {
+      "button": "Laai op",
+      "cancel": "Kanselleer oplaai",
+      "done": "{{name}} opgelaai",
+      "failed": "{{name}} kon nie oplaai nie: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Opsomming",
+      "network": "Netwerk",
+      "system": "Stelsel",
+      "services": "Dienste",
+      "updates": "Bywerkings",
+      "disks": "Skywe",
+      "tasks": "Take",
+      "log": "Log"
+    },
+    "services": {
+      "start": "Begin",
+      "stop": "Stop",
+      "restart": "Herbegin",
+      "reload": "Herlaai",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Stop {{name}}?",
+        "restart": "Herbegin {{name}}?",
+        "description": "Proxmox se eie dienste hou die nodus en sy API aan die gang; om een te stop kan hierdie hulpmiddel afsny totdat dit weer begin."
+      }
+    },
+    "updates": {
+      "refresh": "Verfris pakketlyste",
+      "refreshLabel": "Verfris pakketlyste op {{node}}",
+      "count_one": "{{count}} pakket kan opgegradeer word",
+      "count_other": "{{count}} pakkette kan opgegradeer word",
+      "none": "Alles is op datum",
+      "installHint": "Installeer opgraderings vanaf die nodus se terminaal met apt full-upgrade; Proxmox gradeer nie deur sy API op nie.",
+      "views": {
+        "packages": "Pakkette",
+        "repositories": "Bewaarplekke"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART vir {{disk}}",
+      "health": "Gesondheid",
+      "usedBy": "gebruik deur {{used}}",
+      "unused": "ongebruik",
+      "wearout": "{{value}}% leeftyd oor",
+      "views": {
+        "disks": "Skywe",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Gids",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "{{count}} logiese volume",
+        "lvCount_other": "{{count}} logiese volumes",
+        "metadata": "metadata {{used}} / {{size}}",
+        "frag": "{{value}}% gefragmenteer",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "Geen LVM-volumegroepe nie.",
+          "lvmthin": "Geen LVM-Thin-poele nie.",
+          "directory": "Geen gidsberging op 'n eie skyf nie.",
+          "zfs": "Geen ZFS-poele nie."
+        },
+        "create": {
+          "lvm": "Skep LVM-volumegroep",
+          "lvmthin": "Skep LVM-Thin-poel",
+          "directory": "Skep gids",
+          "zfs": "Skep ZFS-poel"
+        },
+        "createSubmit": "Skep",
+        "createLabel": "Skep {{name}} op {{node}}",
+        "wipeWarning": "Die gekose skywe word gepartisioneer en geformateer. Slegs skywe met niks daarop word aangebied.",
+        "name": "Naam",
+        "device": "Skyf",
+        "devices": "Skywe",
+        "pickDisk": "Kies 'n skyf",
+        "noUnused": "Daar is geen ongebruikte skyf nie. Vee eers een onder Skywe uit, as wat daarop is kan weg.",
+        "filesystem": "Lêerstelsel",
+        "raidlevel": "RAID-vlak",
+        "raid": {
+          "single": "Enkele skyf",
+          "mirror": "Spieël",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Kompressie",
+        "addStorage": "Voeg by as berging",
+        "addStorageHint": "Maak dit 'n Proxmox-berging met dieselfde naam, vir skywe, houers of rugsteun.",
+        "problem": {
+          "name": "'n Naam begin met 'n letter en het letters, syfers, -, _ of .",
+          "device": "Kies 'n skyf.",
+          "oneDevice": "Kies een skyf.",
+          "tooFew": "Hierdie RAID-vlak benodig minstens {{count}} skywe.",
+          "even": "RAID10 benodig 'n ewe aantal skywe.",
+          "ashift": "ashift is tussen 9 en 16."
+        },
+        "remove": "Verwyder",
+        "removeTitle": "Verwyder {{name}}?",
+        "removeWarning": "Gaste met skywe daarop verloor hulle. Verwydering skuif niks eers daarvan af nie.",
+        "removeLabel": "Verwyder {{name}} op {{node}}",
+        "cleanupConfig": "Verwyder ook die bergingsinskrywing",
+        "cleanupDisks": "Vee sy skywe uit",
+        "cleanupDisksHint": "Vee die skywe uit sodat hulle weer gebruik kan word.",
+        "inUse": {
+          "lvm": "Dit het nog logiese volumes. Verwyder hulle eers; hierdie groep kan die nodus se eie stelsel bevat.",
+          "lvmthin": "Dit bevat nog data. Skuif of verwyder eers die gasskywe daarop."
+        }
+      },
+      "gpt": "Inisialiseer GPT",
+      "gptTitle": "Inisialiseer {{disk}} met GPT?",
+      "gptDescription": "Skryf 'n leë GPT-partisietabel na die skyf.",
+      "gptLabel": "Inisialiseer {{disk}} op {{node}}",
+      "wipe": "Vee uit",
+      "wipeTitle": "Vee {{disk}} uit?",
+      "wipeWarning": "Vee die partisietabel en elke lêerstelsel-, LVM- en ZFS-handtekening op die skyf uit (nou: {{used}}). Wat daarop is, is vir altyd weg.",
+      "wipeLabel": "Vee {{disk}} op {{node}} uit",
+      "typePath": "Tik {{disk}} om te bevestig"
+    },
+    "log": {
+      "search": "Filtreer die log...",
+      "empty": "Geen reëls pas nie."
+    },
+    "power": {
+      "menu": "Nodus-krag",
+      "termixWarning": "As Termix op hierdie nodus loop, gaan dit ook af totdat die nodus terug is.",
+      "typeName": "Tik {{node}} om te bevestig",
+      "reboot": {
+        "menu": "Herbegin nodus",
+        "title": "Herbegin {{node}}?",
+        "submit": "Herbegin",
+        "label": "Herbegin {{node}}",
+        "warning_one": "{{count}} lopende gas stop of sit eers af, soos sy beginstellings bepaal.",
+        "warning_other": "{{count}} lopende gaste stop of sit eers af, soos hul beginstellings bepaal."
+      },
+      "shutdown": {
+        "menu": "Sit nodus af",
+        "title": "Sit {{node}} af?",
+        "submit": "Sit af",
+        "label": "Sit {{node}} af",
+        "warning_one": "{{count}} lopende gas gaan saam daarmee af, en niks begin dit weer totdat iemand die nodus aanskakel nie.",
+        "warning_other": "{{count}} lopende gaste gaan saam daarmee af, en niks begin hulle weer totdat iemand die nodus aanskakel nie."
+      }
+    },
+    "shell": "Dop",
+    "shellHint": "Maak hierdie gasheer se SSH-terminaal in Termix oop.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Soekdomein",
+        "server": "DNS-bediener {{n}}",
+        "editTitle": "DNS van {{node}}",
+        "saved": "DNS gestoor",
+        "problem": {
+          "search": "Voer 'n soekdomein in, soos example.com.",
+          "server": "'n DNS-bediener is 'n IPv4- of IPv6-adres.",
+          "noServer": "Voer minstens een DNS-bediener in."
+        }
+      },
+      "time": {
+        "title": "Tyd",
+        "zone": "Tydsone",
+        "local": "Plaaslike tyd",
+        "editTitle": "Tydsone van {{node}}",
+        "hint": "Die horlosie self word deur NTP (chrony) op die nodus bygehou.",
+        "saved": "Tydsone gestel op {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "/etc/hosts van {{node}}",
+        "warning": "Die nodus se eie naam moet steeds na sy adres oplos, anders hou die groepering en sy webkoppelvlak op werk.",
+        "saved": "/etc/hosts gestoor"
+      },
+      "certs": {
+        "title": "Sertifikate",
+        "issuer": "uitgereik deur {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Geldig tot {{date}}",
+          "expiring": "Verval {{date}}",
+          "expired": "Verval op {{date}}",
+          "notYet": "Nog nie geldig nie"
+        },
+        "upload": "Laai pasgemaakte op",
+        "uploadTitle": "Pasgemaakte sertifikaat vir {{node}}",
+        "uploaded": "Sertifikaat opgelaai",
+        "chain": "Sertifikaatketting",
+        "chainHint": "PEM: eers die nodus se sertifikaat, dan die tussensertifikate.",
+        "key": "Privaat sleutel",
+        "keyHint": "PEM, ongeënkripteer. Laat leeg om die sleutel wat reeds op die nodus is te behou.",
+        "fromFile": "Lees uit lêer",
+        "badCert": "Dit is nie 'n PEM-sertifikaat nie.",
+        "badKey": "Dit is nie 'n PEM-privaatsleutel nie.",
+        "restart": "Herbegin die webkoppelvlak om dit te gebruik",
+        "restartHint": "pveproxy herbegin; Termix verloor die API vir 'n paar sekondes.",
+        "remove": "Verwyder pasgemaakte",
+        "removeTitle": "Verwyder die pasgemaakte sertifikaat?",
+        "removeDescription": "Die nodus keer terug na sy selfondertekende sertifikaat, en die webkoppelvlak herbegin.",
+        "removed": "Pasgemaakte sertifikaat verwyder"
+      }
+    },
+    "repos": {
+      "on": "Geaktiveer",
+      "off": "Gedeaktiveer",
+      "enable": "Aktiveer",
+      "disable": "Deaktiveer",
+      "enableTitle": "Aktiveer hierdie bewaarplek?",
+      "enabled": "Bewaarplek geaktiveer",
+      "disabled": "Bewaarplek gedeaktiveer",
+      "add": "Voeg by:",
+      "added": "{{name}}-bewaarplek bygevoeg",
+      "hint": "Voer Verfris pakketlyste onder Pakkette uit ná 'n verandering. Die Enterprise-bewaarplekke vereis 'n intekening."
+    },
+    "taskHistory": {
+      "type": "Tipe, soos vzdump",
+      "vmid": "VM/CT-ID",
+      "user": "Gebruiker",
+      "errorsOnly": "Slegs mislukte take",
+      "none": "Geen take pas nie.",
+      "more": "Laai meer",
+      "state": {
+        "running": "Loop",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Bestel sertifikaat",
+      "renew": "Hernu",
+      "orderLabel": "Bestel ACME-sertifikaat vir {{node}}",
+      "renewLabel": "Hernu ACME-sertifikaat vir {{node}}",
+      "usesAccount": "Rekening: {{account}}",
+      "none": "geen",
+      "noDomains": "Nog geen domeine nie. Wysig om die name by te voeg waarop hierdie nodus antwoord.",
+      "viaHttp": "HTTP-uitdaging",
+      "viaDns": "DNS-uitdaging via {{plugin}}",
+      "accounts": "Rekeninge",
+      "plugins": "DNS-uitdagingsinproppe",
+      "remove": "Verwyder",
+      "domainsTitle": "ACME-domeine van {{node}}",
+      "domainsSaved": "ACME-domeine gestoor",
+      "domain": "Domein",
+      "challenge": "Uitdaging",
+      "alias": "Alias",
+      "addDomain": "Voeg domein by",
+      "httpHint": "Die HTTP-uitdaging vereis dat poort 80 van hierdie nodus onder die domein vanaf die internet bereikbaar is. DNS werk sonder dit, en vir jokertekens.",
+      "hint": "Rekeninge en inproppe word deur die hele groepering gedeel; domeine is per nodus.",
+      "problem": {
+        "noDomain": "Voeg minstens een domein by.",
+        "tooMany": "'n Nodus het hoogstens ses ACME-domeine.",
+        "domain": "'n Domein is 'n volledige naam soos pve.example.com.",
+        "wildcard": "'n Jokerteken-domein benodig 'n DNS-uitdagingsinprop."
+      },
+      "account": {
+        "title": "Rekening",
+        "pick": "Kies 'n rekening",
+        "add": "Registreer rekening",
+        "addTitle": "Registreer 'n ACME-rekening",
+        "register": "Registreer",
+        "registerLabel": "Registreer ACME-rekening {{name}}",
+        "name": "Naam",
+        "email": "E-pos",
+        "directory": "ACME-gids",
+        "customDirectory": "Pasgemaakte URL",
+        "directoryUrl": "Gids-URL",
+        "acceptTos": "Aanvaar die diensbepalings",
+        "eabKid": "EAB-sleutel-ID",
+        "eabHmac": "EAB HMAC-sleutel",
+        "eabHint": "Slegs vir CA's wat External Account Binding vra.",
+        "none": "Nog geen ACME-rekening nie.",
+        "needOne": "Registreer eers 'n ACME-rekening.",
+        "removeTitle": "Deaktiveer rekening {{name}}?",
+        "removeDescription": "Die rekening word by die CA gedeaktiveer en hier verwyder. Sertifikate wat reeds uitgereik is, werk steeds.",
+        "removeLabel": "Deaktiveer ACME-rekening {{name}}",
+        "problem": {
+          "name": "'n Naam het letters, syfers, -, _ of .",
+          "email": "Voer 'n e-posadres in.",
+          "directory": "Die gids is 'n http- of https-URL.",
+          "tos": "Aanvaar die diensbepalings om te registreer.",
+          "eab": "EAB benodig sowel die sleutel-ID as die HMAC-sleutel."
+        }
+      },
+      "plugin": {
+        "add": "Voeg inprop by",
+        "addTitle": "Voeg 'n DNS-uitdagingsinprop by",
+        "id": "Inprop-ID",
+        "api": "DNS API",
+        "pickApi": "Kies 'n DNS-verskaffer",
+        "delay": "Valideringsvertraging (s)",
+        "delayHint": "Hoe lank om te wag vir die TXT-rekord om te versprei.",
+        "noFields": "Proxmox lys geen velde vir hierdie verskaffer nie; sien acme.sh se dokumentasie vir die veranderlikes wat dit lees.",
+        "none": "Geen DNS-inproppe nie. HTTP werk sonder een.",
+        "disabled": "Gedeaktiveer",
+        "removeTitle": "Verwyder inprop {{name}}?",
+        "removeDescription": "Domeine wat dit gebruik, kan nie meer gevalideer word nie."
+      }
+    }
+  },
+  "console": {
+    "open": "Konsole",
+    "openHint": "Maak die gas se Termix-gasheer oop, of bied aan om dit eers by Termix te voeg.",
+    "tabTitle": "Proxmox-konsole",
+    "tabLabel": "{{name}} — Konsole",
+    "pick": "Maak 'n konsole oop vanaf 'n lopende VM of houer in die Proxmox-hulpmiddel.",
+    "connect": "Koppel",
+    "reconnect": "Koppel weer",
+    "disconnect": "Ontkoppel",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Volskerm",
+    "notRunning": "Begin die gas om sy konsole oop te maak.",
+    "lost": "Die konsoleverbinding is verloor.",
+    "ended": "Konsole gesluit.",
+    "status": {
+      "idle": "Nie gekoppel nie",
+      "connecting": "Koppel tans...",
+      "connected": "Gekoppel",
+      "closed": "Ontkoppel",
+      "error": "Kon nie koppel nie"
+    },
+    "proxmox": "Proxmox-konsole",
+    "proxmoxHint": "Proxmox se eie konsole deur die nodus: die skerm van 'n VM, 'n dop in 'n houer. Vir 'n gas wat nog geen netwerk het nie."
+  },
+  "pool": {
+    "members": "Lede",
+    "empty": "Niks is in hierdie poel nie."
+  },
+  "sdn": {
+    "hint": "SDN-sones, VNets en subnette kom met groeperingsbestuur in 'n latere weergawe."
+  },
+  "network": {
+    "add": "Skep",
+    "apply": "Pas toe",
+    "revert": "Rol terug",
+    "pending": "Nog nie toegepas nie",
+    "hint": "Veranderinge word in /etc/network/interfaces.new gestoor en tree in werking met Pas toe, wat die nodus se netwerk herlaai.",
+    "type": "Tipe",
+    "name": "Naam",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Poort (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Poort (IPv6)",
+    "ports": "Brugpoorte",
+    "slaves": "Slawe",
+    "portsHint": "Koppelvlakname, geskei deur spasies.",
+    "bondMode": "Modus",
+    "vlanDevice": "VLAN-rou toestel",
+    "mtu": "MTU",
+    "comments": "Opmerking",
+    "autostart": "Outobegin",
+    "vlanAware": "VLAN-bewus",
+    "vlanAwareHint": "Laat gaste op hierdie brug VLAN-etikette gebruik.",
+    "inactive": "Onaktief",
+    "create": "Skep",
+    "createTitle": "Skep koppelvlak",
+    "editTitle": "Wysig {{iface}}",
+    "types": {
+      "bridge": "Brug",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Poort",
+      "OVSBridge": "OVS-brug",
+      "alias": "Alias"
+    },
+    "nameHint": {
+      "bridge": "vmbr gevolg deur 'n nommer, soos vmbr1.",
+      "bond": "bond gevolg deur 'n nommer, soos bond0.",
+      "vlan": "toestel.etiket soos vmbr0.10, of vlan10 met 'n rou toestel."
+    },
+    "addressWarning": "Hierdie koppelvlak dra die adres waarop Termix die nodus bereik. 'n Fout kan Termix afsny totdat iemand die nodus by sy konsole regmaak.",
+    "removeTitle": "Verwyder {{iface}}?",
+    "removeDescription": "Die koppelvlak word verwyder wanneer die verandering toegepas word.",
+    "applyTitle": "Pas netwerkveranderinge op {{node}} toe?",
+    "applyDescription": "Die nodus herlaai sy netwerk. As die nuwe instellings verkeerd is, kan die nodus en Termix se verbinding daarmee vanlyn gaan.",
+    "applyLabel": "Pas netwerk op {{node}} toe",
+    "reverted": "Netwerkveranderinge teruggerol",
+    "problem": {
+      "cidr": "Voer die adres in soos 10.10.0.1/24.",
+      "gateway": "'n Poort benodig 'n IPv4-adres en 'n geldige poort-IP.",
+      "cidr6": "Voer die adres in soos fd00::1/64.",
+      "ports": "Voer koppelvlakname in, geskei deur spasies.",
+      "slaves": "'n Bond benodig minstens een slaaf.",
+      "vlanDevice": "Noem die rou toestel vir 'n vlanN-koppelvlak.",
+      "mtu": "MTU is van 1280 tot 65520.",
+      "name": {
+        "bridge": "'n Brug word vmbr en 'n nommer genoem.",
+        "bond": "'n Bond word bond en 'n nommer genoem.",
+        "vlan": "'n VLAN word toestel.etiket of vlan en 'n nommer genoem."
+      }
+    }
+  },
+  "import": {
+    "open": "Voer in na Termix",
+    "title": "Voer gaste in as Termix-gashere",
+    "hint": "Elke gekose VM of houer word 'n Termix-gasheer met die etiket proxmox. Invoer verfris ook die name, adresse en etikette van gaste wat voorheen ingevoer is, en etiketteer dié wat uit Proxmox weg is as proxmox-missing.",
+    "loading": "Soek gaste en hul adresse…",
+    "counts": "{{total}} gaste, {{imported}} reeds ingevoer",
+    "selectAll": "Kies almal",
+    "selectNone": "Kies geen",
+    "none": "Hierdie groepering het geen VM's of houers nie.",
+    "imported": "Ingevoer",
+    "noAddress": "geen adres",
+    "folder": "Gids",
+    "folderDefault": "Gids met die naam {{node}}",
+    "folderSearch": "Soek of skep, / vir 'n subgids",
+    "folderCreate": "Skep \"{{folder}}\"",
+    "folderNone": "Nog geen gidse nie",
+    "connection": "Koppel met",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Houer-looptyd",
+    "runtimeOff": "Geen Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "Onbekende bedryfstelsel"
+    },
+    "sshLogin": "SSH-aanmelding",
+    "desktopLogin": "RDP- en VNC-aanmelding",
+    "desktopHint": "Vereis die Afstandswerkskerm-inprop om te koppel.",
+    "login": {
+      "nodeCredential": "Die nodus se aanmeldbewyse",
+      "nodeUser": "Die nodus se gebruikersnaam",
+      "username": "Slegs gebruikersnaam",
+      "none": "Geen aanmelding"
+    },
+    "username": "Gebruikersnaam",
+    "submit_one": "Voer {{count}} gas in",
+    "submit_other": "Voer {{count}} gaste in",
+    "refresh": "Verfris ingevoerdes",
+    "done": "{{created}} geskep, {{updated}} bygewerk, {{markedMissing}} as vermis gemerk",
+    "lastSync": "Laaste sinchronisering {{when}}.",
+    "lastSyncFailed": "Laaste sinchronisering {{when}} het misluk: {{error}}",
+    "syncHint": "Skakel Hou ingevoerde gaste gesinchroniseer aan in die gasheer se Proxmox-instellings om hulle volgens 'n skedule te verfris.",
+    "addTitle": "Voeg {{name}} by Termix",
+    "addHint": "Hierdie gas is nog nie 'n Termix-gasheer nie. Voeg dit by om sy terminaal oop te maak, dan maak Konsole dit dadelik oop.",
+    "addSubmit": "Voeg by en koppel",
+    "gone": "Proxmox lys nie meer hierdie gas nie."
+  }
+}

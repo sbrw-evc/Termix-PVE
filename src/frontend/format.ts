@@ -25,14 +25,29 @@ export function percent(
   return Math.min(100, Math.max(0, (used / total) * 100));
 }
 
-export function formatUptime(seconds: number | undefined): string {
+/** Uptime as two units in the UI language: "1d 1h" in English, "1 д 1 ч" in Russian. */
+export function formatUptime(
+  seconds: number | undefined,
+  language = "en",
+): string {
   if (!seconds) return "-";
+  const unit = (value: number, name: "day" | "hour" | "minute") => {
+    try {
+      return new Intl.NumberFormat(language, {
+        style: "unit",
+        unit: name,
+        unitDisplay: "narrow",
+      }).format(value);
+    } catch {
+      return `${value}${name[0]}`;
+    }
+  };
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  if (days) return `${days}d ${hours}h`;
-  if (hours) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
+  if (days) return `${unit(days, "day")} ${unit(hours, "hour")}`;
+  if (hours) return `${unit(hours, "hour")} ${unit(minutes, "minute")}`;
+  return unit(minutes, "minute");
 }
 
 /** Megabytes and gibibytes as the create forms take them. */

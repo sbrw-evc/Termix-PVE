@@ -25,12 +25,16 @@ Each phase is a release, checked on a real node before it ships. Every new Proxm
 - Node network: bridges, bonds, VLANs, with apply
 - Import guests as Termix hosts, with sync
 
-## Node menu still to come
+## Node menu (done in 0.2.10)
 
 - System: DNS, Hosts, Time, Certificates
 - Updates: Repositories
 - Disks: LVM, LVM-Thin, Directory, ZFS
-- Ceph, Replication and Firewall (with 0.3), Task History per node
+- Task History per node
+- 0.2.11: creating and removing LVM, LVM-Thin, directory and ZFS storage, wiping disks, custom
+  certificates and ACME (accounts, DNS plugins, domains, order and renew)
+
+Still to come: Ceph. Replication and Firewall come with 0.3.
 
 ## 0.3: data and safety
 

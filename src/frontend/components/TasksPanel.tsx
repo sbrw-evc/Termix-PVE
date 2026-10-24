@@ -8,13 +8,30 @@ import {
   ScrollArea,
   cn,
 } from "@termix-ssh/plugin-sdk/ui";
-import { ListChecks } from "lucide-react";
+import { ChevronDown, ChevronUp, ListChecks } from "lucide-react";
 import { pve, taskOk, toCallError, type PveClusterTask } from "../api";
 import { useTasks } from "../tasks";
 
 const REFRESH_MS = 15000;
+const COLLAPSED_KEY = "pve.tasksCollapsed";
 
-function TaskLogDialog({
+function readCollapsed(): boolean {
+  try {
+    return localStorage.getItem(COLLAPSED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function saveCollapsed(collapsed: boolean) {
+  try {
+    localStorage.setItem(COLLAPSED_KEY, collapsed ? "1" : "0");
+  } catch {
+    // Storage off: the choice lasts until the tab closes.
+  }
+}
+
+export function TaskLogDialog({
   hostId,
   task,
   onClose,
@@ -82,6 +99,8 @@ export function TasksPanel({
   const [tasks, setTasks] = useState<PveClusterTask[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState<PveClusterTask | null>(null);
+  const [collapsed, setCollapsed] = useState(readCollapsed);
+  const running = tasks.filter((task) => !task.endtime).length;
 
   const load = useCallback(async () => {
     try {
@@ -113,64 +132,102 @@ export function TasksPanel({
   }, [trackedKey, isVisible, load]);
 
   return (
-    <div className="flex h-44 shrink-0 flex-col border-t border-border">
-      <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium">
+    <div
+      className={cn(
+        "flex shrink-0 flex-col border-t border-border",
+        !collapsed && "h-44",
+      )}
+    >
+      <button
+        type="button"
+        className="flex items-center gap-1.5 px-3 py-1.5 text-left text-xs font-medium hover:bg-muted/50"
+        aria-expanded={!collapsed}
+        title={t(collapsed ? "tasks.expand" : "tasks.collapse")}
+        onClick={() => {
+          setCollapsed(!collapsed);
+          saveCollapsed(!collapsed);
+        }}
+      >
         <ListChecks className="size-3.5" />
         {t("tasks.title")}
+        {/* Collapsed, the header still says when something is going on. */}
+        {collapsed && running > 0 && (
+          <span className="font-normal text-muted-foreground">
+            {t("tasks.runningCount", { count: running })}
+          </span>
+        )}
         {error && (
           <span className="ml-2 truncate font-normal text-destructive">
             {error}
           </span>
         )}
-      </div>
-      <ScrollArea className="min-h-0 flex-1">
-        <table className="w-full text-[11px]">
-          <thead className="sticky top-0 bg-background text-muted-foreground">
-            <tr className="text-left">
-              <th className="px-3 py-1 font-normal">{t("tasks.started")}</th>
-              <th className="px-2 py-1 font-normal">{t("tasks.node")}</th>
-              <th className="px-2 py-1 font-normal">{t("tasks.user")}</th>
-              <th className="px-2 py-1 font-normal">{t("tasks.task")}</th>
-              <th className="px-3 py-1 font-normal">{t("tasks.status")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tasks.map((task) => {
-              const done = !!task.endtime;
-              const ok = done && taskOk(task);
-              return (
-                <tr
-                  key={task.upid}
-                  onClick={() => setOpen(task)}
-                  className="cursor-pointer border-t border-border/50 hover:bg-accent"
-                >
-                  <td className="px-3 py-1 tabular-nums whitespace-nowrap">
-                    {new Date(task.starttime * 1000).toLocaleString()}
-                  </td>
-                  <td className="px-2 py-1">{task.node}</td>
-                  <td className="px-2 py-1">{task.user}</td>
-                  <td className="px-2 py-1">
-                    {task.id ? `${task.type} ${task.id}` : task.type}
-                  </td>
-                  <td
-                    className={cn(
-                      "max-w-64 truncate px-3 py-1",
-                      done && !ok && "text-destructive",
-                    )}
-                    title={task.status}
+        <span className="flex-1" />
+        {collapsed ? (
+          <ChevronUp className="size-3.5 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="size-3.5 text-muted-foreground" />
+        )}
+      </button>
+      {!collapsed && (
+        <ScrollArea className="min-h-0 flex-1">
+          <table className="w-full text-[11px]">
+            <thead className="sticky top-0 bg-background text-muted-foreground">
+              <tr className="text-left">
+                <th className="px-3 py-1 font-normal whitespace-nowrap">
+                  {t("tasks.started")}
+                </th>
+                <th className="px-2 py-1 font-normal whitespace-nowrap">
+                  {t("tasks.node")}
+                </th>
+                <th className="px-2 py-1 font-normal whitespace-nowrap">
+                  {t("tasks.user")}
+                </th>
+                <th className="px-2 py-1 font-normal whitespace-nowrap">
+                  {t("tasks.task")}
+                </th>
+                <th className="px-3 py-1 font-normal whitespace-nowrap">
+                  {t("tasks.status")}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {tasks.map((task) => {
+                const done = !!task.endtime;
+                const ok = done && taskOk(task);
+                return (
+                  <tr
+                    key={task.upid}
+                    onClick={() => setOpen(task)}
+                    className="cursor-pointer border-t border-border/50 hover:bg-accent"
                   >
-                    {!done
-                      ? t("tasks.running")
-                      : ok
-                        ? t("tasks.ok")
-                        : task.status}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </ScrollArea>
+                    <td className="px-3 py-1 tabular-nums whitespace-nowrap">
+                      {new Date(task.starttime * 1000).toLocaleString()}
+                    </td>
+                    <td className="px-2 py-1">{task.node}</td>
+                    <td className="px-2 py-1">{task.user}</td>
+                    <td className="px-2 py-1">
+                      {task.id ? `${task.type} ${task.id}` : task.type}
+                    </td>
+                    <td
+                      className={cn(
+                        "max-w-64 truncate px-3 py-1",
+                        done && !ok && "text-destructive",
+                      )}
+                      title={task.status}
+                    >
+                      {!done
+                        ? t("tasks.running")
+                        : ok
+                          ? t("tasks.ok")
+                          : task.status}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </ScrollArea>
+      )}
       {open && (
         <TaskLogDialog
           hostId={hostId}

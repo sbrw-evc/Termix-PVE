@@ -1,0 +1,1030 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Pārvaldiet Proxmox VE no Termix: virtuālās mašīnas, konteinerus, krātuves, tīklu, dublējumus, ugunsmūri, piekļuvi un klasteri."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Atvērt Proxmox"
+  },
+  "permissions": {
+    "view": {
+      "title": "Skatīt Proxmox",
+      "description": "Redzēt mezglus, viesus, krātuves, diagrammas un uzdevumus Proxmox resursdatoros, ar kuriem varat savienoties."
+    },
+    "operate": {
+      "title": "Vadīt Proxmox viesus",
+      "description": "Startēt, apturēt, izslēgt, pārstartēt, iesnaudināt un atsākt VM un konteinerus. Nepieciešama rediģēšanas piekļuve resursdatoram."
+    },
+    "console": {
+      "title": "Atvērt Proxmox konsoles",
+      "description": "Atvērt VM ekrānu un root čaulu konteinerā. Nepieciešama rediģēšanas piekļuve resursdatoram."
+    },
+    "configure": {
+      "title": "Konfigurēt Proxmox",
+      "description": "Izveidot, klonēt, migrēt, pārveidot un dzēst VM un konteinerus. Nepieciešama rediģēšanas piekļuve resursdatoram."
+    },
+    "administer": {
+      "title": "Administrēt Proxmox",
+      "description": "Pārvaldīt lietotājus, grupas, lomas, pūlus, 2FA, marķierus, sfēras un klasteri. Nepieciešama rediģēšanas piekļuve resursdatoram."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Proxmox mezgls",
+      "description": "Atzīmējiet šo resursdatoru kā Proxmox VE mezglu. Tad tas parādās Proxmox rīkā sadaļā Rīki."
+    },
+    "transport": {
+      "label": "Savienot caur",
+      "description": "Automātiski izmanto API caur SSH tuneli, kad marķieris ir saglabāts, un līdz tam pvesh caur SSH.",
+      "auto": "Automātiski",
+      "tunnel": "API caur SSH tuneli",
+      "direct": "API tieši",
+      "pvesh": "pvesh caur SSH"
+    },
+    "tokenId": {
+      "label": "API marķiera ID",
+      "description": "Izveidots Proxmox sadaļā Datu centrs, Atļaujas, API marķieri. Izskatās kā user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "API marķiera noslēpums",
+      "description": "Parādīts vienreiz, kad marķieris tiek izveidots. Tiek glabāts šifrēts."
+    },
+    "apiHost": {
+      "label": "API adrese",
+      "description": "Tikai API tieši. Atstājiet tukšu, lai izmantotu šī resursdatora adresi."
+    },
+    "apiPort": {
+      "label": "API ports",
+      "description": "8006, ja vien neesat to mainījis."
+    },
+    "caCert": {
+      "label": "CA sertifikāts",
+      "description": "Tikai API tieši. Mezgla CA PEM formātā no /etc/pve/pve-root-ca.pem. Atstājiet tukšu, ja API ir publiski uzticams sertifikāts.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Importētie viesi",
+    "importSync": {
+      "label": "Sinhronizēt importētos viesus",
+      "description": "Atjaunina no šī mezgla importēto viesu nosaukumus, adreses un birkas un atzīmē no Proxmox noņemtos ar birku proxmox-missing."
+    },
+    "importInterval": {
+      "label": "Sinhronizēt ik pēc (minūtes)",
+      "description": "Vismaz 5 minūtes."
+    },
+    "importAddNew": {
+      "label": "Sinhronizējot pievienot jaunus viesus",
+      "description": "Importē viesus, kas izveidoti Proxmox pēc pirmās importēšanas, ar importēšanas dialogā pēdējo reizi izmantotajiem noklusējumiem."
+    },
+    "importDefaults": {
+      "label": "Importēšanas noklusējumi"
+    },
+    "importState": {
+      "label": "Pēdējā viesu sinhronizācija"
+    },
+    "source": {
+      "label": "Proxmox viesis"
+    }
+  },
+  "app": {
+    "loading": "Ielādē...",
+    "loadFailed": "Neizdevās ielādēt klasteri",
+    "refreshFailed": "Atsvaidzināšana neizdevās: {{message}}",
+    "retry": "Mēģināt vēlreiz",
+    "refresh": "Atsvaidzināt",
+    "search": "Meklēt viesus, mezglus un krātuves...",
+    "status": "Mezgli: {{nodes}}, darbojas {{running}} no {{total}} viesiem",
+    "pickHost": "Proxmox resursdators",
+    "pickResource": "Izvēlieties mezglu, viesi vai krātuvi kreisajā pusē",
+    "noHosts": "Vēl nav Proxmox resursdatoru",
+    "noHostsHint": "Atveriet resursdatora iestatījumus, sadaļā SSH ieslēdziet Proxmox mezgls un izvēlieties savienojuma veidu. Tad mezgls parādās šeit.",
+    "cancel": "Atcelt",
+    "working": "Notiek apstrāde...",
+    "save": "Saglabāt",
+    "reset": "Atiestatīt",
+    "close": "Aizvērt",
+    "yes": "Jā",
+    "no": "Nē",
+    "edit": "Rediģēt"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix neuzticas mezgla sertifikātam. Resursdatora Proxmox iestatījumos ielīmējiet mezgla CA no /etc/pve/pve-root-ca.pem laukā CA sertifikāts vai izvēlieties API caur SSH tuneli.",
+    "tlsHostname": "Mezgla sertifikāts ir citam nosaukumam. Iestatiet API adresi uz nosaukumu vai adresi, kas norādīta sertifikātā.",
+    "tlsExpired": "Mezgla sertifikātam beidzies derīgums vai tas vēl nav derīgs. Atjaunojiet to Proxmox sadaļā mezgls, Sistēma, Sertifikāti.",
+    "notEnabled": "Šis resursdators nav atzīmēts kā Proxmox mezgls. Resursdatora iestatījumos ieslēdziet Proxmox mezgls.",
+    "hostAccess": "Lai mainītu šo resursdatoru, nepieciešama rediģēšanas piekļuve."
+  },
+  "tree": {
+    "nothingFound": "Meklēšanai nekas neatbilst.",
+    "expand": "Izvērst",
+    "collapse": "Sakļaut",
+    "datacenter": "Datu centrs",
+    "folders": {
+      "lxc": "LXC konteiners",
+      "qemu": "Virtuālā mašīna",
+      "node": "Mezgli",
+      "pool": "Pūli",
+      "sdn": "Tīkls",
+      "storage": "Krātuve"
+    },
+    "views": {
+      "folder": "Mapju skats",
+      "server": "Serveru skats"
+    }
+  },
+  "types": {
+    "node": "Mezgls",
+    "qemu": "VM",
+    "lxc": "Konteiners",
+    "storage": "Krātuve",
+    "pool": "Pūls",
+    "sdn": "SDN zona"
+  },
+  "states": {
+    "running": "Darbojas",
+    "stopped": "Apturēts",
+    "paused": "Pauzēts",
+    "suspended": "Iesnaudināts",
+    "online": "Tiešsaistē",
+    "offline": "Bezsaistē",
+    "available": "Pieejams",
+    "unknown": "Nezināms"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Atmiņa",
+    "disk": "Disks",
+    "rootDisk": "Saknes disks",
+    "usage": "Lietojums",
+    "cores_zero": "{{count}} kodolu",
+    "cores_one": "{{count}} kodols",
+    "cores_other": "{{count}} kodoli",
+    "swap": "Mijmaiņa"
+  },
+  "summary": {
+    "title": "Kopsavilkums",
+    "node": "Mezgls",
+    "vmid": "ID",
+    "uptime": "Darbības laiks",
+    "pool": "Pūls",
+    "ha": "HA",
+    "tags": "Birkas",
+    "guests": "Viesi",
+    "guestsRunning": "Darbojas {{running}} no {{total}}",
+    "cpuModel": "CPU",
+    "sockets": "ligzdas",
+    "load": "Vidējā slodze",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Kodols",
+    "ips": "Adreses"
+  },
+  "charts": {
+    "title": "Diagrammas",
+    "cpu": "CPU",
+    "load": "Vidējā slodze",
+    "memory": "Atmiņa",
+    "network": "Tīkls",
+    "diskIo": "Diska I/O",
+    "cpuUsage": "CPU lietojums",
+    "ioDelay": "IO aizture",
+    "used": "Izmantots",
+    "total": "Kopā",
+    "in": "Ienākošais",
+    "out": "Izejošais",
+    "read": "Lasīšana",
+    "write": "Rakstīšana",
+    "timeframe": {
+      "hour": "Stunda",
+      "day": "Diena",
+      "week": "Nedēļa",
+      "month": "Mēnesis",
+      "year": "Gads"
+    },
+    "noData": "Šim periodam nav datu",
+    "serverLoad": "Servera slodze",
+    "loadAverage": "Vidējā slodze",
+    "swap": "Mijmaiņa",
+    "pressureCpu": "CPU spiediena aizture",
+    "pressureMemory": "Atmiņas spiediena aizture",
+    "pressureIo": "IO spiediena aizture",
+    "some": "Daļēja",
+    "full": "Pilna",
+    "average": "Vidēji",
+    "maximum": "Maksimums"
+  },
+  "tasks": {
+    "title": "Uzdevumi",
+    "started": "Sākts",
+    "node": "Mezgls",
+    "user": "Lietotājs",
+    "task": "Uzdevums",
+    "status": "Statuss",
+    "running": "Darbojas",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} mezglā {{node}}",
+    "done": "{{label}}: pabeigts",
+    "failed": "{{label}} neizdevās: {{reason}}"
+  },
+  "guests": {
+    "more": "Citas darbības",
+    "isTemplate": "Veidne",
+    "locked": "Bloķēts: {{lock}}",
+    "power": {
+      "start": "Startēt",
+      "shutdown": "Izslēgt",
+      "stop": "Apturēt",
+      "reboot": "Pārstartēt",
+      "suspend": "Iesnaudināt",
+      "resume": "Atsākt",
+      "reset": "Atiestatīt",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Apturēt {{name}} tūlīt?",
+        "reset": "Atiestatīt {{name}} tūlīt?",
+        "description": "Tas atslēdz barošanu kā kontaktdakšas izraušana. Viesī nesaglabātais darbs tiek zaudēts."
+      }
+    },
+    "clone": {
+      "menu": "Klonēt",
+      "title": "Klonēt {{name}}",
+      "submit": "Klonēt",
+      "label": "Klonēt {{source}} uz {{id}}",
+      "full": "Pilns klons",
+      "fullHint": "Kopē katru disku, tāpēc klons nav atkarīgs no oriģināla.",
+      "linkedHint": "Izslēgts izveido saistītu klonu, kas koplieto veidnes diskus un tiek izveidots dažās sekundēs.",
+      "sameStorage": "Tā pati krātuve, kas oriģinālam"
+    },
+    "migrate": {
+      "menu": "Migrēt",
+      "title": "Migrēt {{name}}",
+      "submit": "Migrēt",
+      "label": "Migrēt {{name}} uz {{target}}",
+      "noOtherNodes": "Šajā klasterī nav cita tiešsaistes mezgla, uz kuru to pārvietot.",
+      "onlineHint": "VM darbojas un tiek pārvietota tiešsaistē, neapturot to.",
+      "restartHint": "Konteiners darbojas. Tas tiek apturēts, pārvietots un atkal startēts mērķī."
+    },
+    "template": {
+      "menu": "Pārveidot par veidni",
+      "confirm": "Pārveidot {{name}} par veidni?",
+      "description": "Veidni nevar startēt, to var tikai klonēt. To nevar atsaukt.",
+      "submit": "Pārveidot",
+      "label": "Pārveidot {{name}} par veidni"
+    },
+    "delete": {
+      "menu": "Dzēst",
+      "title": "Dzēst {{name}}",
+      "submit": "Dzēst",
+      "label": "Dzēst {{name}}",
+      "warning": "Tas izdzēš viesi {{vmid}} un tā diskus. To nevar atsaukt.",
+      "stopFirst": "Pirms dzēšanas apturiet viesi.",
+      "typeId": "Ierakstiet {{vmid}}, lai apstiprinātu",
+      "purge": "Noņemt no dublēšanas darbiem, replicēšanas un HA",
+      "purgeHint": "Neatstāj darbus, kas norāda uz vairs neesošu viesi.",
+      "unreferenced": "Dzēst arī neizmantotos diskus",
+      "unreferencedHint": "Diski iespējotās krātuvēs ar šo ID, kurus konfigurācija neuzskaita."
+    },
+    "create": {
+      "vmButton": "Izveidot VM",
+      "ctButton": "Izveidot CT",
+      "vmTitle": "Izveidot virtuālo mašīnu",
+      "ctTitle": "Izveidot konteineru",
+      "submit": "Izveidot",
+      "vmLabel": "Izveidot VM {{id}} ({{name}})",
+      "ctLabel": "Izveidot CT {{id}} ({{name}})",
+      "noTemplates": "Šajā mezglā nav konteineru veidņu. Lejupielādējiet kādu Proxmox sadaļā krātuve, CT veidnes.",
+      "noIso": "Nav instalācijas datu nesēju",
+      "unprivilegedHint": "Drošāk: root konteinerā nav root mezglā.",
+      "loginHint": "Iestatiet root paroli, SSH atslēgas vai abus.",
+      "problem": {
+        "vmid": "Izvēlieties ID, kas ir 100 vai vairāk.",
+        "hostname": "Ievadiet resursdatora nosaukumu: burti, cipari un domuzīmes.",
+        "name": "Ievadiet nosaukumu: burti, cipari un domuzīmes.",
+        "template": "Izvēlieties veidni.",
+        "storage": "Izvēlieties krātuvi.",
+        "disk": "Ievadiet diska izmēru.",
+        "cores": "Ievadiet kodolu skaitu.",
+        "sockets": "Ievadiet ligzdu skaitu.",
+        "memory": "Ievadiet vismaz 16 MiB atmiņas.",
+        "swap": "Ievadiet mijmaiņu MiB, 0, ja nav.",
+        "network": "Izvēlieties tiltu un statiskai adresei ievadiet to kā 192.168.0.60/24.",
+        "login": "Iestatiet root paroli vai SSH atslēgas, lai varētu pieteikties.",
+        "password": "Parolē jābūt vismaz 5 rakstzīmēm."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Cits"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Nosaukums",
+      "hostname": "Resursdatora nosaukums",
+      "node": "Mezgls",
+      "targetNode": "Mērķa mezgls",
+      "targetStorage": "Mērķa krātuve",
+      "storage": "Krātuve",
+      "template": "Veidne",
+      "iso": "Instalācijas datu nesējs",
+      "ostype": "Viesa OS",
+      "rootPassword": "Root parole",
+      "sshKeys": "SSH publiskās atslēgas",
+      "unprivileged": "Nepriviliģēts konteiners",
+      "diskGiB": "Disks (GiB)",
+      "cores": "Kodoli",
+      "sockets": "Ligzdas",
+      "memoryMiB": "Atmiņa (MiB)",
+      "swapMiB": "Mijmaiņa (MiB)",
+      "bridge": "Tīkla tilts",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Statiska",
+      "cidr": "Adrese/prefikss",
+      "gateway": "Vārteja",
+      "startAfter": "Startēt pēc izveides",
+      "pick": "Izvēlieties"
+    },
+    "tabs": {
+      "summary": "Kopsavilkums",
+      "hardware": "Aparatūra",
+      "options": "Opcijas",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Rediģēt",
+    "add": "Pievienot",
+    "remove": "Noņemt",
+    "removed": "{{key}} noņemts",
+    "pending": "Gaida",
+    "pendingHint": "Izmaiņas, kas atzīmētas kā Gaida, stājas spēkā, kad viesis tiek pārstartēts no Proxmox: pārstartēšana viesa iekšienē nav pietiekama.",
+    "processors": "Procesori",
+    "processorsValue": "{{sockets}} ligzda × {{cores}} kodoli, {{cpu}}",
+    "allCores": "Visi",
+    "swap": "Mijmaiņa",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "Procesors un atmiņa",
+      "title": "Procesors un atmiņa"
+    },
+    "cpuType": "CPU tips",
+    "cpulimit": "CPU ierobežojums",
+    "cpulimitHint": "0 — bez ierobežojuma. 1.5 ir pusotra kodola laiks.",
+    "balloon": "Minimālā atmiņa (MiB)",
+    "balloonHint": "Ar balona draiveri viesis atdod atmiņu līdz šai vērtībai. Vienāda ar atmiņu to izslēdz, 0 noņem draiveri.",
+    "disks": "Diski",
+    "volumes": "Saknes disks un montēšanas punkti",
+    "bus": "Kopne",
+    "slot": "Būs {{key}}",
+    "iothread": "IO pavediens",
+    "discard": "Discard",
+    "discardHint": "Ļauj viesim atbrīvot neizmantotos blokus plānajā krātuvē.",
+    "ssd": "SSD emulācija",
+    "mountPath": "Montēšanas ceļš konteinerā",
+    "backup": "Iekļaut dublējumos",
+    "addDisk": {
+      "button": "Pievienot disku",
+      "title": "Pievienot disku",
+      "label": "Pievienot {{key}}"
+    },
+    "addMount": {
+      "button": "Pievienot montēšanas punktu",
+      "title": "Pievienot montēšanas punktu"
+    },
+    "resize": {
+      "menu": "Mainīt izmēru",
+      "title": "Palielināt {{key}}",
+      "grow": "Pievienot (GiB)",
+      "result": "{{from}} GiB kļūst par {{to}} GiB",
+      "noShrink": "Diskus var tikai palielināt. Viesa nodalījums un failu sistēma pēc tam jāpalielina viesa iekšienē, ja vien tas to neizdara sāknēšanas laikā.",
+      "submit": "Palielināt",
+      "label": "Palielināt {{key}} par {{size}} GiB"
+    },
+    "move": {
+      "menu": "Pārvietot uz krātuvi",
+      "title": "Pārvietot {{key}}",
+      "submit": "Pārvietot",
+      "deleteSource": "Dzēst oriģinālu",
+      "deleteSourceHint": "Izslēgts to patur kā neizmantotu disku.",
+      "label": "Pārvietot {{key}} uz {{storage}}"
+    },
+    "detach": {
+      "menu": "Atvienot",
+      "title": "Atvienot {{key}}?",
+      "description": "Disks paliek savā krātuvē kā neizmantots disks, un to var dzēst vai pievienot atkal."
+    },
+    "unused": {
+      "delete": "Dzēst",
+      "title": "Dzēst {{volume}}?",
+      "description": "Tas izdzēš disku un visu, kas uz tā ir. To nevar atsaukt."
+    },
+    "cd": {
+      "heading": "CD/DVD diskdziņi",
+      "title": "Datu nesējs ierīcē {{key}}",
+      "empty": "Nav datu nesēja"
+    },
+    "nic": {
+      "heading": "Tīkla adapteri",
+      "add": "Pievienot adapteri",
+      "addTitle": "Pievienot {{key}}",
+      "editTitle": "Rediģēt {{key}}",
+      "none": "Nav tīkla adapteru.",
+      "model": "Modelis",
+      "name": "Nosaukums konteinerā",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Statiska",
+        "none": "Nav",
+        "auto": "SLAAC"
+      },
+      "tag": "VLAN birka",
+      "tagHint": "Tukšs — bez birkas.",
+      "rate": "Ātruma ierobežojums (MB/s)",
+      "rateHint": "Tukšs — bez ierobežojuma.",
+      "firewall": "Ugunsmūris",
+      "firewallShort": "ugunsmūris",
+      "removeTitle": "Noņemt {{key}}?",
+      "removeDescription": "Viesis zaudē šo adapteri un tā adresi."
+    },
+    "problem": {
+      "cpu": "Ievadiet vismaz vienu ligzdu un kodolu.",
+      "cpulimit": "CPU ierobežojums ir no 0 līdz 8192.",
+      "memory": "Ievadiet vismaz 16 MiB atmiņas.",
+      "balloon": "Minimālā atmiņa nevar būt lielāka par atmiņu.",
+      "swap": "Ievadiet mijmaiņu MiB, 0, ja nav.",
+      "noSlot": "Visas šāda veida vietas ir aizņemtas.",
+      "storage": "Izvēlieties krātuvi.",
+      "size": "Ievadiet izmēru veselos GiB.",
+      "path": "Ievadiet absolūtu ceļu, piemēram, /data, bet ne pašu /.",
+      "bridge": "Izvēlieties tiltu.",
+      "tag": "VLAN birka ir no 1 līdz 4094.",
+      "rate": "Ievadiet ātrumu, kas lielāks par 0, vai atstājiet tukšu.",
+      "name": "Ievadiet nosaukumu, piemēram, eth0.",
+      "ip4": "Ievadiet adresi kā 192.168.0.60/24 un derīgu vārteju.",
+      "ip6": "Ievadiet adresi kā fd00::10/64."
+    },
+    "detached": "{{key}} atvienots; tas paliek kā neizmantots disks",
+    "coresHint": "Tukšs izmanto visus mezgla kodolus."
+  },
+  "options": {
+    "general": "Vispārīgi",
+    "tags": "Birkas",
+    "tagsHint": "Atdalītas ar komatiem.",
+    "onboot": "Startēt, kad mezgls sāknējas",
+    "protection": "Aizsardzība",
+    "protectionHint": "Bloķē viesa un tā disku dzēšanu, līdz tiek izslēgta.",
+    "agent": "QEMU viesa aģents",
+    "agentHint": "Ieslēdziet, kad aģents darbojas viesī, lai iegūtu tā adreses un tīru izslēgšanu.",
+    "startup": "Startēšanas un izslēgšanas secība",
+    "startupOrder": "Secība",
+    "startupUp": "Aizture pēc startēšanas (s)",
+    "startupDown": "Izslēgšanas noildze (s)",
+    "dns": "DNS",
+    "nameserver": "DNS serveri",
+    "searchdomain": "Meklēšanas domēns",
+    "useHost": "Tukšs izmanto mezgla iestatījumu.",
+    "notes": "Piezīmes",
+    "saved": "Opcijas saglabātas",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Cits"
+    },
+    "problem": {
+      "name": "Ievadiet nosaukumu.",
+      "startup": "Secība un aiztures ir veseli skaitļi.",
+      "tags": "Birkās izmanto burtus, ciparus, domuzīmes, punktus un pasvītras.",
+      "nameserver": "Ievadiet IP adreses, atdalītas ar atstarpēm."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "Šai VM nav cloud-init diska. Pievienojiet to, pēc tam šeit iestatiet lietotāju, atslēgas un tīklu; viesa attēlam jāatbalsta cloud-init.",
+    "addDrive": "Pievienot cloud-init disku",
+    "driveAdded": "Cloud-init disks pievienots",
+    "user": "Lietotājs",
+    "username": "Lietotājvārds",
+    "usernameHint": "Tukšs izmanto attēla noklusējuma lietotāju.",
+    "password": "Parole",
+    "passwordHint": "Tukšs patur pašreizējo. Proxmox to glabā jaucējkoda veidā.",
+    "network": "Tīkls",
+    "saved": "Cloud-init iestatījumi saglabāti",
+    "regenerate": "Ģenerēt attēlu no jauna",
+    "regenerated": "Cloud-init attēls ģenerēts no jauna",
+    "regenerateHint": "Ieraksta iestatījumus diskā {{drive}}. Viesis tos nolasa nākamajā sāknēšanā."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Kopsavilkums",
+      "iso": "ISO attēli",
+      "vztmpl": "CT veidnes",
+      "backup": "Dublējumi",
+      "images": "Disku attēli"
+    },
+    "content": "Saturs",
+    "contentTypes": {
+      "images": "VM diski",
+      "rootdir": "Konteineru diski",
+      "iso": "ISO attēli",
+      "vztmpl": "CT veidnes",
+      "backup": "Dublējumi",
+      "snippets": "Fragmenti",
+      "import": "Imports"
+    },
+    "shared": "Koplietots",
+    "empty": "Šeit vēl nekā nav.",
+    "owner": "viesis {{vmid}}",
+    "protected": "Aizsargāts",
+    "download": {
+      "button": "Lejupielādēt no URL",
+      "title": {
+        "iso": "Lejupielādēt ISO attēlu krātuvē {{storage}}",
+        "vztmpl": "Lejupielādēt CT veidni krātuvē {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Faila nosaukums",
+      "algorithm": "Kontrolsummas tips",
+      "noChecksum": "Nav",
+      "checksum": "Kontrolsumma",
+      "verify": "Pārbaudīt servera sertifikātu",
+      "submit": "Lejupielādēt",
+      "label": "Lejupielādēt {{name}}",
+      "problem": {
+        "url": "Ievadiet http vai https URL.",
+        "filename": "Faila nosaukumā izmanto burtus, ciparus, punktus, domuzīmes un pasvītras.",
+        "extension": "ISO attēli beidzas ar .iso vai .img; veidnes ar .tar.gz, .tar.xz vai .tar.zst.",
+        "checksum": "Izvēlieties kontrolsummas tipu un ievadiet kontrolsummu hex formātā vai atstājiet abus tukšus."
+      }
+    },
+    "catalog": {
+      "button": "Veidnes",
+      "title": "Konteineru veidnes krātuvei {{storage}}",
+      "search": "Meklēt veidnes...",
+      "have": "Lejupielādēts",
+      "label": "Lejupielādēt {{name}}"
+    },
+    "delete": {
+      "title": "Dzēst {{name}}?",
+      "description": "Tas izdzēš failu no krātuves. To nevar atsaukt.",
+      "submit": "Dzēst",
+      "done": "{{name}} izdzēsts"
+    },
+    "upload": {
+      "button": "Augšupielādēt",
+      "cancel": "Atcelt augšupielādi",
+      "done": "{{name}} augšupielādēts",
+      "failed": "Neizdevās augšupielādēt {{name}}: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Kopsavilkums",
+      "network": "Tīkls",
+      "system": "Sistēma",
+      "services": "Pakalpojumi",
+      "updates": "Atjauninājumi",
+      "disks": "Diski",
+      "tasks": "Uzdevumi",
+      "log": "Žurnāls"
+    },
+    "services": {
+      "start": "Startēt",
+      "stop": "Apturēt",
+      "restart": "Restartēt",
+      "reload": "Pārlādēt",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Apturēt {{name}}?",
+        "restart": "Restartēt {{name}}?",
+        "description": "Proxmox pakalpojumi uztur mezglu un tā API darbībā; apturot kādu, šis rīks var zaudēt savienojumu, līdz tas atkal tiek startēts."
+      }
+    },
+    "updates": {
+      "refresh": "Atsvaidzināt pakotņu sarakstus",
+      "refreshLabel": "Atsvaidzināt pakotņu sarakstus mezglā {{node}}",
+      "count_zero": "Var jaunināt {{count}} pakotņu",
+      "count_one": "Var jaunināt {{count}} pakotni",
+      "count_other": "Var jaunināt {{count}} pakotnes",
+      "none": "Viss ir atjaunināts",
+      "installHint": "Instalējiet jauninājumus no mezgla termināļa ar apt full-upgrade; Proxmox nejaunina caur savu API.",
+      "views": {
+        "packages": "Pakotnes",
+        "repositories": "Repozitoriji"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART diskam {{disk}}",
+      "health": "Veselība",
+      "usedBy": "izmanto {{used}}",
+      "unused": "neizmantots",
+      "wearout": "Atlicis {{value}}% kalpošanas laika",
+      "views": {
+        "disks": "Diski",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Direktorijs",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_zero": "{{count}} loģisko sējumu",
+        "lvCount_one": "{{count}} loģiskais sējums",
+        "lvCount_other": "{{count}} loģiskie sējumi",
+        "metadata": "metadati {{used}} / {{size}}",
+        "frag": "{{value}}% fragmentēts",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "Nav LVM sējumu grupu.",
+          "lvmthin": "Nav LVM-Thin pūlu.",
+          "directory": "Nav direktorija krātuves atsevišķā diskā.",
+          "zfs": "Nav ZFS pūlu."
+        },
+        "create": {
+          "lvm": "Izveidot LVM sējumu grupu",
+          "lvmthin": "Izveidot LVM-Thin pūlu",
+          "directory": "Izveidot direktoriju",
+          "zfs": "Izveidot ZFS pūlu"
+        },
+        "createSubmit": "Izveidot",
+        "createLabel": "Izveidot {{name}} mezglā {{node}}",
+        "wipeWarning": "Izvēlētie diski tiek sadalīti nodalījumos un formatēti. Tiek piedāvāti tikai diski, uz kuriem nekā nav.",
+        "name": "Nosaukums",
+        "device": "Disks",
+        "devices": "Diski",
+        "pickDisk": "Izvēlieties disku",
+        "noUnused": "Nav neizmantota diska. Vispirms notīriet kādu sadaļā Diski, ja tā saturs nav vajadzīgs.",
+        "filesystem": "Failu sistēma",
+        "raidlevel": "RAID līmenis",
+        "raid": {
+          "single": "Viens disks",
+          "mirror": "Spogulis",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Saspiešana",
+        "addStorage": "Pievienot kā krātuvi",
+        "addStorageHint": "Izveido tāda paša nosaukuma Proxmox krātuvi diskiem, konteineriem vai dublējumiem.",
+        "problem": {
+          "name": "Nosaukums sākas ar burtu un satur burtus, ciparus, -, _ vai .",
+          "device": "Izvēlieties disku.",
+          "oneDevice": "Izvēlieties vienu disku.",
+          "tooFew": "Šim RAID līmenim nepieciešami vismaz {{count}} diski.",
+          "even": "RAID10 nepieciešams pāra skaits disku.",
+          "ashift": "ashift ir no 9 līdz 16."
+        },
+        "remove": "Noņemt",
+        "removeTitle": "Noņemt {{name}}?",
+        "removeWarning": "Viesi, kuru diski ir uz tā, tos zaudē. Noņemšana vispirms neko no tā nepārvieto.",
+        "removeLabel": "Noņemt {{name}} mezglā {{node}}",
+        "cleanupConfig": "Noņemt arī krātuves ierakstu",
+        "cleanupDisks": "Notīrīt tā diskus",
+        "cleanupDisksHint": "Izdzēš diskus, lai tos varētu izmantot atkal.",
+        "inUse": {
+          "lvm": "Tajā joprojām ir loģiskie sējumi. Vispirms noņemiet tos; šajā grupā var būt paša mezgla sistēma.",
+          "lvmthin": "Tajā joprojām ir dati. Vispirms pārvietojiet vai noņemiet uz tā esošos viesu diskus."
+        }
+      },
+      "gpt": "Inicializēt GPT",
+      "gptTitle": "Inicializēt {{disk}} ar GPT?",
+      "gptDescription": "Ieraksta diskā tukšu GPT nodalījumu tabulu.",
+      "gptLabel": "Inicializēt {{disk}} mezglā {{node}}",
+      "wipe": "Notīrīt",
+      "wipeTitle": "Notīrīt {{disk}}?",
+      "wipeWarning": "Izdzēš nodalījumu tabulu un visus failu sistēmu, LVM un ZFS parakstus diskā (pašlaik: {{used}}). Tā saturs tiek zaudēts neatgriezeniski.",
+      "wipeLabel": "Notīrīt {{disk}} mezglā {{node}}",
+      "typePath": "Ierakstiet {{disk}}, lai apstiprinātu"
+    },
+    "log": {
+      "search": "Filtrēt žurnālu...",
+      "empty": "Neviena rinda neatbilst."
+    },
+    "power": {
+      "menu": "Mezgla barošana",
+      "termixWarning": "Ja Termix darbojas šajā mezglā, arī tas izslēdzas, līdz mezgls atkal darbojas.",
+      "typeName": "Ierakstiet {{node}}, lai apstiprinātu",
+      "reboot": {
+        "menu": "Pārstartēt mezglu",
+        "title": "Pārstartēt {{node}}?",
+        "submit": "Pārstartēt",
+        "label": "Pārstartēt {{node}}",
+        "warning_zero": "{{count}} darbojošos viesu vispirms tiek apturēti vai izslēgti, kā nosaka to startēšanas iestatījumi.",
+        "warning_one": "{{count}} darbojošais viesis vispirms tiek apturēts vai izslēgts, kā nosaka tā startēšanas iestatījumi.",
+        "warning_other": "{{count}} darbojošies viesi vispirms tiek apturēti vai izslēgti, kā nosaka to startēšanas iestatījumi."
+      },
+      "shutdown": {
+        "menu": "Izslēgt mezglu",
+        "title": "Izslēgt {{node}}?",
+        "submit": "Izslēgt",
+        "label": "Izslēgt {{node}}",
+        "warning_zero": "{{count}} darbojošos viesu izslēdzas kopā ar to, un nekas tos atkal nestartē, līdz kāds ieslēdz mezglu.",
+        "warning_one": "{{count}} darbojošais viesis izslēdzas kopā ar to, un nekas to atkal nestartē, līdz kāds ieslēdz mezglu.",
+        "warning_other": "{{count}} darbojošies viesi izslēdzas kopā ar to, un nekas tos atkal nestartē, līdz kāds ieslēdz mezglu."
+      }
+    },
+    "shell": "Čaula",
+    "shellHint": "Atver šī resursdatora SSH termināli Termix.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Meklēšanas domēns",
+        "server": "DNS serveris {{n}}",
+        "editTitle": "Mezgla {{node}} DNS",
+        "saved": "DNS saglabāts",
+        "problem": {
+          "search": "Ievadiet meklēšanas domēnu, piemēram, example.com.",
+          "server": "DNS serveris ir IPv4 vai IPv6 adrese.",
+          "noServer": "Ievadiet vismaz vienu DNS serveri."
+        }
+      },
+      "time": {
+        "title": "Laiks",
+        "zone": "Laika josla",
+        "local": "Vietējais laiks",
+        "editTitle": "Mezgla {{node}} laika josla",
+        "hint": "Pašu pulksteni mezglā uztur NTP (chrony).",
+        "saved": "Laika josla iestatīta uz {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "Mezgla {{node}} /etc/hosts",
+        "warning": "Mezgla nosaukumam jāturpina atrisināties uz tā adresi, citādi klasteris un tā tīmekļa saskarne pārstāj darboties.",
+        "saved": "/etc/hosts saglabāts"
+      },
+      "certs": {
+        "title": "Sertifikāti",
+        "issuer": "izdevējs: {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Derīgs līdz {{date}}",
+          "expiring": "Derīgums beidzas {{date}}",
+          "expired": "Derīgums beidzās {{date}}",
+          "notYet": "Vēl nav derīgs"
+        },
+        "upload": "Augšupielādēt pielāgotu",
+        "uploadTitle": "Pielāgots sertifikāts mezglam {{node}}",
+        "uploaded": "Sertifikāts augšupielādēts",
+        "chain": "Sertifikātu ķēde",
+        "chainHint": "PEM: vispirms mezgla sertifikāts, pēc tam starpsertifikāti.",
+        "key": "Privātā atslēga",
+        "keyHint": "PEM, nešifrēta. Atstājiet tukšu, lai paturētu mezglā jau esošo atslēgu.",
+        "fromFile": "Nolasīt no faila",
+        "badCert": "Tas nav PEM sertifikāts.",
+        "badKey": "Tā nav PEM privātā atslēga.",
+        "restart": "Restartēt tīmekļa saskarni, lai to izmantotu",
+        "restartHint": "pveproxy tiek restartēts; Termix uz dažām sekundēm zaudē API.",
+        "remove": "Noņemt pielāgoto",
+        "removeTitle": "Noņemt pielāgoto sertifikātu?",
+        "removeDescription": "Mezgls atgriežas pie sava pašparakstītā sertifikāta, un tīmekļa saskarne tiek restartēta.",
+        "removed": "Pielāgotais sertifikāts noņemts"
+      }
+    },
+    "repos": {
+      "on": "Iespējots",
+      "off": "Atspējots",
+      "enable": "Iespējot",
+      "disable": "Atspējot",
+      "enableTitle": "Iespējot šo repozitoriju?",
+      "enabled": "Repozitorijs iespējots",
+      "disabled": "Repozitorijs atspējots",
+      "add": "Pievienot:",
+      "added": "Repozitorijs {{name}} pievienots",
+      "hint": "Pēc izmaiņām palaidiet Atsvaidzināt pakotņu sarakstus sadaļā Pakotnes. Enterprise repozitorijiem nepieciešams abonements."
+    },
+    "taskHistory": {
+      "type": "Tips, piemēram, vzdump",
+      "vmid": "VM/CT ID",
+      "user": "Lietotājs",
+      "errorsOnly": "Tikai neizdevušies uzdevumi",
+      "none": "Neviens uzdevums neatbilst.",
+      "more": "Ielādēt vairāk",
+      "state": {
+        "running": "Darbojas",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Pasūtīt sertifikātu",
+      "renew": "Atjaunot",
+      "orderLabel": "Pasūtīt ACME sertifikātu mezglam {{node}}",
+      "renewLabel": "Atjaunot ACME sertifikātu mezglam {{node}}",
+      "usesAccount": "Konts: {{account}}",
+      "none": "nav",
+      "noDomains": "Vēl nav domēnu. Rediģējiet, lai pievienotu nosaukumus, uz kuriem šis mezgls atbild.",
+      "viaHttp": "HTTP izaicinājums",
+      "viaDns": "DNS izaicinājums caur {{plugin}}",
+      "accounts": "Konti",
+      "plugins": "DNS izaicinājuma spraudņi",
+      "remove": "Noņemt",
+      "domainsTitle": "Mezgla {{node}} ACME domēni",
+      "domainsSaved": "ACME domēni saglabāti",
+      "domain": "Domēns",
+      "challenge": "Izaicinājums",
+      "alias": "Aizstājvārds",
+      "addDomain": "Pievienot domēnu",
+      "httpHint": "HTTP izaicinājumam nepieciešams, lai šī mezgla 80. ports būtu sasniedzams no interneta zem domēna. DNS darbojas bez tā un arī aizstājējzīmju domēniem.",
+      "hint": "Kontus un spraudņus koplieto viss klasteris; domēni ir katram mezglam atsevišķi.",
+      "problem": {
+        "noDomain": "Pievienojiet vismaz vienu domēnu.",
+        "tooMany": "Mezglam var būt ne vairāk kā seši ACME domēni.",
+        "domain": "Domēns ir pilns nosaukums, piemēram, pve.example.com.",
+        "wildcard": "Aizstājējzīmes domēnam nepieciešams DNS izaicinājuma spraudnis."
+      },
+      "account": {
+        "title": "Konts",
+        "pick": "Izvēlieties kontu",
+        "add": "Reģistrēt kontu",
+        "addTitle": "Reģistrēt ACME kontu",
+        "register": "Reģistrēt",
+        "registerLabel": "Reģistrēt ACME kontu {{name}}",
+        "name": "Nosaukums",
+        "email": "E-pasts",
+        "directory": "ACME direktorijs",
+        "customDirectory": "Pielāgots URL",
+        "directoryUrl": "Direktorija URL",
+        "acceptTos": "Pieņemt pakalpojuma noteikumus",
+        "eabKid": "EAB atslēgas ID",
+        "eabHmac": "EAB HMAC atslēga",
+        "eabHint": "Tikai CA, kas pieprasa External Account Binding.",
+        "none": "Vēl nav ACME konta.",
+        "needOne": "Vispirms reģistrējiet ACME kontu.",
+        "removeTitle": "Deaktivizēt kontu {{name}}?",
+        "removeDescription": "Konts tiek deaktivizēts CA pusē un noņemts šeit. Jau izdotie sertifikāti turpina darboties.",
+        "removeLabel": "Deaktivizēt ACME kontu {{name}}",
+        "problem": {
+          "name": "Nosaukums satur burtus, ciparus, -, _ vai .",
+          "email": "Ievadiet e-pasta adresi.",
+          "directory": "Direktorijs ir http vai https URL.",
+          "tos": "Lai reģistrētos, pieņemiet pakalpojuma noteikumus.",
+          "eab": "EAB nepieciešams gan atslēgas ID, gan HMAC atslēga."
+        }
+      },
+      "plugin": {
+        "add": "Pievienot spraudni",
+        "addTitle": "Pievienot DNS izaicinājuma spraudni",
+        "id": "Spraudņa ID",
+        "api": "DNS API",
+        "pickApi": "Izvēlieties DNS nodrošinātāju",
+        "delay": "Validācijas aizture (s)",
+        "delayHint": "Cik ilgi gaidīt, līdz TXT ieraksts izplatās.",
+        "noFields": "Proxmox šim nodrošinātājam neuzskaita laukus; skatiet acme.sh dokumentāciju par mainīgajiem, ko tas nolasa.",
+        "none": "Nav DNS spraudņu. HTTP darbojas bez tiem.",
+        "disabled": "Atspējots",
+        "removeTitle": "Noņemt spraudni {{name}}?",
+        "removeDescription": "Domēnus, kas to izmanto, vairs nevar validēt."
+      }
+    }
+  },
+  "console": {
+    "open": "Konsole",
+    "openHint": "Atver viesa Termix resursdatoru vai piedāvā vispirms to pievienot Termix.",
+    "tabTitle": "Proxmox konsole",
+    "tabLabel": "{{name}} — Konsole",
+    "pick": "Atveriet konsoli no darbojošās VM vai konteinera Proxmox rīkā.",
+    "connect": "Savienot",
+    "reconnect": "Savienot vēlreiz",
+    "disconnect": "Atvienot",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Pilnekrāns",
+    "notRunning": "Startējiet viesi, lai atvērtu tā konsoli.",
+    "lost": "Konsoles savienojums tika zaudēts.",
+    "ended": "Konsole aizvērta.",
+    "status": {
+      "idle": "Nav savienots",
+      "connecting": "Savieno...",
+      "connected": "Savienots",
+      "closed": "Atvienots",
+      "error": "Neizdevās savienot"
+    },
+    "proxmox": "Proxmox konsole",
+    "proxmoxHint": "Proxmox konsole caur mezglu: VM ekrāns, čaula konteinerā. Viesim, kuram vēl nav tīkla."
+  },
+  "pool": {
+    "members": "Dalībnieki",
+    "empty": "Šajā pūlā nekā nav."
+  },
+  "sdn": {
+    "hint": "SDN zonas, VNet un apakštīkli būs pieejami kopā ar klastera pārvaldību kādā nākamajā laidienā."
+  },
+  "network": {
+    "add": "Izveidot",
+    "apply": "Lietot",
+    "revert": "Atsaukt",
+    "pending": "Vēl nav lietots",
+    "hint": "Izmaiņas tiek saglabātas failā /etc/network/interfaces.new un stājas spēkā ar Lietot, kas pārlādē mezgla tīklu.",
+    "type": "Tips",
+    "name": "Nosaukums",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Vārteja (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Vārteja (IPv6)",
+    "ports": "Tilta porti",
+    "slaves": "Pakārtotie",
+    "portsHint": "Saskarņu nosaukumi, atdalīti ar atstarpēm.",
+    "bondMode": "Režīms",
+    "vlanDevice": "VLAN pamatierīce",
+    "mtu": "MTU",
+    "comments": "Komentārs",
+    "autostart": "Automātiska startēšana",
+    "vlanAware": "VLAN atbalsts",
+    "vlanAwareHint": "Ļauj viesiem uz šī tilta izmantot VLAN birkas.",
+    "inactive": "Neaktīvs",
+    "create": "Izveidot",
+    "createTitle": "Izveidot saskarni",
+    "editTitle": "Rediģēt {{iface}}",
+    "types": {
+      "bridge": "Tilts",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Ports",
+      "OVSBridge": "OVS tilts",
+      "alias": "Aizstājvārds"
+    },
+    "nameHint": {
+      "bridge": "vmbr un skaitlis, piemēram, vmbr1.",
+      "bond": "bond un skaitlis, piemēram, bond0.",
+      "vlan": "ierīce.birka, piemēram, vmbr0.10, vai vlan10 ar pamatierīci."
+    },
+    "addressWarning": "Šī saskarne nes adresi, caur kuru Termix sasniedz mezglu. Kļūda var atslēgt Termix, līdz kāds izlabo mezglu tā konsolē.",
+    "removeTitle": "Noņemt {{iface}}?",
+    "removeDescription": "Saskarne tiek noņemta, kad izmaiņas tiek lietotas.",
+    "applyTitle": "Lietot tīkla izmaiņas mezglā {{node}}?",
+    "applyDescription": "Mezgls pārlādē savu tīklu. Ja jaunie iestatījumi ir nepareizi, mezgls un Termix savienojums ar to var pāriet bezsaistē.",
+    "applyLabel": "Lietot tīklu mezglā {{node}}",
+    "reverted": "Tīkla izmaiņas atsauktas",
+    "problem": {
+      "cidr": "Ievadiet adresi kā 10.10.0.1/24.",
+      "gateway": "Vārtejai nepieciešama IPv4 adrese un derīga vārtejas IP.",
+      "cidr6": "Ievadiet adresi kā fd00::1/64.",
+      "ports": "Ievadiet saskarņu nosaukumus, atdalītus ar atstarpēm.",
+      "slaves": "Bond nepieciešams vismaz viens pakārtotais.",
+      "vlanDevice": "Norādiet pamatierīci vlanN saskarnei.",
+      "mtu": "MTU ir no 1280 līdz 65520.",
+      "name": {
+        "bridge": "Tilta nosaukums ir vmbr un skaitlis.",
+        "bond": "Bond nosaukums ir bond un skaitlis.",
+        "vlan": "VLAN nosaukums ir ierīce.birka vai vlan un skaitlis."
+      }
+    }
+  },
+  "import": {
+    "open": "Importēt Termix",
+    "title": "Importēt viesus kā Termix resursdatorus",
+    "hint": "Katra izvēlētā VM vai konteiners kļūst par Termix resursdatoru ar birku proxmox. Importēšana arī atsvaidzina iepriekš importēto viesu nosaukumus, adreses un birkas un atzīmē no Proxmox pazudušos ar birku proxmox-missing.",
+    "loading": "Meklē viesus un to adreses…",
+    "counts": "Viesi: {{total}}, jau importēti: {{imported}}",
+    "selectAll": "Atlasīt visus",
+    "selectNone": "Neatlasīt nevienu",
+    "none": "Šajā klasterī nav VM vai konteineru.",
+    "imported": "Importēts",
+    "noAddress": "nav adreses",
+    "folder": "Mape",
+    "folderDefault": "Mape ar nosaukumu {{node}}",
+    "folderSearch": "Meklēt vai izveidot, / apakšmapei",
+    "folderCreate": "Izveidot \"{{folder}}\"",
+    "folderNone": "Vēl nav mapju",
+    "connection": "Savienot ar",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Konteineru izpildlaiks",
+    "runtimeOff": "Bez Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "Nezināma OS"
+    },
+    "sshLogin": "SSH pieteikšanās",
+    "desktopLogin": "RDP un VNC pieteikšanās",
+    "desktopHint": "Savienošanai nepieciešams attālās darbvirsmas spraudnis.",
+    "login": {
+      "nodeCredential": "Mezgla akreditācijas dati",
+      "nodeUser": "Mezgla lietotājvārds",
+      "username": "Tikai lietotājvārds",
+      "none": "Bez pieteikšanās"
+    },
+    "username": "Lietotājvārds",
+    "submit_zero": "Importēt {{count}} viesu",
+    "submit_one": "Importēt {{count}} viesi",
+    "submit_other": "Importēt {{count}} viesus",
+    "refresh": "Atsvaidzināt importētos",
+    "done": "Izveidoti: {{created}}, atjaunināti: {{updated}}, atzīmēti kā trūkstoši: {{markedMissing}}",
+    "lastSync": "Pēdējā sinhronizācija {{when}}.",
+    "lastSyncFailed": "Pēdējā sinhronizācija {{when}} neizdevās: {{error}}",
+    "syncHint": "Resursdatora Proxmox iestatījumos ieslēdziet Sinhronizēt importētos viesus, lai tos atsvaidzinātu pēc grafika.",
+    "addTitle": "Pievienot {{name}} Termix",
+    "addHint": "Šis viesis vēl nav Termix resursdators. Pievienojiet to, lai atvērtu tā termināli, tad Konsole to atver uzreiz.",
+    "addSubmit": "Pievienot un savienot",
+    "gone": "Proxmox vairs neuzskaita šo viesi."
+  }
+}

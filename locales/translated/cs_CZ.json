@@ -1,0 +1,1036 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Spravujte Proxmox VE z Termixu: virtuální stroje, kontejnery, úložiště, síť, zálohy, firewall, přístup a cluster."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Otevřít v Proxmox"
+  },
+  "permissions": {
+    "view": {
+      "title": "Zobrazení Proxmox",
+      "description": "Zobrazení uzlů, hostů, úložišť, grafů a úloh na hostitelích Proxmox, ke kterým se můžete připojit."
+    },
+    "operate": {
+      "title": "Ovládání hostů Proxmox",
+      "description": "Spouštění, zastavování, vypínání, restartování, uspávání a obnovování VM a kontejnerů. Vyžaduje oprávnění k úpravám hostitele."
+    },
+    "console": {
+      "title": "Otevírání konzolí Proxmox",
+      "description": "Otevření obrazovky VM a root shellu v kontejneru. Vyžaduje oprávnění k úpravám hostitele."
+    },
+    "configure": {
+      "title": "Konfigurace Proxmox",
+      "description": "Vytváření, klonování, migrace, převod a mazání VM a kontejnerů. Vyžaduje oprávnění k úpravám hostitele."
+    },
+    "administer": {
+      "title": "Správa Proxmox",
+      "description": "Správa uživatelů, skupin, rolí, poolů, 2FA, tokenů, ověřovacích domén a clusteru. Vyžaduje oprávnění k úpravám hostitele."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Uzel Proxmox",
+      "description": "Označte tohoto hostitele jako uzel Proxmox VE. Poté se zobrazí v nástroji Proxmox v sekci Nástroje."
+    },
+    "transport": {
+      "label": "Připojit přes",
+      "description": "Automatický režim po uložení tokenu používá API přes SSH tunel, do té doby pvesh přes SSH.",
+      "auto": "Automaticky",
+      "tunnel": "API přes SSH tunel",
+      "direct": "API přímo",
+      "pvesh": "pvesh přes SSH"
+    },
+    "tokenId": {
+      "label": "ID tokenu API",
+      "description": "Vytváří se v Proxmox v Datové centrum, Oprávnění, API tokeny. Vypadá jako user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "Tajný klíč tokenu API",
+      "description": "Zobrazí se jednou při vytvoření tokenu. Ukládá se šifrovaně."
+    },
+    "apiHost": {
+      "label": "Adresa API",
+      "description": "Pouze pro API přímo. Ponechte prázdné pro použití adresy tohoto hostitele."
+    },
+    "apiPort": {
+      "label": "Port API",
+      "description": "8006, pokud jste jej nezměnili."
+    },
+    "caCert": {
+      "label": "Certifikát CA",
+      "description": "Pouze pro API přímo. CA uzlu ve formátu PEM z /etc/pve/pve-root-ca.pem. Ponechte prázdné, pokud má API veřejně důvěryhodný certifikát.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Importovaní hosté",
+    "importSync": {
+      "label": "Synchronizovat importované hosty",
+      "description": "Aktualizuje názvy, adresy a štítky hostů importovaných z tohoto uzlu a ty odebrané z Proxmox označí štítkem proxmox-missing."
+    },
+    "importInterval": {
+      "label": "Synchronizovat každých (minut)",
+      "description": "Nejméně 5 minut."
+    },
+    "importAddNew": {
+      "label": "Při synchronizaci přidat nové hosty",
+      "description": "Importuje hosty vytvořené v Proxmox po prvním importu s naposledy použitým nastavením z dialogu importu."
+    },
+    "importDefaults": {
+      "label": "Výchozí nastavení importu"
+    },
+    "importState": {
+      "label": "Poslední synchronizace hostů"
+    },
+    "source": {
+      "label": "Host Proxmox"
+    }
+  },
+  "app": {
+    "loading": "Načítání...",
+    "loadFailed": "Cluster se nepodařilo načíst",
+    "refreshFailed": "Obnovení selhalo: {{message}}",
+    "retry": "Zkusit znovu",
+    "refresh": "Obnovit",
+    "search": "Hledat hosty, uzly a úložiště...",
+    "status": "Uzly: {{nodes}}, spuštění hosté: {{running}} z {{total}}",
+    "pickHost": "Hostitel Proxmox",
+    "pickResource": "Vyberte vlevo uzel, hosta nebo úložiště",
+    "noHosts": "Zatím žádní hostitelé Proxmox",
+    "noHostsHint": "Otevřete nastavení hostitele, zapněte Uzel Proxmox v sekci SSH a zvolte způsob připojení. Uzel se pak zobrazí zde.",
+    "cancel": "Zrušit",
+    "working": "Probíhá...",
+    "save": "Uložit",
+    "reset": "Resetovat",
+    "close": "Zavřít",
+    "yes": "Ano",
+    "no": "Ne",
+    "edit": "Upravit"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix nedůvěřuje certifikátu uzlu. V nastavení Proxmox hostitele vložte CA uzlu z /etc/pve/pve-root-ca.pem do pole Certifikát CA, nebo zvolte API přes SSH tunel.",
+    "tlsHostname": "Certifikát uzlu je vystaven na jiný název. Nastavte Adresu API na název nebo adresu uvedenou v certifikátu.",
+    "tlsExpired": "Platnost certifikátu uzlu vypršela nebo ještě nezačala. Obnovte jej v Proxmox v uzlu, Systém, Certifikáty.",
+    "notEnabled": "Tento hostitel není označen jako uzel Proxmox. Zapněte Uzel Proxmox v nastavení hostitele.",
+    "hostAccess": "Ke změně tohoto hostitele potřebujete oprávnění k úpravám."
+  },
+  "tree": {
+    "nothingFound": "Hledání nic neodpovídá.",
+    "expand": "Rozbalit",
+    "collapse": "Sbalit",
+    "datacenter": "Datové centrum",
+    "folders": {
+      "lxc": "Kontejner LXC",
+      "qemu": "Virtuální stroj",
+      "node": "Uzly",
+      "pool": "Pooly",
+      "sdn": "Síť",
+      "storage": "Úložiště"
+    },
+    "views": {
+      "folder": "Zobrazení složek",
+      "server": "Zobrazení serverů"
+    }
+  },
+  "types": {
+    "node": "Uzel",
+    "qemu": "VM",
+    "lxc": "Kontejner",
+    "storage": "Úložiště",
+    "pool": "Pool",
+    "sdn": "Zóna SDN"
+  },
+  "states": {
+    "running": "Spuštěno",
+    "stopped": "Zastaveno",
+    "paused": "Pozastaveno",
+    "suspended": "Uspáno",
+    "online": "Online",
+    "offline": "Offline",
+    "available": "Dostupné",
+    "unknown": "Neznámé"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Paměť",
+    "disk": "Disk",
+    "rootDisk": "Kořenový disk",
+    "usage": "Využití",
+    "cores_one": "{{count}} jádro",
+    "cores_few": "{{count}} jádra",
+    "cores_many": "{{count}} jádra",
+    "cores_other": "{{count}} jader",
+    "swap": "Swap"
+  },
+  "summary": {
+    "title": "Souhrn",
+    "node": "Uzel",
+    "vmid": "ID",
+    "uptime": "Doba běhu",
+    "pool": "Pool",
+    "ha": "HA",
+    "tags": "Štítky",
+    "guests": "Hosté",
+    "guestsRunning": "Spuštěno {{running}} z {{total}}",
+    "cpuModel": "CPU",
+    "sockets": "sokety",
+    "load": "Průměrná zátěž",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Jádro",
+    "ips": "Adresy"
+  },
+  "charts": {
+    "title": "Grafy",
+    "cpu": "CPU",
+    "load": "Průměrná zátěž",
+    "memory": "Paměť",
+    "network": "Síť",
+    "diskIo": "Diskové I/O",
+    "cpuUsage": "Využití CPU",
+    "ioDelay": "Zpoždění IO",
+    "used": "Využito",
+    "total": "Celkem",
+    "in": "Příchozí",
+    "out": "Odchozí",
+    "read": "Čtení",
+    "write": "Zápis",
+    "timeframe": {
+      "hour": "Hodina",
+      "day": "Den",
+      "week": "Týden",
+      "month": "Měsíc",
+      "year": "Rok"
+    },
+    "noData": "Pro toto období nejsou data",
+    "serverLoad": "Zátěž serveru",
+    "loadAverage": "Průměrná zátěž",
+    "swap": "Swap",
+    "pressureCpu": "Zdržení kvůli tlaku na CPU",
+    "pressureMemory": "Zdržení kvůli tlaku na paměť",
+    "pressureIo": "Zdržení kvůli tlaku na IO",
+    "some": "Částečné",
+    "full": "Úplné",
+    "average": "Průměr",
+    "maximum": "Maximum"
+  },
+  "tasks": {
+    "title": "Úlohy",
+    "started": "Zahájeno",
+    "node": "Uzel",
+    "user": "Uživatel",
+    "task": "Úloha",
+    "status": "Stav",
+    "running": "Probíhá",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} na {{node}}",
+    "done": "{{label}}: hotovo",
+    "failed": "{{label}} selhalo: {{reason}}"
+  },
+  "guests": {
+    "more": "Další akce",
+    "isTemplate": "Šablona",
+    "locked": "Zamčeno: {{lock}}",
+    "power": {
+      "start": "Spustit",
+      "shutdown": "Vypnout",
+      "stop": "Zastavit",
+      "reboot": "Restartovat",
+      "suspend": "Uspat",
+      "resume": "Obnovit",
+      "reset": "Resetovat",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Zastavit {{name}} nyní?",
+        "reset": "Resetovat {{name}} nyní?",
+        "description": "Tím se přeruší napájení jako při vytažení zástrčky. Neuložená práce v hostovi bude ztracena."
+      }
+    },
+    "clone": {
+      "menu": "Klonovat",
+      "title": "Klonovat {{name}}",
+      "submit": "Klonovat",
+      "label": "Klonovat {{source}} na {{id}}",
+      "full": "Úplný klon",
+      "fullHint": "Zkopíruje všechny disky, takže klon nezávisí na originálu.",
+      "linkedHint": "Vypnuto vytvoří propojený klon, který sdílí disky šablony a vznikne během několika sekund.",
+      "sameStorage": "Stejné úložiště jako originál"
+    },
+    "migrate": {
+      "menu": "Migrovat",
+      "title": "Migrovat {{name}}",
+      "submit": "Migrovat",
+      "label": "Migrovat {{name}} na {{target}}",
+      "noOtherNodes": "V tomto clusteru není jiný online uzel, na který by šel přesunout.",
+      "onlineHint": "VM běží a přesune se za chodu, bez zastavení.",
+      "restartHint": "Kontejner běží. Zastaví se, přesune a znovu spustí na cílovém uzlu."
+    },
+    "template": {
+      "menu": "Převést na šablonu",
+      "confirm": "Převést {{name}} na šablonu?",
+      "description": "Šablonu nelze spustit, pouze klonovat. Tuto akci nelze vrátit.",
+      "submit": "Převést",
+      "label": "Převést {{name}} na šablonu"
+    },
+    "delete": {
+      "menu": "Smazat",
+      "title": "Smazat {{name}}",
+      "submit": "Smazat",
+      "label": "Smazat {{name}}",
+      "warning": "Tímto se smaže host {{vmid}} a jeho disky. Tuto akci nelze vrátit.",
+      "stopFirst": "Před smazáním hosta zastavte.",
+      "typeId": "Pro potvrzení zadejte {{vmid}}",
+      "purge": "Odebrat z úloh zálohování, replikace a HA",
+      "purgeHint": "Nezůstanou žádné úlohy odkazující na neexistujícího hosta.",
+      "unreferenced": "Smazat i neodkazované disky",
+      "unreferencedHint": "Disky s tímto ID na povolených úložištích, které konfigurace neuvádí."
+    },
+    "create": {
+      "vmButton": "Vytvořit VM",
+      "ctButton": "Vytvořit CT",
+      "vmTitle": "Vytvořit virtuální stroj",
+      "ctTitle": "Vytvořit kontejner",
+      "submit": "Vytvořit",
+      "vmLabel": "Vytvořit VM {{id}} ({{name}})",
+      "ctLabel": "Vytvořit CT {{id}} ({{name}})",
+      "noTemplates": "Na tomto uzlu nejsou žádné šablony kontejnerů. Stáhněte nějakou v Proxmox v úložišti, Šablony CT.",
+      "noIso": "Žádné instalační médium",
+      "unprivilegedHint": "Bezpečnější: root v kontejneru není root na uzlu.",
+      "loginHint": "Nastavte heslo uživatele root, klíče SSH nebo obojí.",
+      "problem": {
+        "vmid": "Zvolte ID 100 nebo vyšší.",
+        "hostname": "Zadejte název hostitele: písmena, číslice a pomlčky.",
+        "name": "Zadejte název: písmena, číslice a pomlčky.",
+        "template": "Vyberte šablonu.",
+        "storage": "Vyberte úložiště.",
+        "disk": "Zadejte velikost disku.",
+        "cores": "Zadejte počet jader.",
+        "sockets": "Zadejte počet soketů.",
+        "memory": "Zadejte alespoň 16 MiB paměti.",
+        "swap": "Zadejte swap v MiB, 0 pro žádný.",
+        "network": "Vyberte most a pro statickou adresu ji zadejte ve tvaru 192.168.0.60/24.",
+        "login": "Nastavte heslo uživatele root nebo klíče SSH, abyste se mohli přihlásit.",
+        "password": "Heslo musí mít alespoň 5 znaků."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Jiný"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Název",
+      "hostname": "Název hostitele",
+      "node": "Uzel",
+      "targetNode": "Cílový uzel",
+      "targetStorage": "Cílové úložiště",
+      "storage": "Úložiště",
+      "template": "Šablona",
+      "iso": "Instalační médium",
+      "ostype": "OS hosta",
+      "rootPassword": "Heslo uživatele root",
+      "sshKeys": "Veřejné klíče SSH",
+      "unprivileged": "Neprivilegovaný kontejner",
+      "diskGiB": "Disk (GiB)",
+      "cores": "Jádra",
+      "sockets": "Sokety",
+      "memoryMiB": "Paměť (MiB)",
+      "swapMiB": "Swap (MiB)",
+      "bridge": "Síťový most",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Statická",
+      "cidr": "Adresa/prefix",
+      "gateway": "Brána",
+      "startAfter": "Po vytvoření spustit",
+      "pick": "Vyberte"
+    },
+    "tabs": {
+      "summary": "Souhrn",
+      "hardware": "Hardware",
+      "options": "Možnosti",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Upravit",
+    "add": "Přidat",
+    "remove": "Odebrat",
+    "removed": "{{key}} odebráno",
+    "pending": "Čeká",
+    "pendingHint": "Změny označené Čeká se použijí, až se host restartuje z Proxmox: restart uvnitř hosta nestačí.",
+    "processors": "Procesory",
+    "processorsValue": "{{sockets}} soket × {{cores}} jádra, {{cpu}}",
+    "allCores": "Vše",
+    "swap": "Swap",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "Procesor a paměť",
+      "title": "Procesor a paměť"
+    },
+    "cpuType": "Typ CPU",
+    "cpulimit": "Limit CPU",
+    "cpulimitHint": "0 bez omezení. 1.5 je čas jednoho a půl jádra.",
+    "balloon": "Minimální paměť (MiB)",
+    "balloonHint": "S ovladačem balloon host vrací paměť až na tuto hodnotu. Hodnota rovná paměti jej vypne, 0 ovladač odebere.",
+    "disks": "Disky",
+    "volumes": "Kořenový disk a přípojné body",
+    "bus": "Sběrnice",
+    "slot": "Bude {{key}}",
+    "iothread": "IO vlákno",
+    "discard": "Discard",
+    "discardHint": "Umožní hostovi uvolňovat nepoužívané bloky na thin úložišti.",
+    "ssd": "Emulace SSD",
+    "mountPath": "Přípojná cesta v kontejneru",
+    "backup": "Zahrnout do záloh",
+    "addDisk": {
+      "button": "Přidat disk",
+      "title": "Přidat disk",
+      "label": "Přidat {{key}}"
+    },
+    "addMount": {
+      "button": "Přidat přípojný bod",
+      "title": "Přidat přípojný bod"
+    },
+    "resize": {
+      "menu": "Změnit velikost",
+      "title": "Zvětšit {{key}}",
+      "grow": "Přidat (GiB)",
+      "result": "Z {{from}} GiB bude {{to}} GiB",
+      "noShrink": "Disky lze pouze zvětšovat. Oddíl a souborový systém je pak třeba zvětšit uvnitř hosta, pokud to host neudělá sám při startu.",
+      "submit": "Zvětšit",
+      "label": "Zvětšit {{key}} o {{size}} GiB"
+    },
+    "move": {
+      "menu": "Přesunout do úložiště",
+      "title": "Přesunout {{key}}",
+      "submit": "Přesunout",
+      "deleteSource": "Smazat originál",
+      "deleteSourceHint": "Vypnuto jej ponechá jako nepoužívaný disk.",
+      "label": "Přesunout {{key}} do {{storage}}"
+    },
+    "detach": {
+      "menu": "Odpojit",
+      "title": "Odpojit {{key}}?",
+      "description": "Disk zůstane ve svém úložišti jako nepoužívaný a lze jej smazat nebo znovu připojit."
+    },
+    "unused": {
+      "delete": "Smazat",
+      "title": "Smazat {{volume}}?",
+      "description": "Tímto se smaže disk i vše na něm. Tuto akci nelze vrátit."
+    },
+    "cd": {
+      "heading": "Mechaniky CD/DVD",
+      "title": "Médium v {{key}}",
+      "empty": "Žádné médium"
+    },
+    "nic": {
+      "heading": "Síťové adaptéry",
+      "add": "Přidat adaptér",
+      "addTitle": "Přidat {{key}}",
+      "editTitle": "Upravit {{key}}",
+      "none": "Žádné síťové adaptéry.",
+      "model": "Model",
+      "name": "Název v kontejneru",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Statická",
+        "none": "Žádná",
+        "auto": "SLAAC"
+      },
+      "tag": "Značka VLAN",
+      "tagHint": "Prázdné pro neoznačený provoz.",
+      "rate": "Omezení rychlosti (MB/s)",
+      "rateHint": "Prázdné bez omezení.",
+      "firewall": "Firewall",
+      "firewallShort": "firewall",
+      "removeTitle": "Odebrat {{key}}?",
+      "removeDescription": "Host přijde o tento adaptér a jeho adresu."
+    },
+    "problem": {
+      "cpu": "Zadejte alespoň jeden soket a jádro.",
+      "cpulimit": "Limit CPU je od 0 do 8192.",
+      "memory": "Zadejte alespoň 16 MiB paměti.",
+      "balloon": "Minimální paměť nemůže být větší než paměť.",
+      "swap": "Zadejte swap v MiB, 0 pro žádný.",
+      "noSlot": "Všechny sloty tohoto druhu jsou obsazené.",
+      "storage": "Vyberte úložiště.",
+      "size": "Zadejte velikost v celých GiB.",
+      "path": "Zadejte absolutní cestu, např. /data, ne samotné /.",
+      "bridge": "Vyberte most.",
+      "tag": "Značka VLAN je od 1 do 4094.",
+      "rate": "Zadejte rychlost větší než 0, nebo ponechte prázdné.",
+      "name": "Zadejte název, např. eth0.",
+      "ip4": "Zadejte adresu ve tvaru 192.168.0.60/24 a platnou bránu.",
+      "ip6": "Zadejte adresu ve tvaru fd00::10/64."
+    },
+    "detached": "{{key}} odpojeno; zůstává jako nepoužívaný disk",
+    "coresHint": "Prázdné použije všechna jádra uzlu."
+  },
+  "options": {
+    "general": "Obecné",
+    "tags": "Štítky",
+    "tagsHint": "Oddělené čárkami.",
+    "onboot": "Spustit při startu uzlu",
+    "protection": "Ochrana",
+    "protectionHint": "Brání smazání hosta a jeho disků, dokud ji nevypnete.",
+    "agent": "Agent hosta QEMU",
+    "agentHint": "Zapněte, jakmile v hostovi běží agent, kvůli jeho adresám a čistému vypínání.",
+    "startup": "Pořadí spouštění a vypínání",
+    "startupOrder": "Pořadí",
+    "startupUp": "Prodleva po spuštění (s)",
+    "startupDown": "Časový limit vypnutí (s)",
+    "dns": "DNS",
+    "nameserver": "Servery DNS",
+    "searchdomain": "Vyhledávací doména",
+    "useHost": "Prázdné použije nastavení uzlu.",
+    "notes": "Poznámky",
+    "saved": "Možnosti uloženy",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Jiný"
+    },
+    "problem": {
+      "name": "Zadejte název.",
+      "startup": "Pořadí a prodlevy jsou celá čísla.",
+      "tags": "Štítky obsahují písmena, číslice, pomlčky, tečky a podtržítka.",
+      "nameserver": "Zadejte IP adresy oddělené mezerami."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "Tento VM nemá jednotku cloud-init. Přidejte ji a pak zde nastavte uživatele, klíče a síť; obraz hosta musí cloud-init podporovat.",
+    "addDrive": "Přidat jednotku cloud-init",
+    "driveAdded": "Jednotka cloud-init přidána",
+    "user": "Uživatel",
+    "username": "Uživatelské jméno",
+    "usernameHint": "Prázdné použije výchozího uživatele obrazu.",
+    "password": "Heslo",
+    "passwordHint": "Prázdné ponechá stávající. Proxmox jej ukládá jako hash.",
+    "network": "Síť",
+    "saved": "Nastavení cloud-init uloženo",
+    "regenerate": "Znovu vygenerovat obraz",
+    "regenerated": "Obraz cloud-init znovu vygenerován",
+    "regenerateHint": "Zapíše nastavení na {{drive}}. Host je načte při příštím spuštění."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Souhrn",
+      "iso": "Obrazy ISO",
+      "vztmpl": "Šablony CT",
+      "backup": "Zálohy",
+      "images": "Obrazy disků"
+    },
+    "content": "Obsahuje",
+    "contentTypes": {
+      "images": "Disky VM",
+      "rootdir": "Disky kontejnerů",
+      "iso": "Obrazy ISO",
+      "vztmpl": "Šablony CT",
+      "backup": "Zálohy",
+      "snippets": "Útržky",
+      "import": "Import"
+    },
+    "shared": "Sdílené",
+    "empty": "Zatím zde nic není.",
+    "owner": "host {{vmid}}",
+    "protected": "Chráněno",
+    "download": {
+      "button": "Stáhnout z URL",
+      "title": {
+        "iso": "Stáhnout obraz ISO do {{storage}}",
+        "vztmpl": "Stáhnout šablonu CT do {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Název souboru",
+      "algorithm": "Typ kontrolního součtu",
+      "noChecksum": "Žádný",
+      "checksum": "Kontrolní součet",
+      "verify": "Ověřit certifikát serveru",
+      "submit": "Stáhnout",
+      "label": "Stáhnout {{name}}",
+      "problem": {
+        "url": "Zadejte URL http nebo https.",
+        "filename": "Název souboru obsahuje písmena, číslice, tečky, pomlčky a podtržítka.",
+        "extension": "Obrazy ISO končí na .iso nebo .img; šablony na .tar.gz, .tar.xz nebo .tar.zst.",
+        "checksum": "Vyberte typ kontrolního součtu a zadejte součet v hex, nebo nechte obojí prázdné."
+      }
+    },
+    "catalog": {
+      "button": "Šablony",
+      "title": "Šablony kontejnerů pro {{storage}}",
+      "search": "Hledat šablony...",
+      "have": "Staženo",
+      "label": "Stáhnout {{name}}"
+    },
+    "delete": {
+      "title": "Smazat {{name}}?",
+      "description": "Tímto se soubor smaže z úložiště. Tuto akci nelze vrátit.",
+      "submit": "Smazat",
+      "done": "{{name}} smazáno"
+    },
+    "upload": {
+      "button": "Nahrát",
+      "cancel": "Zrušit nahrávání",
+      "done": "{{name}} nahráno",
+      "failed": "{{name}} se nepodařilo nahrát: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Souhrn",
+      "network": "Síť",
+      "system": "Systém",
+      "services": "Služby",
+      "updates": "Aktualizace",
+      "disks": "Disky",
+      "tasks": "Úlohy",
+      "log": "Protokol"
+    },
+    "services": {
+      "start": "Spustit",
+      "stop": "Zastavit",
+      "restart": "Restartovat",
+      "reload": "Znovu načíst",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Zastavit {{name}}?",
+        "restart": "Restartovat {{name}}?",
+        "description": "Vlastní služby Proxmox udržují uzel a jeho API v chodu; zastavení některé z nich může tento nástroj odříznout, dokud se znovu nespustí."
+      }
+    },
+    "updates": {
+      "refresh": "Obnovit seznamy balíčků",
+      "refreshLabel": "Obnovit seznamy balíčků na {{node}}",
+      "count_one": "Lze aktualizovat {{count}} balíček",
+      "count_few": "Lze aktualizovat {{count}} balíčky",
+      "count_many": "Lze aktualizovat {{count}} balíčku",
+      "count_other": "Lze aktualizovat {{count}} balíčků",
+      "none": "Vše je aktuální",
+      "installHint": "Aktualizace nainstalujte z terminálu uzlu příkazem apt full-upgrade; Proxmox neaktualizuje přes své API.",
+      "views": {
+        "packages": "Balíčky",
+        "repositories": "Repozitáře"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART pro {{disk}}",
+      "health": "Stav",
+      "usedBy": "používá {{used}}",
+      "unused": "nepoužívaný",
+      "wearout": "Zbývá {{value}} % životnosti",
+      "views": {
+        "disks": "Disky",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Adresář",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "{{count}} logický svazek",
+        "lvCount_few": "{{count}} logické svazky",
+        "lvCount_many": "{{count}} logického svazku",
+        "lvCount_other": "{{count}} logických svazků",
+        "metadata": "metadata {{used}} / {{size}}",
+        "frag": "fragmentace {{value}} %",
+        "dedup": "deduplikace {{value}}x",
+        "none": {
+          "lvm": "Žádné skupiny svazků LVM.",
+          "lvmthin": "Žádné pooly LVM-Thin.",
+          "directory": "Žádné adresářové úložiště na vlastním disku.",
+          "zfs": "Žádné pooly ZFS."
+        },
+        "create": {
+          "lvm": "Vytvořit skupinu svazků LVM",
+          "lvmthin": "Vytvořit pool LVM-Thin",
+          "directory": "Vytvořit adresář",
+          "zfs": "Vytvořit pool ZFS"
+        },
+        "createSubmit": "Vytvořit",
+        "createLabel": "Vytvořit {{name}} na {{node}}",
+        "wipeWarning": "Vybrané disky budou rozděleny na oddíly a naformátovány. Nabízeny jsou jen prázdné disky.",
+        "name": "Název",
+        "device": "Disk",
+        "devices": "Disky",
+        "pickDisk": "Vyberte disk",
+        "noUnused": "Není k dispozici žádný nepoužívaný disk. Nejprve nějaký vymažte v sekci Disky, pokud jeho obsah není potřeba.",
+        "filesystem": "Souborový systém",
+        "raidlevel": "Úroveň RAID",
+        "raid": {
+          "single": "Jeden disk",
+          "mirror": "Zrcadlo",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Komprese",
+        "addStorage": "Přidat jako úložiště",
+        "addStorageHint": "Vytvoří z něj úložiště Proxmox se stejným názvem pro disky, kontejnery nebo zálohy.",
+        "problem": {
+          "name": "Název začíná písmenem a obsahuje písmena, číslice, -, _ nebo .",
+          "device": "Vyberte disk.",
+          "oneDevice": "Vyberte jeden disk.",
+          "tooFew": "Tato úroveň RAID vyžaduje alespoň {{count}} disky.",
+          "even": "RAID10 vyžaduje sudý počet disků.",
+          "ashift": "ashift je mezi 9 a 16."
+        },
+        "remove": "Odebrat",
+        "removeTitle": "Odebrat {{name}}?",
+        "removeWarning": "Hosté, kteří na něm mají disky, o ně přijdou. Odebrání předem nic nepřesouvá.",
+        "removeLabel": "Odebrat {{name}} na {{node}}",
+        "cleanupConfig": "Odebrat i záznam úložiště",
+        "cleanupDisks": "Vymazat jeho disky",
+        "cleanupDisksHint": "Vymaže disky, aby je bylo možné znovu použít.",
+        "inUse": {
+          "lvm": "Stále obsahuje logické svazky. Nejprve je odeberte; tato skupina může obsahovat systém samotného uzlu.",
+          "lvmthin": "Stále obsahuje data. Nejprve přesuňte nebo odeberte disky hostů, které jsou na něm."
+        }
+      },
+      "gpt": "Inicializovat GPT",
+      "gptTitle": "Inicializovat {{disk}} s GPT?",
+      "gptDescription": "Zapíše na disk prázdnou tabulku oddílů GPT.",
+      "gptLabel": "Inicializovat {{disk}} na {{node}}",
+      "wipe": "Vymazat",
+      "wipeTitle": "Vymazat {{disk}}?",
+      "wipeWarning": "Smaže tabulku oddílů a všechny signatury souborových systémů, LVM a ZFS na disku (nyní: {{used}}). Jeho obsah bude nenávratně ztracen.",
+      "wipeLabel": "Vymazat {{disk}} na {{node}}",
+      "typePath": "Pro potvrzení zadejte {{disk}}"
+    },
+    "log": {
+      "search": "Filtrovat protokol...",
+      "empty": "Žádné odpovídající řádky."
+    },
+    "power": {
+      "menu": "Napájení uzlu",
+      "termixWarning": "Pokud Termix běží na tomto uzlu, přestane fungovat také, dokud se uzel nevrátí.",
+      "typeName": "Pro potvrzení zadejte {{node}}",
+      "reboot": {
+        "menu": "Restartovat uzel",
+        "title": "Restartovat {{node}}?",
+        "submit": "Restartovat",
+        "label": "Restartovat {{node}}",
+        "warning_one": "{{count}} spuštěný host se nejprve zastaví nebo vypne podle svého nastavení spouštění.",
+        "warning_few": "{{count}} spuštění hosté se nejprve zastaví nebo vypnou podle svého nastavení spouštění.",
+        "warning_many": "{{count}} spuštěného hosta se nejprve zastaví nebo vypne podle svého nastavení spouštění.",
+        "warning_other": "{{count}} spuštěných hostů se nejprve zastaví nebo vypne podle svého nastavení spouštění."
+      },
+      "shutdown": {
+        "menu": "Vypnout uzel",
+        "title": "Vypnout {{node}}?",
+        "submit": "Vypnout",
+        "label": "Vypnout {{node}}",
+        "warning_one": "{{count}} spuštěný host se vypne spolu s ním a nic jej znovu nespustí, dokud někdo uzel nezapne.",
+        "warning_few": "{{count}} spuštění hosté se vypnou spolu s ním a nic je znovu nespustí, dokud někdo uzel nezapne.",
+        "warning_many": "{{count}} spuštěného hosta se vypne spolu s ním a nic je znovu nespustí, dokud někdo uzel nezapne.",
+        "warning_other": "{{count}} spuštěných hostů se vypne spolu s ním a nic je znovu nespustí, dokud někdo uzel nezapne."
+      }
+    },
+    "shell": "Shell",
+    "shellHint": "Otevře v Termixu terminál SSH tohoto hostitele.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Vyhledávací doména",
+        "server": "Server DNS {{n}}",
+        "editTitle": "DNS uzlu {{node}}",
+        "saved": "DNS uloženo",
+        "problem": {
+          "search": "Zadejte vyhledávací doménu, např. example.com.",
+          "server": "Server DNS je adresa IPv4 nebo IPv6.",
+          "noServer": "Zadejte alespoň jeden server DNS."
+        }
+      },
+      "time": {
+        "title": "Čas",
+        "zone": "Časové pásmo",
+        "local": "Místní čas",
+        "editTitle": "Časové pásmo uzlu {{node}}",
+        "hint": "Samotné hodiny udržuje na uzlu NTP (chrony).",
+        "saved": "Časové pásmo nastaveno na {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "/etc/hosts uzlu {{node}}",
+        "warning": "Vlastní název uzlu musí dál ukazovat na jeho adresu, jinak cluster a jeho webové rozhraní přestanou fungovat.",
+        "saved": "/etc/hosts uloženo"
+      },
+      "certs": {
+        "title": "Certifikáty",
+        "issuer": "vydal {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Platný do {{date}}",
+          "expiring": "Vyprší {{date}}",
+          "expired": "Vypršel {{date}}",
+          "notYet": "Zatím neplatný"
+        },
+        "upload": "Nahrát vlastní",
+        "uploadTitle": "Vlastní certifikát pro {{node}}",
+        "uploaded": "Certifikát nahrán",
+        "chain": "Řetězec certifikátů",
+        "chainHint": "PEM: nejprve certifikát uzlu, pak zprostředkující certifikáty.",
+        "key": "Soukromý klíč",
+        "keyHint": "PEM, nešifrovaný. Ponechte prázdné pro zachování klíče, který už na uzlu je.",
+        "fromFile": "Načíst ze souboru",
+        "badCert": "Toto není certifikát PEM.",
+        "badKey": "Toto není soukromý klíč PEM.",
+        "restart": "Pro použití restartovat webové rozhraní",
+        "restartHint": "pveproxy se restartuje; Termix na několik sekund ztratí API.",
+        "remove": "Odebrat vlastní",
+        "removeTitle": "Odebrat vlastní certifikát?",
+        "removeDescription": "Uzel se vrátí ke svému certifikátu podepsanému sám sebou a webové rozhraní se restartuje.",
+        "removed": "Vlastní certifikát odebrán"
+      }
+    },
+    "repos": {
+      "on": "Povoleno",
+      "off": "Zakázáno",
+      "enable": "Povolit",
+      "disable": "Zakázat",
+      "enableTitle": "Povolit tento repozitář?",
+      "enabled": "Repozitář povolen",
+      "disabled": "Repozitář zakázán",
+      "add": "Přidat:",
+      "added": "Repozitář {{name}} přidán",
+      "hint": "Po změně spusťte Obnovit seznamy balíčků v sekci Balíčky. Repozitáře Enterprise vyžadují předplatné."
+    },
+    "taskHistory": {
+      "type": "Typ, např. vzdump",
+      "vmid": "ID VM/CT",
+      "user": "Uživatel",
+      "errorsOnly": "Jen neúspěšné úlohy",
+      "none": "Žádné odpovídající úlohy.",
+      "more": "Načíst další",
+      "state": {
+        "running": "Probíhá",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Objednat certifikát",
+      "renew": "Obnovit",
+      "orderLabel": "Objednat certifikát ACME pro {{node}}",
+      "renewLabel": "Obnovit certifikát ACME pro {{node}}",
+      "usesAccount": "Účet: {{account}}",
+      "none": "žádný",
+      "noDomains": "Zatím žádné domény. Upravte a přidejte názvy, na které tento uzel odpovídá.",
+      "viaHttp": "Výzva HTTP",
+      "viaDns": "Výzva DNS přes {{plugin}}",
+      "accounts": "Účty",
+      "plugins": "Pluginy výzvy DNS",
+      "remove": "Odebrat",
+      "domainsTitle": "Domény ACME uzlu {{node}}",
+      "domainsSaved": "Domény ACME uloženy",
+      "domain": "Doména",
+      "challenge": "Výzva",
+      "alias": "Alias",
+      "addDomain": "Přidat doménu",
+      "httpHint": "Výzva HTTP vyžaduje, aby byl port 80 tohoto uzlu dostupný z internetu pod danou doménou. DNS funguje i bez toho a také pro zástupné domény.",
+      "hint": "Účty a pluginy sdílí celý cluster; domény jsou pro každý uzel zvlášť.",
+      "problem": {
+        "noDomain": "Přidejte alespoň jednu doménu.",
+        "tooMany": "Uzel může mít až šest domén ACME.",
+        "domain": "Doména je úplný název, např. pve.example.com.",
+        "wildcard": "Zástupná doména vyžaduje plugin výzvy DNS."
+      },
+      "account": {
+        "title": "Účet",
+        "pick": "Vyberte účet",
+        "add": "Registrovat účet",
+        "addTitle": "Registrovat účet ACME",
+        "register": "Registrovat",
+        "registerLabel": "Registrovat účet ACME {{name}}",
+        "name": "Název",
+        "email": "E-mail",
+        "directory": "Adresář ACME",
+        "customDirectory": "Vlastní URL",
+        "directoryUrl": "URL adresáře",
+        "acceptTos": "Přijmout podmínky služby",
+        "eabKid": "ID klíče EAB",
+        "eabHmac": "Klíč HMAC EAB",
+        "eabHint": "Pouze pro CA, které vyžadují External Account Binding.",
+        "none": "Zatím žádný účet ACME.",
+        "needOne": "Nejprve zaregistrujte účet ACME.",
+        "removeTitle": "Deaktivovat účet {{name}}?",
+        "removeDescription": "Účet bude deaktivován u CA a odebrán zde. Již vydané certifikáty budou dál fungovat.",
+        "removeLabel": "Deaktivovat účet ACME {{name}}",
+        "problem": {
+          "name": "Název obsahuje písmena, číslice, -, _ nebo .",
+          "email": "Zadejte e-mailovou adresu.",
+          "directory": "Adresář je URL http nebo https.",
+          "tos": "Pro registraci přijměte podmínky služby.",
+          "eab": "EAB vyžaduje ID klíče i klíč HMAC."
+        }
+      },
+      "plugin": {
+        "add": "Přidat plugin",
+        "addTitle": "Přidat plugin výzvy DNS",
+        "id": "ID pluginu",
+        "api": "DNS API",
+        "pickApi": "Vyberte poskytovatele DNS",
+        "delay": "Prodleva ověření (s)",
+        "delayHint": "Jak dlouho čekat na rozšíření záznamu TXT.",
+        "noFields": "Proxmox pro tohoto poskytovatele neuvádí žádná pole; proměnné, které čte, najdete v dokumentaci acme.sh.",
+        "none": "Žádné pluginy DNS. HTTP funguje i bez nich.",
+        "disabled": "Zakázáno",
+        "removeTitle": "Odebrat plugin {{name}}?",
+        "removeDescription": "Domény, které jej používají, už nebude možné ověřit."
+      }
+    }
+  },
+  "console": {
+    "open": "Konzole",
+    "openHint": "Otevře hostitele Termix daného hosta, nebo nabídne jej nejprve přidat do Termixu.",
+    "tabTitle": "Konzole Proxmox",
+    "tabLabel": "{{name}} — Konzole",
+    "pick": "Otevřete konzoli spuštěného VM nebo kontejneru v nástroji Proxmox.",
+    "connect": "Připojit",
+    "reconnect": "Připojit znovu",
+    "disconnect": "Odpojit",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Celá obrazovka",
+    "notRunning": "Spusťte hosta, abyste mohli otevřít jeho konzoli.",
+    "lost": "Spojení s konzolí bylo ztraceno.",
+    "ended": "Konzole zavřena.",
+    "status": {
+      "idle": "Nepřipojeno",
+      "connecting": "Připojování...",
+      "connected": "Připojeno",
+      "closed": "Odpojeno",
+      "error": "Nepodařilo se připojit"
+    },
+    "proxmox": "Konzole Proxmox",
+    "proxmoxHint": "Vlastní konzole Proxmox přes uzel: obrazovka VM, shell v kontejneru. Pro hosta, který zatím nemá síť."
+  },
+  "pool": {
+    "members": "Členové",
+    "empty": "V tomto poolu nic není."
+  },
+  "sdn": {
+    "hint": "Zóny SDN, VNety a podsítě přibudou se správou clusteru v pozdější verzi."
+  },
+  "network": {
+    "add": "Vytvořit",
+    "apply": "Použít",
+    "revert": "Vrátit",
+    "pending": "Zatím nepoužito",
+    "hint": "Změny se ukládají do /etc/network/interfaces.new a projeví se po kliknutí na Použít, které znovu načte síť uzlu.",
+    "type": "Typ",
+    "name": "Název",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Brána (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Brána (IPv6)",
+    "ports": "Porty mostu",
+    "slaves": "Podřízená rozhraní",
+    "portsHint": "Názvy rozhraní oddělené mezerami.",
+    "bondMode": "Režim",
+    "vlanDevice": "Základní zařízení VLAN",
+    "mtu": "MTU",
+    "comments": "Komentář",
+    "autostart": "Automatický start",
+    "vlanAware": "Podpora VLAN",
+    "vlanAwareHint": "Umožní hostům na tomto mostu používat značky VLAN.",
+    "inactive": "Neaktivní",
+    "create": "Vytvořit",
+    "createTitle": "Vytvořit rozhraní",
+    "editTitle": "Upravit {{iface}}",
+    "types": {
+      "bridge": "Most",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Port",
+      "OVSBridge": "Most OVS",
+      "alias": "Alias"
+    },
+    "nameHint": {
+      "bridge": "vmbr a číslo, např. vmbr1.",
+      "bond": "bond a číslo, např. bond0.",
+      "vlan": "zařízení.značka, např. vmbr0.10, nebo vlan10 se základním zařízením."
+    },
+    "addressWarning": "Toto rozhraní nese adresu, přes kterou se Termix k uzlu připojuje. Chyba může Termix odříznout, dokud někdo uzel neopraví na jeho konzoli.",
+    "removeTitle": "Odebrat {{iface}}?",
+    "removeDescription": "Rozhraní bude odebráno, jakmile se změna použije.",
+    "applyTitle": "Použít změny sítě na {{node}}?",
+    "applyDescription": "Uzel znovu načte svou síť. Pokud je nové nastavení chybné, uzel i připojení Termixu k němu mohou přejít do stavu offline.",
+    "applyLabel": "Použít síť na {{node}}",
+    "reverted": "Změny sítě vráceny",
+    "problem": {
+      "cidr": "Zadejte adresu ve tvaru 10.10.0.1/24.",
+      "gateway": "Brána vyžaduje adresu IPv4 a platnou IP brány.",
+      "cidr6": "Zadejte adresu ve tvaru fd00::1/64.",
+      "ports": "Zadejte názvy rozhraní oddělené mezerami.",
+      "slaves": "Bond vyžaduje alespoň jedno podřízené rozhraní.",
+      "vlanDevice": "Uveďte základní zařízení pro rozhraní vlanN.",
+      "mtu": "MTU je od 1280 do 65520.",
+      "name": {
+        "bridge": "Most se jmenuje vmbr a číslo.",
+        "bond": "Bond se jmenuje bond a číslo.",
+        "vlan": "VLAN se jmenuje zařízení.značka nebo vlan a číslo."
+      }
+    }
+  },
+  "import": {
+    "open": "Importovat do Termixu",
+    "title": "Importovat hosty jako hostitele Termix",
+    "hint": "Každý vybraný VM nebo kontejner se stane hostitelem Termix se štítkem proxmox. Import také obnoví názvy, adresy a štítky dříve importovaných hostů a ty, které z Proxmox zmizely, označí štítkem proxmox-missing.",
+    "loading": "Hledání hostů a jejich adres…",
+    "counts": "Hosté: {{total}}, již importováno: {{imported}}",
+    "selectAll": "Vybrat vše",
+    "selectNone": "Zrušit výběr",
+    "none": "Tento cluster nemá žádné VM ani kontejnery.",
+    "imported": "Importováno",
+    "noAddress": "bez adresy",
+    "folder": "Složka",
+    "folderDefault": "Složka s názvem {{node}}",
+    "folderSearch": "Hledejte nebo vytvořte, / pro podsložku",
+    "folderCreate": "Vytvořit \"{{folder}}\"",
+    "folderNone": "Zatím žádné složky",
+    "connection": "Připojit přes",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Běhové prostředí kontejnerů",
+    "runtimeOff": "Bez Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "Neznámý OS"
+    },
+    "sshLogin": "Přihlášení SSH",
+    "desktopLogin": "Přihlášení RDP a VNC",
+    "desktopHint": "K připojení je potřeba plugin Vzdálená plocha.",
+    "login": {
+      "nodeCredential": "Přihlašovací údaje uzlu",
+      "nodeUser": "Uživatelské jméno uzlu",
+      "username": "Pouze uživatelské jméno",
+      "none": "Bez přihlášení"
+    },
+    "username": "Uživatelské jméno",
+    "submit_one": "Importovat {{count}} hosta",
+    "submit_few": "Importovat {{count}} hosty",
+    "submit_many": "Importovat {{count}} hosta",
+    "submit_other": "Importovat {{count}} hostů",
+    "refresh": "Obnovit importované",
+    "done": "Vytvořeno {{created}}, aktualizováno {{updated}}, označeno jako chybějící {{markedMissing}}",
+    "lastSync": "Poslední synchronizace {{when}}.",
+    "lastSyncFailed": "Poslední synchronizace {{when}} selhala: {{error}}",
+    "syncHint": "Zapněte Synchronizovat importované hosty v nastavení Proxmox hostitele, aby se obnovovaly podle plánu.",
+    "addTitle": "Přidat {{name}} do Termixu",
+    "addHint": "Tento host zatím není hostitelem Termix. Přidejte jej, abyste mohli otevřít jeho terminál; Konzole jej pak otevře rovnou.",
+    "addSubmit": "Přidat a připojit",
+    "gone": "Proxmox už tohoto hosta neuvádí."
+  }
+}

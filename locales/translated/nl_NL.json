@@ -1,0 +1,1024 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Beheer Proxmox VE vanuit Termix: virtuele machines, containers, opslag, netwerk, back-ups, firewall, toegang en het cluster."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Openen in Proxmox"
+  },
+  "permissions": {
+    "view": {
+      "title": "Proxmox bekijken",
+      "description": "Nodes, gasten, opslag, grafieken en taken zien op Proxmox-hosts waarmee u verbinding kunt maken."
+    },
+    "operate": {
+      "title": "Proxmox-gasten bedienen",
+      "description": "VM's en containers starten, stoppen, afsluiten, herstarten, pauzeren en hervatten. Vereist bewerkrechten op de host."
+    },
+    "console": {
+      "title": "Proxmox-consoles openen",
+      "description": "Het scherm van een VM en een root-shell in een container openen. Vereist bewerkrechten op de host."
+    },
+    "configure": {
+      "title": "Proxmox configureren",
+      "description": "VM's en containers aanmaken, klonen, migreren, converteren en verwijderen. Vereist bewerkrechten op de host."
+    },
+    "administer": {
+      "title": "Proxmox beheren",
+      "description": "Gebruikers, groepen, rollen, pools, 2FA, tokens, realms en het cluster beheren. Vereist bewerkrechten op de host."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Proxmox-node",
+      "description": "Markeer deze host als Proxmox VE-node. Hij verschijnt dan in de Proxmox-tool onder Tools."
+    },
+    "transport": {
+      "label": "Verbinden via",
+      "description": "Automatisch gebruikt de API via een SSH-tunnel zodra er een token is opgeslagen, en tot dan pvesh via SSH.",
+      "auto": "Automatisch",
+      "tunnel": "API via SSH-tunnel",
+      "direct": "API rechtstreeks",
+      "pvesh": "pvesh via SSH"
+    },
+    "tokenId": {
+      "label": "API-token-ID",
+      "description": "Aangemaakt in Proxmox onder Datacenter, Machtigingen, API-tokens. Ziet eruit als user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "API-tokengeheim",
+      "description": "Eenmalig getoond bij het aanmaken van de token. Versleuteld opgeslagen."
+    },
+    "apiHost": {
+      "label": "API-adres",
+      "description": "Alleen voor API rechtstreeks. Laat leeg om het adres van deze host te gebruiken."
+    },
+    "apiPort": {
+      "label": "API-poort",
+      "description": "8006, tenzij u deze hebt gewijzigd."
+    },
+    "caCert": {
+      "label": "CA-certificaat",
+      "description": "Alleen voor API rechtstreeks. De CA van de node in PEM, uit /etc/pve/pve-root-ca.pem. Laat leeg als de API een publiek vertrouwd certificaat heeft.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Geïmporteerde gasten",
+    "importSync": {
+      "label": "Geïmporteerde gasten gesynchroniseerd houden",
+      "description": "Werkt namen, adressen en tags bij van de gasten die van deze node zijn geïmporteerd, en tagt de gasten die uit Proxmox zijn verwijderd als proxmox-missing."
+    },
+    "importInterval": {
+      "label": "Synchroniseren elke (minuten)",
+      "description": "Minimaal 5 minuten."
+    },
+    "importAddNew": {
+      "label": "Nieuwe gasten toevoegen bij synchronisatie",
+      "description": "Importeert gasten die na de eerste import in Proxmox zijn aangemaakt, met de standaardwaarden die laatst in het importvenster zijn gebruikt."
+    },
+    "importDefaults": {
+      "label": "Standaardwaarden voor import"
+    },
+    "importState": {
+      "label": "Laatste gastsynchronisatie"
+    },
+    "source": {
+      "label": "Proxmox-gast"
+    }
+  },
+  "app": {
+    "loading": "Laden...",
+    "loadFailed": "Kan het cluster niet laden",
+    "refreshFailed": "Vernieuwen mislukt: {{message}}",
+    "retry": "Opnieuw proberen",
+    "refresh": "Vernieuwen",
+    "search": "Gasten, nodes en opslag zoeken...",
+    "status": "{{nodes}} nodes, {{running}} van {{total}} gasten actief",
+    "pickHost": "Proxmox-host",
+    "pickResource": "Kies links een node, gast of opslag",
+    "noHosts": "Nog geen Proxmox-hosts",
+    "noHostsHint": "Open de instellingen van een host, schakel Proxmox-node in onder SSH en kies hoe u verbinding maakt. De node verschijnt dan hier.",
+    "cancel": "Annuleren",
+    "working": "Bezig...",
+    "save": "Opslaan",
+    "reset": "Herstellen",
+    "close": "Sluiten",
+    "yes": "Ja",
+    "no": "Nee",
+    "edit": "Bewerken"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix vertrouwt het certificaat van de node niet. Plak in de Proxmox-instellingen van de host de CA van de node uit /etc/pve/pve-root-ca.pem bij CA-certificaat, of kies API via SSH-tunnel.",
+    "tlsHostname": "Het certificaat van de node is voor een andere naam. Stel het API-adres in op een naam of adres dat in het certificaat staat.",
+    "tlsExpired": "Het certificaat van de node is verlopen of nog niet geldig. Vernieuw het in Proxmox onder de node, Systeem, Certificaten.",
+    "notEnabled": "Deze host is niet gemarkeerd als Proxmox-node. Schakel Proxmox-node in bij de instellingen van de host.",
+    "hostAccess": "U hebt bewerkrechten op deze host nodig om deze te wijzigen."
+  },
+  "tree": {
+    "nothingFound": "Niets komt overeen met de zoekopdracht.",
+    "expand": "Uitvouwen",
+    "collapse": "Samenvouwen",
+    "datacenter": "Datacenter",
+    "folders": {
+      "lxc": "LXC-container",
+      "qemu": "Virtuele machine",
+      "node": "Nodes",
+      "pool": "Pools",
+      "sdn": "Netwerk",
+      "storage": "Opslag"
+    },
+    "views": {
+      "folder": "Mapweergave",
+      "server": "Serverweergave"
+    }
+  },
+  "types": {
+    "node": "Node",
+    "qemu": "VM",
+    "lxc": "Container",
+    "storage": "Opslag",
+    "pool": "Pool",
+    "sdn": "SDN-zone"
+  },
+  "states": {
+    "running": "Actief",
+    "stopped": "Gestopt",
+    "paused": "Gepauzeerd",
+    "suspended": "Onderbroken",
+    "online": "Online",
+    "offline": "Offline",
+    "available": "Beschikbaar",
+    "unknown": "Onbekend"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Geheugen",
+    "disk": "Schijf",
+    "rootDisk": "Rootschijf",
+    "usage": "Gebruik",
+    "cores_one": "{{count}} core",
+    "cores_other": "{{count}} cores",
+    "swap": "Swap"
+  },
+  "summary": {
+    "title": "Overzicht",
+    "node": "Node",
+    "vmid": "ID",
+    "uptime": "Uptime",
+    "pool": "Pool",
+    "ha": "HA",
+    "tags": "Tags",
+    "guests": "Gasten",
+    "guestsRunning": "{{running}} van {{total}} actief",
+    "cpuModel": "CPU",
+    "sockets": "sockets",
+    "load": "Gemiddelde belasting",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Kernel",
+    "ips": "Adressen"
+  },
+  "charts": {
+    "title": "Grafieken",
+    "cpu": "CPU",
+    "load": "Gemiddelde belasting",
+    "memory": "Geheugen",
+    "network": "Netwerk",
+    "diskIo": "Schijf-I/O",
+    "cpuUsage": "CPU-gebruik",
+    "ioDelay": "IO-vertraging",
+    "used": "Gebruikt",
+    "total": "Totaal",
+    "in": "In",
+    "out": "Uit",
+    "read": "Lezen",
+    "write": "Schrijven",
+    "timeframe": {
+      "hour": "Uur",
+      "day": "Dag",
+      "week": "Week",
+      "month": "Maand",
+      "year": "Jaar"
+    },
+    "noData": "Geen gegevens voor deze periode",
+    "serverLoad": "Serverbelasting",
+    "loadAverage": "Gemiddelde belasting",
+    "swap": "Swap",
+    "pressureCpu": "CPU-drukvertraging",
+    "pressureMemory": "Geheugendrukvertraging",
+    "pressureIo": "IO-drukvertraging",
+    "some": "Deels",
+    "full": "Volledig",
+    "average": "Gemiddeld",
+    "maximum": "Maximum"
+  },
+  "tasks": {
+    "title": "Taken",
+    "started": "Gestart",
+    "node": "Node",
+    "user": "Gebruiker",
+    "task": "Taak",
+    "status": "Status",
+    "running": "Actief",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} op {{node}}",
+    "done": "{{label}}: voltooid",
+    "failed": "{{label}} mislukt: {{reason}}"
+  },
+  "guests": {
+    "more": "Meer acties",
+    "isTemplate": "Sjabloon",
+    "locked": "Vergrendeld: {{lock}}",
+    "power": {
+      "start": "Starten",
+      "shutdown": "Afsluiten",
+      "stop": "Stoppen",
+      "reboot": "Herstarten",
+      "suspend": "Pauzeren",
+      "resume": "Hervatten",
+      "reset": "Resetten",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "{{name}} nu stoppen?",
+        "reset": "{{name}} nu resetten?",
+        "description": "Dit schakelt de stroom uit alsof u de stekker eruit trekt. Niet-opgeslagen werk in de gast gaat verloren."
+      }
+    },
+    "clone": {
+      "menu": "Klonen",
+      "title": "{{name}} klonen",
+      "submit": "Klonen",
+      "label": "{{source}} klonen naar {{id}}",
+      "full": "Volledige kloon",
+      "fullHint": "Kopieert elke schijf, zodat de kloon niet afhankelijk is van het origineel.",
+      "linkedHint": "Uit maakt een gekoppelde kloon die de schijven van het sjabloon deelt en in seconden klaar is.",
+      "sameStorage": "Dezelfde opslag als het origineel"
+    },
+    "migrate": {
+      "menu": "Migreren",
+      "title": "{{name}} migreren",
+      "submit": "Migreren",
+      "label": "{{name}} migreren naar {{target}}",
+      "noOtherNodes": "Er is geen andere online node in dit cluster om naartoe te verplaatsen.",
+      "onlineHint": "De VM is actief en wordt live verplaatst, zonder te stoppen.",
+      "restartHint": "De container is actief. Hij stopt, wordt verplaatst en start opnieuw op het doel."
+    },
+    "template": {
+      "menu": "Converteren naar sjabloon",
+      "confirm": "{{name}} converteren naar een sjabloon?",
+      "description": "Een sjabloon kan niet worden gestart, alleen gekloond. Dit kan niet ongedaan worden gemaakt.",
+      "submit": "Converteren",
+      "label": "{{name}} converteren naar een sjabloon"
+    },
+    "delete": {
+      "menu": "Verwijderen",
+      "title": "{{name}} verwijderen",
+      "submit": "Verwijderen",
+      "label": "{{name}} verwijderen",
+      "warning": "Dit verwijdert gast {{vmid}} en de schijven ervan. Dit kan niet ongedaan worden gemaakt.",
+      "stopFirst": "Stop de gast voordat u deze verwijdert.",
+      "typeId": "Typ {{vmid}} om te bevestigen",
+      "purge": "Verwijderen uit back-uptaken, replicatie en HA",
+      "purgeHint": "Laat geen taken achter die verwijzen naar een gast die niet meer bestaat.",
+      "unreferenced": "Ook niet-gerefereerde schijven verwijderen",
+      "unreferencedHint": "Schijven op ingeschakelde opslag met deze ID die niet in de configuratie staan."
+    },
+    "create": {
+      "vmButton": "VM aanmaken",
+      "ctButton": "CT aanmaken",
+      "vmTitle": "Virtuele machine aanmaken",
+      "ctTitle": "Container aanmaken",
+      "submit": "Aanmaken",
+      "vmLabel": "VM {{id}} ({{name}}) aanmaken",
+      "ctLabel": "CT {{id}} ({{name}}) aanmaken",
+      "noTemplates": "Geen containersjablonen op deze node. Download er een in Proxmox onder een opslag, CT-sjablonen.",
+      "noIso": "Geen installatiemedia",
+      "unprivilegedHint": "Veiliger: root in de container is geen root op de node.",
+      "loginHint": "Stel een root-wachtwoord, SSH-sleutels of beide in.",
+      "problem": {
+        "vmid": "Kies een ID van 100 of hoger.",
+        "hostname": "Voer een hostnaam in: letters, cijfers en streepjes.",
+        "name": "Voer een naam in: letters, cijfers en streepjes.",
+        "template": "Kies een sjabloon.",
+        "storage": "Kies een opslag.",
+        "disk": "Voer een schijfgrootte in.",
+        "cores": "Voer het aantal cores in.",
+        "sockets": "Voer het aantal sockets in.",
+        "memory": "Voer minimaal 16 MiB geheugen in.",
+        "swap": "Voer swap in MiB in, 0 voor geen.",
+        "network": "Kies een bridge en voer voor een statisch adres dit in zoals 192.168.0.60/24.",
+        "login": "Stel een root-wachtwoord of SSH-sleutels in zodat u kunt inloggen.",
+        "password": "Het wachtwoord moet minimaal 5 tekens hebben."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Overig"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Naam",
+      "hostname": "Hostnaam",
+      "node": "Node",
+      "targetNode": "Doelnode",
+      "targetStorage": "Doelopslag",
+      "storage": "Opslag",
+      "template": "Sjabloon",
+      "iso": "Installatiemedium",
+      "ostype": "Gast-OS",
+      "rootPassword": "Root-wachtwoord",
+      "sshKeys": "Openbare SSH-sleutels",
+      "unprivileged": "Niet-geprivilegieerde container",
+      "diskGiB": "Schijf (GiB)",
+      "cores": "Cores",
+      "sockets": "Sockets",
+      "memoryMiB": "Geheugen (MiB)",
+      "swapMiB": "Swap (MiB)",
+      "bridge": "Netwerkbridge",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Statisch",
+      "cidr": "Adres/prefix",
+      "gateway": "Gateway",
+      "startAfter": "Starten na aanmaken",
+      "pick": "Kies er een"
+    },
+    "tabs": {
+      "summary": "Overzicht",
+      "hardware": "Hardware",
+      "options": "Opties",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Bewerken",
+    "add": "Toevoegen",
+    "remove": "Verwijderen",
+    "removed": "{{key}} verwijderd",
+    "pending": "In afwachting",
+    "pendingHint": "Wijzigingen gemarkeerd als In afwachting worden toegepast wanneer de gast vanuit Proxmox herstart: een herstart binnen de gast is niet genoeg.",
+    "processors": "Processors",
+    "processorsValue": "{{sockets}} socket × {{cores}} cores, {{cpu}}",
+    "allCores": "Alle",
+    "swap": "Swap",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "Processor en geheugen",
+      "title": "Processor en geheugen"
+    },
+    "cpuType": "CPU-type",
+    "cpulimit": "CPU-limiet",
+    "cpulimitHint": "0 voor geen limiet. 1.5 is anderhalve core aan rekentijd.",
+    "balloon": "Minimaal geheugen (MiB)",
+    "balloonHint": "Met de balloon-driver geeft de gast geheugen terug tot deze waarde. Gelijk aan het geheugen schakelt hem uit, 0 verwijdert de driver.",
+    "disks": "Schijven",
+    "volumes": "Rootschijf en koppelpunten",
+    "bus": "Bus",
+    "slot": "Wordt {{key}}",
+    "iothread": "IO-thread",
+    "discard": "Discard",
+    "discardHint": "Laat de gast ongebruikte blokken vrijgeven op thin-opslag.",
+    "ssd": "SSD-emulatie",
+    "mountPath": "Koppelpad in de container",
+    "backup": "Opnemen in back-ups",
+    "addDisk": {
+      "button": "Schijf toevoegen",
+      "title": "Schijf toevoegen",
+      "label": "{{key}} toevoegen"
+    },
+    "addMount": {
+      "button": "Koppelpunt toevoegen",
+      "title": "Koppelpunt toevoegen"
+    },
+    "resize": {
+      "menu": "Grootte wijzigen",
+      "title": "{{key}} vergroten",
+      "grow": "Toevoegen (GiB)",
+      "result": "{{from}} GiB wordt {{to}} GiB",
+      "noShrink": "Schijven kunnen alleen groeien. De partitie en het bestandssysteem van de gast moeten daarna in de gast worden vergroot, tenzij dat bij het opstarten gebeurt.",
+      "submit": "Vergroten",
+      "label": "{{key}} vergroten met {{size}} GiB"
+    },
+    "move": {
+      "menu": "Verplaatsen naar opslag",
+      "title": "{{key}} verplaatsen",
+      "submit": "Verplaatsen",
+      "deleteSource": "Origineel verwijderen",
+      "deleteSourceHint": "Uit bewaart het als ongebruikte schijf.",
+      "label": "{{key}} verplaatsen naar {{storage}}"
+    },
+    "detach": {
+      "menu": "Ontkoppelen",
+      "title": "{{key}} ontkoppelen?",
+      "description": "De schijf blijft als ongebruikte schijf op de opslag staan en kan worden verwijderd of opnieuw gekoppeld."
+    },
+    "unused": {
+      "delete": "Verwijderen",
+      "title": "{{volume}} verwijderen?",
+      "description": "Dit verwijdert de schijf en alles erop. Dit kan niet ongedaan worden gemaakt."
+    },
+    "cd": {
+      "heading": "Cd/dvd-stations",
+      "title": "Medium in {{key}}",
+      "empty": "Geen medium"
+    },
+    "nic": {
+      "heading": "Netwerkadapters",
+      "add": "Adapter toevoegen",
+      "addTitle": "{{key}} toevoegen",
+      "editTitle": "{{key}} bewerken",
+      "none": "Geen netwerkadapters.",
+      "model": "Model",
+      "name": "Naam in de container",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Statisch",
+        "none": "Geen",
+        "auto": "SLAAC"
+      },
+      "tag": "VLAN-tag",
+      "tagHint": "Leeg voor zonder tag.",
+      "rate": "Snelheidslimiet (MB/s)",
+      "rateHint": "Leeg voor geen limiet.",
+      "firewall": "Firewall",
+      "firewallShort": "firewall",
+      "removeTitle": "{{key}} verwijderen?",
+      "removeDescription": "De gast verliest deze adapter en het adres ervan."
+    },
+    "problem": {
+      "cpu": "Voer minimaal één socket en core in.",
+      "cpulimit": "De CPU-limiet loopt van 0 tot 8192.",
+      "memory": "Voer minimaal 16 MiB geheugen in.",
+      "balloon": "Minimaal geheugen kan niet meer zijn dan het geheugen.",
+      "swap": "Voer swap in MiB in, 0 voor geen.",
+      "noSlot": "Elk slot van dit type is bezet.",
+      "storage": "Kies een opslag.",
+      "size": "Voer een grootte in hele GiB in.",
+      "path": "Voer een absoluut pad in zoals /data, niet / zelf.",
+      "bridge": "Kies een bridge.",
+      "tag": "Een VLAN-tag loopt van 1 tot 4094.",
+      "rate": "Voer een snelheid boven 0 in, of laat het leeg.",
+      "name": "Voer een naam in zoals eth0.",
+      "ip4": "Voer het adres in zoals 192.168.0.60/24 en een geldige gateway.",
+      "ip6": "Voer het adres in zoals fd00::10/64."
+    },
+    "detached": "{{key}} ontkoppeld; blijft als ongebruikte schijf",
+    "coresHint": "Leeg gebruikt alle cores van de node."
+  },
+  "options": {
+    "general": "Algemeen",
+    "tags": "Tags",
+    "tagsHint": "Gescheiden door komma's.",
+    "onboot": "Starten bij opstarten van de node",
+    "protection": "Bescherming",
+    "protectionHint": "Blokkeert het verwijderen van de gast en de schijven ervan totdat dit wordt uitgeschakeld.",
+    "agent": "QEMU-gastagent",
+    "agentHint": "Schakel in zodra de agent in de gast draait, voor de adressen en nette afsluitingen.",
+    "startup": "Start- en afsluitvolgorde",
+    "startupOrder": "Volgorde",
+    "startupUp": "Vertraging na start (s)",
+    "startupDown": "Time-out voor afsluiten (s)",
+    "dns": "DNS",
+    "nameserver": "DNS-servers",
+    "searchdomain": "Zoekdomein",
+    "useHost": "Leeg gebruikt die van de node.",
+    "notes": "Notities",
+    "saved": "Opties opgeslagen",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Overig"
+    },
+    "problem": {
+      "name": "Voer een naam in.",
+      "startup": "Volgorde en vertragingen zijn gehele getallen.",
+      "tags": "Tags bestaan uit letters, cijfers, streepjes, punten en underscores.",
+      "nameserver": "Voer IP-adressen in, gescheiden door spaties."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "Deze VM heeft geen cloud-init-station. Voeg er een toe en stel hier dan de gebruiker, sleutels en het netwerk in; de gastimage moet cloud-init ondersteunen.",
+    "addDrive": "Cloud-init-station toevoegen",
+    "driveAdded": "Cloud-init-station toegevoegd",
+    "user": "Gebruiker",
+    "username": "Gebruikersnaam",
+    "usernameHint": "Leeg gebruikt de standaardgebruiker van de image.",
+    "password": "Wachtwoord",
+    "passwordHint": "Leeg behoudt het huidige. Gehasht opgeslagen door Proxmox.",
+    "network": "Netwerk",
+    "saved": "Cloud-init-instellingen opgeslagen",
+    "regenerate": "Image opnieuw genereren",
+    "regenerated": "Cloud-init-image opnieuw gegenereerd",
+    "regenerateHint": "Schrijft de instellingen naar {{drive}}. De gast leest ze bij de volgende keer opstarten."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Overzicht",
+      "iso": "ISO-images",
+      "vztmpl": "CT-sjablonen",
+      "backup": "Back-ups",
+      "images": "Schijfimages"
+    },
+    "content": "Bevat",
+    "contentTypes": {
+      "images": "VM-schijven",
+      "rootdir": "Containerschijven",
+      "iso": "ISO-images",
+      "vztmpl": "CT-sjablonen",
+      "backup": "Back-ups",
+      "snippets": "Snippets",
+      "import": "Importeren"
+    },
+    "shared": "Gedeeld",
+    "empty": "Hier is nog niets.",
+    "owner": "gast {{vmid}}",
+    "protected": "Beschermd",
+    "download": {
+      "button": "Downloaden van URL",
+      "title": {
+        "iso": "ISO-image downloaden naar {{storage}}",
+        "vztmpl": "CT-sjabloon downloaden naar {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Bestandsnaam",
+      "algorithm": "Type controlesom",
+      "noChecksum": "Geen",
+      "checksum": "Controlesom",
+      "verify": "Certificaat van de server controleren",
+      "submit": "Downloaden",
+      "label": "{{name}} downloaden",
+      "problem": {
+        "url": "Voer een http- of https-URL in.",
+        "filename": "De bestandsnaam bestaat uit letters, cijfers, punten, streepjes en underscores.",
+        "extension": "ISO-images eindigen op .iso of .img; sjablonen op .tar.gz, .tar.xz of .tar.zst.",
+        "checksum": "Kies een type controlesom en voer de controlesom in hex in, of laat beide leeg."
+      }
+    },
+    "catalog": {
+      "button": "Sjablonen",
+      "title": "Containersjablonen voor {{storage}}",
+      "search": "Sjablonen zoeken...",
+      "have": "Gedownload",
+      "label": "{{name}} downloaden"
+    },
+    "delete": {
+      "title": "{{name}} verwijderen?",
+      "description": "Dit verwijdert het bestand van de opslag. Dit kan niet ongedaan worden gemaakt.",
+      "submit": "Verwijderen",
+      "done": "{{name}} verwijderd"
+    },
+    "upload": {
+      "button": "Uploaden",
+      "cancel": "Upload annuleren",
+      "done": "{{name}} geüpload",
+      "failed": "Uploaden van {{name}} mislukt: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Overzicht",
+      "network": "Netwerk",
+      "system": "Systeem",
+      "services": "Services",
+      "updates": "Updates",
+      "disks": "Schijven",
+      "tasks": "Taken",
+      "log": "Logboek"
+    },
+    "services": {
+      "start": "Starten",
+      "stop": "Stoppen",
+      "restart": "Herstarten",
+      "reload": "Herladen",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "{{name}} stoppen?",
+        "restart": "{{name}} herstarten?",
+        "description": "De eigen services van Proxmox houden de node en de API draaiende; als u er een stopt, kan deze tool worden afgesloten totdat de service weer start."
+      }
+    },
+    "updates": {
+      "refresh": "Pakketlijsten vernieuwen",
+      "refreshLabel": "Pakketlijsten vernieuwen op {{node}}",
+      "count_one": "{{count}} pakket kan worden bijgewerkt",
+      "count_other": "{{count}} pakketten kunnen worden bijgewerkt",
+      "none": "Alles is up-to-date",
+      "installHint": "Installeer upgrades vanuit de terminal van de node met apt full-upgrade; Proxmox voert geen upgrades uit via de API.",
+      "views": {
+        "packages": "Pakketten",
+        "repositories": "Repository's"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART voor {{disk}}",
+      "health": "Status",
+      "usedBy": "gebruikt door {{used}}",
+      "unused": "ongebruikt",
+      "wearout": "{{value}}% levensduur over",
+      "views": {
+        "disks": "Schijven",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Map",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "{{count}} logisch volume",
+        "lvCount_other": "{{count}} logische volumes",
+        "metadata": "metadata {{used}} / {{size}}",
+        "frag": "{{value}}% gefragmenteerd",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "Geen LVM-volumegroepen.",
+          "lvmthin": "Geen LVM-Thin-pools.",
+          "directory": "Geen mapopslag op een eigen schijf.",
+          "zfs": "Geen ZFS-pools."
+        },
+        "create": {
+          "lvm": "LVM-volumegroep aanmaken",
+          "lvmthin": "LVM-Thin-pool aanmaken",
+          "directory": "Map aanmaken",
+          "zfs": "ZFS-pool aanmaken"
+        },
+        "createSubmit": "Aanmaken",
+        "createLabel": "{{name}} aanmaken op {{node}}",
+        "wipeWarning": "De gekozen schijven worden gepartitioneerd en geformatteerd. Alleen lege schijven worden aangeboden.",
+        "name": "Naam",
+        "device": "Schijf",
+        "devices": "Schijven",
+        "pickDisk": "Kies een schijf",
+        "noUnused": "Er is geen ongebruikte schijf. Wis er eerst een onder Schijven, als de inhoud weg mag.",
+        "filesystem": "Bestandssysteem",
+        "raidlevel": "RAID-niveau",
+        "raid": {
+          "single": "Enkele schijf",
+          "mirror": "Spiegel",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Compressie",
+        "addStorage": "Toevoegen als opslag",
+        "addStorageHint": "Maakt er een Proxmox-opslag met dezelfde naam van, voor schijven, containers of back-ups.",
+        "problem": {
+          "name": "Een naam begint met een letter en bevat letters, cijfers, -, _ of .",
+          "device": "Kies een schijf.",
+          "oneDevice": "Kies één schijf.",
+          "tooFew": "Dit RAID-niveau vereist minimaal {{count}} schijven.",
+          "even": "RAID10 vereist een even aantal schijven.",
+          "ashift": "ashift ligt tussen 9 en 16."
+        },
+        "remove": "Verwijderen",
+        "removeTitle": "{{name}} verwijderen?",
+        "removeWarning": "Gasten met schijven erop verliezen die. Bij het verwijderen wordt niets eerst verplaatst.",
+        "removeLabel": "{{name}} verwijderen op {{node}}",
+        "cleanupConfig": "Ook de opslagvermelding verwijderen",
+        "cleanupDisks": "De schijven wissen",
+        "cleanupDisksHint": "Wist de schijven zodat ze opnieuw kunnen worden gebruikt.",
+        "inUse": {
+          "lvm": "Er zijn nog logische volumes. Verwijder die eerst; deze groep kan het systeem van de node zelf bevatten.",
+          "lvmthin": "Er staan nog gegevens op. Verplaats of verwijder eerst de schijven van gasten erop."
+        }
+      },
+      "gpt": "Initialiseren met GPT",
+      "gptTitle": "{{disk}} initialiseren met GPT?",
+      "gptDescription": "Schrijft een lege GPT-partitietabel naar de schijf.",
+      "gptLabel": "{{disk}} initialiseren op {{node}}",
+      "wipe": "Wissen",
+      "wipeTitle": "{{disk}} wissen?",
+      "wipeWarning": "Wist de partitietabel en elke bestandssysteem-, LVM- en ZFS-handtekening op de schijf (nu: {{used}}). Wat erop staat, is definitief weg.",
+      "wipeLabel": "{{disk}} wissen op {{node}}",
+      "typePath": "Typ {{disk}} om te bevestigen"
+    },
+    "log": {
+      "search": "Logboek filteren...",
+      "empty": "Geen overeenkomende regels."
+    },
+    "power": {
+      "menu": "Node aan/uit",
+      "termixWarning": "Als Termix op deze node draait, gaat het ook offline totdat de node terug is.",
+      "typeName": "Typ {{node}} om te bevestigen",
+      "reboot": {
+        "menu": "Node herstarten",
+        "title": "{{node}} herstarten?",
+        "submit": "Herstarten",
+        "label": "{{node}} herstarten",
+        "warning_one": "{{count}} actieve gast stopt of sluit eerst af, zoals de opstartinstellingen aangeven.",
+        "warning_other": "{{count}} actieve gasten stoppen of sluiten eerst af, zoals hun opstartinstellingen aangeven."
+      },
+      "shutdown": {
+        "menu": "Node afsluiten",
+        "title": "{{node}} afsluiten?",
+        "submit": "Afsluiten",
+        "label": "{{node}} afsluiten",
+        "warning_one": "{{count}} actieve gast gaat mee offline, en niets start deze opnieuw totdat iemand de node aanzet.",
+        "warning_other": "{{count}} actieve gasten gaan mee offline, en niets start ze opnieuw totdat iemand de node aanzet."
+      }
+    },
+    "shell": "Shell",
+    "shellHint": "Opent de SSH-terminal van deze host in Termix.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Zoekdomein",
+        "server": "DNS-server {{n}}",
+        "editTitle": "DNS van {{node}}",
+        "saved": "DNS opgeslagen",
+        "problem": {
+          "search": "Voer een zoekdomein in, zoals example.com.",
+          "server": "Een DNS-server is een IPv4- of IPv6-adres.",
+          "noServer": "Voer minimaal één DNS-server in."
+        }
+      },
+      "time": {
+        "title": "Tijd",
+        "zone": "Tijdzone",
+        "local": "Lokale tijd",
+        "editTitle": "Tijdzone van {{node}}",
+        "hint": "De klok zelf wordt op de node bijgehouden door NTP (chrony).",
+        "saved": "Tijdzone ingesteld op {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "/etc/hosts van {{node}}",
+        "warning": "De eigen naam van de node moet naar het adres blijven verwijzen, anders werken het cluster en de webinterface niet meer.",
+        "saved": "/etc/hosts opgeslagen"
+      },
+      "certs": {
+        "title": "Certificaten",
+        "issuer": "uitgegeven door {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Geldig tot {{date}}",
+          "expiring": "Verloopt {{date}}",
+          "expired": "Verlopen {{date}}",
+          "notYet": "Nog niet geldig"
+        },
+        "upload": "Eigen uploaden",
+        "uploadTitle": "Eigen certificaat voor {{node}}",
+        "uploaded": "Certificaat geüpload",
+        "chain": "Certificaatketen",
+        "chainHint": "PEM: eerst het certificaat van de node, dan de tussencertificaten.",
+        "key": "Privésleutel",
+        "keyHint": "PEM, onversleuteld. Laat leeg om de sleutel die al op de node staat te behouden.",
+        "fromFile": "Uit bestand lezen",
+        "badCert": "Dit is geen PEM-certificaat.",
+        "badKey": "Dit is geen PEM-privésleutel.",
+        "restart": "De webinterface herstarten om het te gebruiken",
+        "restartHint": "pveproxy herstart; Termix verliest de API een paar seconden.",
+        "remove": "Eigen verwijderen",
+        "removeTitle": "Het eigen certificaat verwijderen?",
+        "removeDescription": "De node gaat terug naar het zelfondertekende certificaat en de webinterface herstart.",
+        "removed": "Eigen certificaat verwijderd"
+      }
+    },
+    "repos": {
+      "on": "Ingeschakeld",
+      "off": "Uitgeschakeld",
+      "enable": "Inschakelen",
+      "disable": "Uitschakelen",
+      "enableTitle": "Deze repository inschakelen?",
+      "enabled": "Repository ingeschakeld",
+      "disabled": "Repository uitgeschakeld",
+      "add": "Toevoegen:",
+      "added": "Repository {{name}} toegevoegd",
+      "hint": "Voer na een wijziging Pakketlijsten vernieuwen uit onder Pakketten. De Enterprise-repository's vereisen een abonnement."
+    },
+    "taskHistory": {
+      "type": "Type, zoals vzdump",
+      "vmid": "VM/CT-ID",
+      "user": "Gebruiker",
+      "errorsOnly": "Alleen mislukte taken",
+      "none": "Geen overeenkomende taken.",
+      "more": "Meer laden",
+      "state": {
+        "running": "Actief",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Certificaat bestellen",
+      "renew": "Vernieuwen",
+      "orderLabel": "ACME-certificaat bestellen voor {{node}}",
+      "renewLabel": "ACME-certificaat vernieuwen voor {{node}}",
+      "usesAccount": "Account: {{account}}",
+      "none": "geen",
+      "noDomains": "Nog geen domeinen. Bewerk om de namen toe te voegen waarop deze node reageert.",
+      "viaHttp": "HTTP-challenge",
+      "viaDns": "DNS-challenge via {{plugin}}",
+      "accounts": "Accounts",
+      "plugins": "DNS-challenge-plug-ins",
+      "remove": "Verwijderen",
+      "domainsTitle": "ACME-domeinen van {{node}}",
+      "domainsSaved": "ACME-domeinen opgeslagen",
+      "domain": "Domein",
+      "challenge": "Challenge",
+      "alias": "Alias",
+      "addDomain": "Domein toevoegen",
+      "httpHint": "De HTTP-challenge vereist dat poort 80 van deze node onder het domein bereikbaar is vanaf internet. DNS werkt zonder dat, en ook voor wildcards.",
+      "hint": "Accounts en plug-ins worden gedeeld door het hele cluster; domeinen zijn per node.",
+      "problem": {
+        "noDomain": "Voeg minimaal één domein toe.",
+        "tooMany": "Een node heeft maximaal zes ACME-domeinen.",
+        "domain": "Een domein is een volledige naam zoals pve.example.com.",
+        "wildcard": "Een wildcarddomein vereist een DNS-challenge-plug-in."
+      },
+      "account": {
+        "title": "Account",
+        "pick": "Kies een account",
+        "add": "Account registreren",
+        "addTitle": "Een ACME-account registreren",
+        "register": "Registreren",
+        "registerLabel": "ACME-account {{name}} registreren",
+        "name": "Naam",
+        "email": "E-mail",
+        "directory": "ACME-directory",
+        "customDirectory": "Aangepaste URL",
+        "directoryUrl": "Directory-URL",
+        "acceptTos": "De servicevoorwaarden accepteren",
+        "eabKid": "EAB-sleutel-ID",
+        "eabHmac": "EAB-HMAC-sleutel",
+        "eabHint": "Alleen voor CA's die om External Account Binding vragen.",
+        "none": "Nog geen ACME-account.",
+        "needOne": "Registreer eerst een ACME-account.",
+        "removeTitle": "Account {{name}} deactiveren?",
+        "removeDescription": "Het account wordt bij de CA gedeactiveerd en hier verwijderd. Al uitgegeven certificaten blijven werken.",
+        "removeLabel": "ACME-account {{name}} deactiveren",
+        "problem": {
+          "name": "Een naam bevat letters, cijfers, -, _ of .",
+          "email": "Voer een e-mailadres in.",
+          "directory": "De directory is een http- of https-URL.",
+          "tos": "Accepteer de servicevoorwaarden om te registreren.",
+          "eab": "EAB vereist zowel de sleutel-ID als de HMAC-sleutel."
+        }
+      },
+      "plugin": {
+        "add": "Plug-in toevoegen",
+        "addTitle": "Een DNS-challenge-plug-in toevoegen",
+        "id": "Plug-in-ID",
+        "api": "DNS-API",
+        "pickApi": "Kies een DNS-provider",
+        "delay": "Validatievertraging (s)",
+        "delayHint": "Hoe lang wordt gewacht tot het TXT-record is verspreid.",
+        "noFields": "Proxmox vermeldt geen velden voor deze provider; zie de documentatie van acme.sh voor de variabelen die het leest.",
+        "none": "Geen DNS-plug-ins. HTTP werkt zonder.",
+        "disabled": "Uitgeschakeld",
+        "removeTitle": "Plug-in {{name}} verwijderen?",
+        "removeDescription": "Domeinen die deze gebruiken, kunnen niet meer worden gevalideerd."
+      }
+    }
+  },
+  "console": {
+    "open": "Console",
+    "openHint": "Opent de Termix-host van de gast, of biedt aan deze eerst aan Termix toe te voegen.",
+    "tabTitle": "Proxmox-console",
+    "tabLabel": "{{name}} — Console",
+    "pick": "Open een console vanuit een actieve VM of container in de Proxmox-tool.",
+    "connect": "Verbinden",
+    "reconnect": "Opnieuw verbinden",
+    "disconnect": "Verbinding verbreken",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Volledig scherm",
+    "notRunning": "Start de gast om de console te openen.",
+    "lost": "De consoleverbinding is verbroken.",
+    "ended": "Console gesloten.",
+    "status": {
+      "idle": "Niet verbonden",
+      "connecting": "Verbinden...",
+      "connected": "Verbonden",
+      "closed": "Verbinding verbroken",
+      "error": "Kan geen verbinding maken"
+    },
+    "proxmox": "Proxmox-console",
+    "proxmoxHint": "De eigen console van Proxmox via de node: het scherm van een VM, een shell in een container. Voor een gast die nog geen netwerk heeft."
+  },
+  "pool": {
+    "members": "Leden",
+    "empty": "Deze pool is leeg."
+  },
+  "sdn": {
+    "hint": "SDN-zones, VNets en subnetten komen met clusterbeheer in een latere versie."
+  },
+  "network": {
+    "add": "Aanmaken",
+    "apply": "Toepassen",
+    "revert": "Terugdraaien",
+    "pending": "Nog niet toegepast",
+    "hint": "Wijzigingen worden opgeslagen in /etc/network/interfaces.new en worden van kracht bij Toepassen, waarbij het netwerk van de node opnieuw wordt geladen.",
+    "type": "Type",
+    "name": "Naam",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Gateway (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Gateway (IPv6)",
+    "ports": "Bridgepoorten",
+    "slaves": "Slaves",
+    "portsHint": "Interfacenamen, gescheiden door spaties.",
+    "bondMode": "Modus",
+    "vlanDevice": "VLAN-basisapparaat",
+    "mtu": "MTU",
+    "comments": "Opmerking",
+    "autostart": "Automatisch starten",
+    "vlanAware": "VLAN-bewust",
+    "vlanAwareHint": "Laat gasten op deze bridge VLAN-tags gebruiken.",
+    "inactive": "Inactief",
+    "create": "Aanmaken",
+    "createTitle": "Interface aanmaken",
+    "editTitle": "{{iface}} bewerken",
+    "types": {
+      "bridge": "Bridge",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Poort",
+      "OVSBridge": "OVS-bridge",
+      "alias": "Alias"
+    },
+    "nameHint": {
+      "bridge": "vmbr gevolgd door een getal, zoals vmbr1.",
+      "bond": "bond gevolgd door een getal, zoals bond0.",
+      "vlan": "apparaat.tag zoals vmbr0.10, of vlan10 met een basisapparaat."
+    },
+    "addressWarning": "Deze interface draagt het adres waarop Termix de node bereikt. Een fout kan Termix afsluiten totdat iemand de node via de console herstelt.",
+    "removeTitle": "{{iface}} verwijderen?",
+    "removeDescription": "De interface wordt verwijderd wanneer de wijziging wordt toegepast.",
+    "applyTitle": "Netwerkwijzigingen toepassen op {{node}}?",
+    "applyDescription": "De node laadt het netwerk opnieuw. Als de nieuwe instellingen onjuist zijn, kunnen de node en de verbinding van Termix ermee offline gaan.",
+    "applyLabel": "Netwerk toepassen op {{node}}",
+    "reverted": "Netwerkwijzigingen teruggedraaid",
+    "problem": {
+      "cidr": "Voer het adres in zoals 10.10.0.1/24.",
+      "gateway": "Een gateway vereist een IPv4-adres en een geldig gateway-IP.",
+      "cidr6": "Voer het adres in zoals fd00::1/64.",
+      "ports": "Voer interfacenamen in, gescheiden door spaties.",
+      "slaves": "Een bond vereist minimaal één slave.",
+      "vlanDevice": "Geef het basisapparaat op voor een vlanN-interface.",
+      "mtu": "De MTU loopt van 1280 tot 65520.",
+      "name": {
+        "bridge": "Een bridge heet vmbr plus een getal.",
+        "bond": "Een bond heet bond plus een getal.",
+        "vlan": "Een VLAN heet apparaat.tag of vlan plus een getal."
+      }
+    }
+  },
+  "import": {
+    "open": "Importeren in Termix",
+    "title": "Gasten importeren als Termix-hosts",
+    "hint": "Elke gekozen VM of container wordt een Termix-host met de tag proxmox. Importeren werkt ook de namen, adressen en tags bij van eerder geïmporteerde gasten, en tagt de gasten die uit Proxmox zijn verdwenen als proxmox-missing.",
+    "loading": "Zoeken naar gasten en hun adressen…",
+    "counts": "{{total}} gasten, {{imported}} al geïmporteerd",
+    "selectAll": "Alles selecteren",
+    "selectNone": "Niets selecteren",
+    "none": "Dit cluster heeft geen VM's of containers.",
+    "imported": "Geïmporteerd",
+    "noAddress": "geen adres",
+    "folder": "Map",
+    "folderDefault": "Map met de naam {{node}}",
+    "folderSearch": "Zoeken of aanmaken, / voor een submap",
+    "folderCreate": "\"{{folder}}\" aanmaken",
+    "folderNone": "Nog geen mappen",
+    "connection": "Verbinden met",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Container-runtime",
+    "runtimeOff": "Geen Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "Onbekend OS"
+    },
+    "sshLogin": "SSH-login",
+    "desktopLogin": "RDP- en VNC-login",
+    "desktopHint": "Vereist de plug-in Extern bureaublad om te verbinden.",
+    "login": {
+      "nodeCredential": "Inloggegevens van de node",
+      "nodeUser": "Gebruikersnaam van de node",
+      "username": "Alleen gebruikersnaam",
+      "none": "Geen login"
+    },
+    "username": "Gebruikersnaam",
+    "submit_one": "{{count}} gast importeren",
+    "submit_other": "{{count}} gasten importeren",
+    "refresh": "Geïmporteerde vernieuwen",
+    "done": "Aangemaakt {{created}}, bijgewerkt {{updated}}, als ontbrekend gemarkeerd {{markedMissing}}",
+    "lastSync": "Laatste synchronisatie {{when}}.",
+    "lastSyncFailed": "Laatste synchronisatie {{when}} mislukt: {{error}}",
+    "syncHint": "Schakel Geïmporteerde gasten gesynchroniseerd houden in bij de Proxmox-instellingen van de host om ze volgens schema te vernieuwen.",
+    "addTitle": "{{name}} toevoegen aan Termix",
+    "addHint": "Deze gast is nog geen Termix-host. Voeg hem toe om de terminal te openen; daarna opent Console hem direct.",
+    "addSubmit": "Toevoegen en verbinden",
+    "gone": "Proxmox vermeldt deze gast niet meer."
+  }
+}

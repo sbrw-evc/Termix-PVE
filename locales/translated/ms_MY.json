@@ -1,0 +1,1018 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Urus Proxmox VE dari Termix: mesin maya, bekas, storan, rangkaian, sandaran, tembok api, akses dan kluster."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Buka dalam Proxmox"
+  },
+  "permissions": {
+    "view": {
+      "title": "Lihat Proxmox",
+      "description": "Lihat nod, tetamu, storan, carta dan tugas pada hos Proxmox yang boleh anda sambungkan."
+    },
+    "operate": {
+      "title": "Kendalikan tetamu Proxmox",
+      "description": "Mula, henti, matikan, but semula, gantung dan sambung semula VM dan bekas. Memerlukan akses edit pada hos."
+    },
+    "console": {
+      "title": "Buka konsol Proxmox",
+      "description": "Buka skrin VM dan shell root dalam bekas. Memerlukan akses edit pada hos."
+    },
+    "configure": {
+      "title": "Konfigurasikan Proxmox",
+      "description": "Cipta, klon, pindahkan, tukar dan padam VM dan bekas. Memerlukan akses edit pada hos."
+    },
+    "administer": {
+      "title": "Tadbir Proxmox",
+      "description": "Urus pengguna, kumpulan, peranan, pool, 2FA, token, realm dan kluster. Memerlukan akses edit pada hos."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Nod Proxmox",
+      "description": "Tandakan hos ini sebagai nod Proxmox VE. Ia kemudian dipaparkan dalam alat Proxmox di bawah Alat."
+    },
+    "transport": {
+      "label": "Sambung melalui",
+      "description": "Automatik menggunakan API melalui terowong SSH setelah token disimpan, dan pvesh melalui SSH sehingga itu.",
+      "auto": "Automatik",
+      "tunnel": "API melalui terowong SSH",
+      "direct": "API secara terus",
+      "pvesh": "pvesh melalui SSH"
+    },
+    "tokenId": {
+      "label": "ID token API",
+      "description": "Dicipta dalam Proxmox di Pusat Data > Kebenaran > Token API. Berbentuk user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "Rahsia token API",
+      "description": "Dipaparkan sekali sahaja semasa token dicipta. Disimpan secara tersulit."
+    },
+    "apiHost": {
+      "label": "Alamat API",
+      "description": "Untuk API secara terus sahaja. Biarkan kosong untuk menggunakan alamat hos ini."
+    },
+    "apiPort": {
+      "label": "Port API",
+      "description": "8006 melainkan anda telah mengubahnya."
+    },
+    "caCert": {
+      "label": "Sijil CA",
+      "description": "Untuk API secara terus sahaja. CA nod dalam PEM, daripada /etc/pve/pve-root-ca.pem. Biarkan kosong jika API mempunyai sijil yang dipercayai umum.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Tetamu yang diimport",
+    "importSync": {
+      "label": "Kekalkan tetamu yang diimport segerak",
+      "description": "Mengemas kini nama, alamat dan tag tetamu yang diimport dari nod ini, dan menandakan yang telah dialih keluar dari Proxmox dengan tag proxmox-missing."
+    },
+    "importInterval": {
+      "label": "Segerak setiap (minit)",
+      "description": "Sekurang-kurangnya 5 minit."
+    },
+    "importAddNew": {
+      "label": "Tambah tetamu baharu semasa segerak",
+      "description": "Mengimport tetamu yang dicipta dalam Proxmox selepas import pertama, dengan lalai yang terakhir digunakan dalam dialog import."
+    },
+    "importDefaults": {
+      "label": "Lalai import"
+    },
+    "importState": {
+      "label": "Segerak tetamu terakhir"
+    },
+    "source": {
+      "label": "Tetamu Proxmox"
+    }
+  },
+  "app": {
+    "loading": "Memuatkan...",
+    "loadFailed": "Tidak dapat memuatkan kluster",
+    "refreshFailed": "Muat semula gagal: {{message}}",
+    "retry": "Cuba lagi",
+    "refresh": "Muat semula",
+    "search": "Cari tetamu, nod dan storan...",
+    "status": "{{nodes}} nod, {{running}} daripada {{total}} tetamu sedang berjalan",
+    "pickHost": "Hos Proxmox",
+    "pickResource": "Pilih nod, tetamu atau storan di sebelah kiri",
+    "noHosts": "Belum ada hos Proxmox",
+    "noHostsHint": "Buka tetapan hos, hidupkan Nod Proxmox di bawah SSH, dan pilih cara untuk menyambung. Nod kemudian dipaparkan di sini.",
+    "cancel": "Batal",
+    "working": "Sedang diproses...",
+    "save": "Simpan",
+    "reset": "Set semula",
+    "close": "Tutup",
+    "yes": "Ya",
+    "no": "Tidak",
+    "edit": "Edit"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix tidak mempercayai sijil nod. Dalam tetapan Proxmox hos, tampal CA nod daripada /etc/pve/pve-root-ca.pem ke dalam Sijil CA, atau pilih API melalui terowong SSH.",
+    "tlsHostname": "Sijil nod adalah untuk nama lain. Tetapkan Alamat API kepada nama atau alamat yang disenaraikan dalam sijil.",
+    "tlsExpired": "Sijil nod telah tamat tempoh atau belum sah. Perbaharuinya dalam Proxmox di nod > Sistem > Sijil.",
+    "notEnabled": "Hos ini tidak ditandakan sebagai nod Proxmox. Hidupkan Nod Proxmox dalam tetapan hos.",
+    "hostAccess": "Anda memerlukan akses edit pada hos ini untuk mengubahnya."
+  },
+  "tree": {
+    "nothingFound": "Tiada yang sepadan dengan carian.",
+    "expand": "Kembangkan",
+    "collapse": "Runtuhkan",
+    "datacenter": "Pusat Data",
+    "folders": {
+      "lxc": "Bekas LXC",
+      "qemu": "Mesin Maya",
+      "node": "Nod",
+      "pool": "Pool",
+      "sdn": "Rangkaian",
+      "storage": "Storan"
+    },
+    "views": {
+      "folder": "Paparan folder",
+      "server": "Paparan pelayan"
+    }
+  },
+  "types": {
+    "node": "Nod",
+    "qemu": "VM",
+    "lxc": "Bekas",
+    "storage": "Storan",
+    "pool": "Pool",
+    "sdn": "Zon SDN"
+  },
+  "states": {
+    "running": "Berjalan",
+    "stopped": "Dihentikan",
+    "paused": "Dijeda",
+    "suspended": "Digantung",
+    "online": "Dalam talian",
+    "offline": "Luar talian",
+    "available": "Tersedia",
+    "unknown": "Tidak diketahui"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Memori",
+    "disk": "Cakera",
+    "rootDisk": "Cakera root",
+    "usage": "Penggunaan",
+    "cores_other": "{{count}} teras",
+    "swap": "Swap"
+  },
+  "summary": {
+    "title": "Ringkasan",
+    "node": "Nod",
+    "vmid": "ID",
+    "uptime": "Masa hidup",
+    "pool": "Pool",
+    "ha": "HA",
+    "tags": "Tag",
+    "guests": "Tetamu",
+    "guestsRunning": "{{running}} daripada {{total}} berjalan",
+    "cpuModel": "CPU",
+    "sockets": "soket",
+    "load": "Purata beban",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Kernel",
+    "ips": "Alamat"
+  },
+  "charts": {
+    "title": "Carta",
+    "cpu": "CPU",
+    "load": "Purata beban",
+    "memory": "Memori",
+    "network": "Rangkaian",
+    "diskIo": "I/O cakera",
+    "cpuUsage": "Penggunaan CPU",
+    "ioDelay": "Kelewatan IO",
+    "used": "Digunakan",
+    "total": "Jumlah",
+    "in": "Masuk",
+    "out": "Keluar",
+    "read": "Baca",
+    "write": "Tulis",
+    "timeframe": {
+      "hour": "Jam",
+      "day": "Hari",
+      "week": "Minggu",
+      "month": "Bulan",
+      "year": "Tahun"
+    },
+    "noData": "Tiada data untuk tempoh ini",
+    "serverLoad": "Beban pelayan",
+    "loadAverage": "Purata beban",
+    "swap": "Swap",
+    "pressureCpu": "Tekanan CPU (stall)",
+    "pressureMemory": "Tekanan memori (stall)",
+    "pressureIo": "Tekanan IO (stall)",
+    "some": "Some",
+    "full": "Full",
+    "average": "Purata",
+    "maximum": "Maksimum"
+  },
+  "tasks": {
+    "title": "Tugas",
+    "started": "Dimulakan",
+    "node": "Nod",
+    "user": "Pengguna",
+    "task": "Tugas",
+    "status": "Status",
+    "running": "Berjalan",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} pada {{node}}",
+    "done": "{{label}}: selesai",
+    "failed": "{{label}} gagal: {{reason}}"
+  },
+  "guests": {
+    "more": "Tindakan lain",
+    "isTemplate": "Templat",
+    "locked": "Dikunci: {{lock}}",
+    "power": {
+      "start": "Mula",
+      "shutdown": "Matikan",
+      "stop": "Henti",
+      "reboot": "But semula",
+      "suspend": "Gantung",
+      "resume": "Sambung semula",
+      "reset": "Set semula",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Hentikan {{name}} sekarang?",
+        "reset": "Set semula {{name}} sekarang?",
+        "description": "Ini memutuskan kuasa seperti mencabut palam. Kerja yang belum disimpan dalam tetamu akan hilang."
+      }
+    },
+    "clone": {
+      "menu": "Klon",
+      "title": "Klon {{name}}",
+      "submit": "Klon",
+      "label": "Klon {{source}} ke {{id}}",
+      "full": "Klon penuh",
+      "fullHint": "Menyalin setiap cakera, jadi klon tidak bergantung pada yang asal.",
+      "linkedHint": "Mati mencipta klon terpaut yang berkongsi cakera templat dan siap dalam beberapa saat.",
+      "sameStorage": "Storan yang sama seperti asal"
+    },
+    "migrate": {
+      "menu": "Pindah",
+      "title": "Pindah {{name}}",
+      "submit": "Pindah",
+      "label": "Pindah {{name}} ke {{target}}",
+      "noOtherNodes": "Tiada nod lain dalam talian dalam kluster ini untuk dipindahkan.",
+      "onlineHint": "VM sedang berjalan dan dipindahkan secara langsung, tanpa dihentikan.",
+      "restartHint": "Bekas sedang berjalan. Ia berhenti, dipindahkan dan dimulakan semula pada sasaran."
+    },
+    "template": {
+      "menu": "Tukar kepada templat",
+      "confirm": "Tukar {{name}} kepada templat?",
+      "description": "Templat tidak boleh dimulakan, hanya diklon. Ini tidak boleh dibuat asal.",
+      "submit": "Tukar",
+      "label": "Tukar {{name}} kepada templat"
+    },
+    "delete": {
+      "menu": "Padam",
+      "title": "Padam {{name}}",
+      "submit": "Padam",
+      "label": "Padam {{name}}",
+      "warning": "Ini memadamkan tetamu {{vmid}} dan cakeranya. Ia tidak boleh dibuat asal.",
+      "stopFirst": "Hentikan tetamu sebelum memadamkannya.",
+      "typeId": "Taip {{vmid}} untuk mengesahkan",
+      "purge": "Alih keluar daripada kerja sandaran, replikasi dan HA",
+      "purgeHint": "Tidak meninggalkan kerja yang menunjuk kepada tetamu yang sudah tiada.",
+      "unreferenced": "Turut padam cakera yang tidak dirujuk",
+      "unreferencedHint": "Cakera pada storan yang didayakan dengan ID ini yang tidak disenaraikan dalam konfigurasi."
+    },
+    "create": {
+      "vmButton": "Cipta VM",
+      "ctButton": "Cipta CT",
+      "vmTitle": "Cipta mesin maya",
+      "ctTitle": "Cipta bekas",
+      "submit": "Cipta",
+      "vmLabel": "Cipta VM {{id}} ({{name}})",
+      "ctLabel": "Cipta CT {{id}} ({{name}})",
+      "noTemplates": "Tiada templat bekas pada nod ini. Muat turun satu dalam Proxmox di storan > Templat CT.",
+      "noIso": "Tiada media pemasangan",
+      "unprivilegedHint": "Lebih selamat: root dalam bekas bukan root pada nod.",
+      "loginHint": "Tetapkan kata laluan root, kunci SSH, atau kedua-duanya.",
+      "problem": {
+        "vmid": "Pilih ID 100 atau lebih.",
+        "hostname": "Masukkan nama hos: huruf, digit dan sengkang.",
+        "name": "Masukkan nama: huruf, digit dan sengkang.",
+        "template": "Pilih templat.",
+        "storage": "Pilih storan.",
+        "disk": "Masukkan saiz cakera.",
+        "cores": "Masukkan bilangan teras.",
+        "sockets": "Masukkan bilangan soket.",
+        "memory": "Masukkan sekurang-kurangnya 16 MiB memori.",
+        "swap": "Masukkan swap dalam MiB, 0 untuk tiada.",
+        "network": "Pilih jambatan dan, untuk alamat statik, masukkannya seperti 192.168.0.60/24.",
+        "login": "Tetapkan kata laluan root atau kunci SSH supaya anda boleh log masuk.",
+        "password": "Kata laluan memerlukan sekurang-kurangnya 5 aksara."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Lain-lain"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Nama",
+      "hostname": "Nama hos",
+      "node": "Nod",
+      "targetNode": "Nod sasaran",
+      "targetStorage": "Storan sasaran",
+      "storage": "Storan",
+      "template": "Templat",
+      "iso": "Media pemasangan",
+      "ostype": "OS tetamu",
+      "rootPassword": "Kata laluan root",
+      "sshKeys": "Kunci awam SSH",
+      "unprivileged": "Bekas tanpa keistimewaan",
+      "diskGiB": "Cakera (GiB)",
+      "cores": "Teras",
+      "sockets": "Soket",
+      "memoryMiB": "Memori (MiB)",
+      "swapMiB": "Swap (MiB)",
+      "bridge": "Jambatan rangkaian",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Statik",
+      "cidr": "Alamat/awalan",
+      "gateway": "Get laluan",
+      "startAfter": "Mula selepas dicipta",
+      "pick": "Pilih satu"
+    },
+    "tabs": {
+      "summary": "Ringkasan",
+      "hardware": "Perkakasan",
+      "options": "Pilihan",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Edit",
+    "add": "Tambah",
+    "remove": "Alih keluar",
+    "removed": "{{key}} dialih keluar",
+    "pending": "Belum selesai",
+    "pendingHint": "Perubahan bertanda Belum selesai berkuat kuasa apabila tetamu dimulakan semula dari Proxmox: but semula di dalam tetamu tidak mencukupi.",
+    "processors": "Pemproses",
+    "processorsValue": "{{sockets}} soket × {{cores}} teras, {{cpu}}",
+    "allCores": "Semua",
+    "swap": "Swap",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "Pemproses dan memori",
+      "title": "Pemproses dan memori"
+    },
+    "cpuType": "Jenis CPU",
+    "cpulimit": "Had CPU",
+    "cpulimitHint": "0 untuk tiada had. 1.5 ialah masa satu setengah teras.",
+    "balloon": "Memori minimum (MiB)",
+    "balloonHint": "Dengan pemacu balloon, tetamu memulangkan memori sehingga nilai ini. Sama dengan memori mematikannya, 0 mengalih keluar pemacu.",
+    "disks": "Cakera",
+    "volumes": "Cakera root dan titik lekap",
+    "bus": "Bas",
+    "slot": "Akan menjadi {{key}}",
+    "iothread": "IO thread",
+    "discard": "Discard",
+    "discardHint": "Membolehkan tetamu membebaskan blok yang tidak digunakan pada storan nipis.",
+    "ssd": "Emulasi SSD",
+    "mountPath": "Laluan lekap dalam bekas",
+    "backup": "Sertakan dalam sandaran",
+    "addDisk": {
+      "button": "Tambah cakera",
+      "title": "Tambah cakera",
+      "label": "Tambah {{key}}"
+    },
+    "addMount": {
+      "button": "Tambah titik lekap",
+      "title": "Tambah titik lekap"
+    },
+    "resize": {
+      "menu": "Ubah saiz",
+      "title": "Besarkan {{key}}",
+      "grow": "Tambah (GiB)",
+      "result": "{{from}} GiB menjadi {{to}} GiB",
+      "noShrink": "Cakera hanya boleh dibesarkan. Partition dan sistem fail tetamu perlu dibesarkan di dalam tetamu selepas itu, melainkan ia melakukannya semasa but.",
+      "submit": "Besarkan",
+      "label": "Besarkan {{key}} sebanyak {{size}} GiB"
+    },
+    "move": {
+      "menu": "Pindah ke storan",
+      "title": "Pindah {{key}}",
+      "submit": "Pindah",
+      "deleteSource": "Padam yang asal",
+      "deleteSourceHint": "Mati menyimpannya sebagai cakera tidak digunakan.",
+      "label": "Pindah {{key}} ke {{storage}}"
+    },
+    "detach": {
+      "menu": "Tanggalkan",
+      "title": "Tanggalkan {{key}}?",
+      "description": "Cakera kekal pada storannya sebagai cakera tidak digunakan dan boleh dipadam atau dipasang semula."
+    },
+    "unused": {
+      "delete": "Padam",
+      "title": "Padam {{volume}}?",
+      "description": "Ini memadamkan cakera dan semua kandungannya. Ia tidak boleh dibuat asal."
+    },
+    "cd": {
+      "heading": "Pemacu CD/DVD",
+      "title": "Media dalam {{key}}",
+      "empty": "Tiada media"
+    },
+    "nic": {
+      "heading": "Penyesuai rangkaian",
+      "add": "Tambah penyesuai",
+      "addTitle": "Tambah {{key}}",
+      "editTitle": "Edit {{key}}",
+      "none": "Tiada penyesuai rangkaian.",
+      "model": "Model",
+      "name": "Nama dalam bekas",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Statik",
+        "none": "Tiada",
+        "auto": "SLAAC"
+      },
+      "tag": "Tag VLAN",
+      "tagHint": "Kosong untuk tanpa tag.",
+      "rate": "Had kadar (MB/s)",
+      "rateHint": "Kosong untuk tiada had.",
+      "firewall": "Tembok api",
+      "firewallShort": "tembok api",
+      "removeTitle": "Alih keluar {{key}}?",
+      "removeDescription": "Tetamu kehilangan penyesuai ini dan alamatnya."
+    },
+    "problem": {
+      "cpu": "Masukkan sekurang-kurangnya satu soket dan teras.",
+      "cpulimit": "Had CPU adalah dari 0 hingga 8192.",
+      "memory": "Masukkan sekurang-kurangnya 16 MiB memori.",
+      "balloon": "Memori minimum tidak boleh melebihi memori.",
+      "swap": "Masukkan swap dalam MiB, 0 untuk tiada.",
+      "noSlot": "Setiap slot jenis ini telah digunakan.",
+      "storage": "Pilih storan.",
+      "size": "Masukkan saiz dalam GiB bulat.",
+      "path": "Masukkan laluan mutlak seperti /data, bukan / itu sendiri.",
+      "bridge": "Pilih jambatan.",
+      "tag": "Tag VLAN adalah dari 1 hingga 4094.",
+      "rate": "Masukkan kadar melebihi 0, atau biarkan kosong.",
+      "name": "Masukkan nama seperti eth0.",
+      "ip4": "Masukkan alamat seperti 192.168.0.60/24 dan get laluan yang sah.",
+      "ip6": "Masukkan alamat seperti fd00::10/64."
+    },
+    "detached": "{{key}} ditanggalkan; ia kekal sebagai cakera tidak digunakan",
+    "coresHint": "Kosong menggunakan setiap teras nod."
+  },
+  "options": {
+    "general": "Umum",
+    "tags": "Tag",
+    "tagsHint": "Dipisahkan dengan koma.",
+    "onboot": "Mula apabila nod but",
+    "protection": "Perlindungan",
+    "protectionHint": "Menyekat pemadaman tetamu dan cakeranya sehingga dimatikan.",
+    "agent": "Ejen tetamu QEMU",
+    "agentHint": "Hidupkan setelah ejen berjalan dalam tetamu, untuk alamatnya dan penutupan yang bersih.",
+    "startup": "Susunan mula dan matikan",
+    "startupOrder": "Susunan",
+    "startupUp": "Kelewatan selepas mula (s)",
+    "startupDown": "Had masa matikan (s)",
+    "dns": "DNS",
+    "nameserver": "Pelayan DNS",
+    "searchdomain": "Domain carian",
+    "useHost": "Kosong menggunakan tetapan nod.",
+    "notes": "Nota",
+    "saved": "Pilihan disimpan",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Lain-lain"
+    },
+    "problem": {
+      "name": "Masukkan nama.",
+      "startup": "Susunan dan kelewatan ialah nombor bulat.",
+      "tags": "Tag menggunakan huruf, digit, sengkang, titik dan garis bawah.",
+      "nameserver": "Masukkan alamat IP dipisahkan dengan ruang."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "VM ini tiada pemacu cloud-init. Tambah satu, kemudian tetapkan pengguna, kunci dan rangkaian di sini; imej tetamu mesti menyokong cloud-init.",
+    "addDrive": "Tambah pemacu cloud-init",
+    "driveAdded": "Pemacu cloud-init ditambah",
+    "user": "Pengguna",
+    "username": "Nama pengguna",
+    "usernameHint": "Kosong menggunakan pengguna lalai imej.",
+    "password": "Kata laluan",
+    "passwordHint": "Kosong mengekalkan yang semasa. Disimpan dalam bentuk cincang oleh Proxmox.",
+    "network": "Rangkaian",
+    "saved": "Tetapan cloud-init disimpan",
+    "regenerate": "Jana semula imej",
+    "regenerated": "Imej cloud-init dijana semula",
+    "regenerateHint": "Menulis tetapan ke {{drive}}. Tetamu membacanya pada but seterusnya."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Ringkasan",
+      "iso": "Imej ISO",
+      "vztmpl": "Templat CT",
+      "backup": "Sandaran",
+      "images": "Imej cakera"
+    },
+    "content": "Kandungan",
+    "contentTypes": {
+      "images": "Cakera VM",
+      "rootdir": "Cakera bekas",
+      "iso": "Imej ISO",
+      "vztmpl": "Templat CT",
+      "backup": "Sandaran",
+      "snippets": "Snippet",
+      "import": "Import"
+    },
+    "shared": "Dikongsi",
+    "empty": "Belum ada apa-apa di sini.",
+    "owner": "tetamu {{vmid}}",
+    "protected": "Dilindungi",
+    "download": {
+      "button": "Muat turun dari URL",
+      "title": {
+        "iso": "Muat turun imej ISO ke {{storage}}",
+        "vztmpl": "Muat turun templat CT ke {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Nama fail",
+      "algorithm": "Jenis checksum",
+      "noChecksum": "Tiada",
+      "checksum": "Checksum",
+      "verify": "Semak sijil pelayan",
+      "submit": "Muat turun",
+      "label": "Muat turun {{name}}",
+      "problem": {
+        "url": "Masukkan URL http atau https.",
+        "filename": "Nama fail menggunakan huruf, digit, titik, sengkang dan garis bawah.",
+        "extension": "Imej ISO berakhir dengan .iso atau .img; templat dengan .tar.gz, .tar.xz atau .tar.zst.",
+        "checksum": "Pilih jenis checksum dan masukkan checksum dalam heks, atau biarkan kedua-duanya kosong."
+      }
+    },
+    "catalog": {
+      "button": "Templat",
+      "title": "Templat bekas untuk {{storage}}",
+      "search": "Cari templat...",
+      "have": "Dimuat turun",
+      "label": "Muat turun {{name}}"
+    },
+    "delete": {
+      "title": "Padam {{name}}?",
+      "description": "Ini memadamkan fail daripada storan. Ia tidak boleh dibuat asal.",
+      "submit": "Padam",
+      "done": "{{name}} dipadam"
+    },
+    "upload": {
+      "button": "Muat naik",
+      "cancel": "Batal muat naik",
+      "done": "{{name}} dimuat naik",
+      "failed": "{{name}} gagal dimuat naik: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Ringkasan",
+      "network": "Rangkaian",
+      "system": "Sistem",
+      "services": "Perkhidmatan",
+      "updates": "Kemas kini",
+      "disks": "Cakera",
+      "tasks": "Tugas",
+      "log": "Log"
+    },
+    "services": {
+      "start": "Mula",
+      "stop": "Henti",
+      "restart": "Mula semula",
+      "reload": "Muat semula",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Hentikan {{name}}?",
+        "restart": "Mula semula {{name}}?",
+        "description": "Perkhidmatan Proxmox sendiri memastikan nod dan API-nya berjalan; menghentikan satu boleh memutuskan alat ini sehingga ia dimulakan semula."
+      }
+    },
+    "updates": {
+      "refresh": "Muat semula senarai pakej",
+      "refreshLabel": "Muat semula senarai pakej pada {{node}}",
+      "count_other": "{{count}} pakej boleh dinaik taraf",
+      "none": "Semuanya terkini",
+      "installHint": "Pasang naik taraf dari terminal nod dengan apt full-upgrade; Proxmox tidak menaik taraf melalui API-nya.",
+      "views": {
+        "packages": "Pakej",
+        "repositories": "Repositori"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART untuk {{disk}}",
+      "health": "Kesihatan",
+      "usedBy": "digunakan oleh {{used}}",
+      "unused": "tidak digunakan",
+      "wearout": "{{value}}% hayat berbaki",
+      "views": {
+        "disks": "Cakera",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Direktori",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_other": "{{count}} volum logik",
+        "metadata": "metadata {{used}} / {{size}}",
+        "frag": "{{value}}% berpecah",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "Tiada kumpulan volum LVM.",
+          "lvmthin": "Tiada pool LVM-Thin.",
+          "directory": "Tiada storan direktori pada cakera tersendiri.",
+          "zfs": "Tiada pool ZFS."
+        },
+        "create": {
+          "lvm": "Cipta kumpulan volum LVM",
+          "lvmthin": "Cipta pool LVM-Thin",
+          "directory": "Cipta direktori",
+          "zfs": "Cipta pool ZFS"
+        },
+        "createSubmit": "Cipta",
+        "createLabel": "Cipta {{name}} pada {{node}}",
+        "wipeWarning": "Cakera yang dipilih akan dipartisi dan diformat. Hanya cakera yang kosong ditawarkan.",
+        "name": "Nama",
+        "device": "Cakera",
+        "devices": "Cakera",
+        "pickDisk": "Pilih cakera",
+        "noUnused": "Tiada cakera yang tidak digunakan. Hapuskan satu di bawah Cakera dahulu, jika kandungannya boleh dibuang.",
+        "filesystem": "Sistem fail",
+        "raidlevel": "Tahap RAID",
+        "raid": {
+          "single": "Cakera tunggal",
+          "mirror": "Cermin",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Pemampatan",
+        "addStorage": "Tambah sebagai storan",
+        "addStorageHint": "Menjadikannya storan Proxmox dengan nama yang sama, untuk cakera, bekas atau sandaran.",
+        "problem": {
+          "name": "Nama bermula dengan huruf dan mengandungi huruf, digit, -, _ atau .",
+          "device": "Pilih cakera.",
+          "oneDevice": "Pilih satu cakera.",
+          "tooFew": "Tahap RAID ini memerlukan sekurang-kurangnya {{count}} cakera.",
+          "even": "RAID10 memerlukan bilangan cakera yang genap.",
+          "ashift": "ashift adalah antara 9 dan 16."
+        },
+        "remove": "Alih keluar",
+        "removeTitle": "Alih keluar {{name}}?",
+        "removeWarning": "Tetamu dengan cakera padanya akan kehilangannya. Mengalih keluar tidak memindahkan apa-apa terlebih dahulu.",
+        "removeLabel": "Alih keluar {{name}} pada {{node}}",
+        "cleanupConfig": "Turut alih keluar entri storan",
+        "cleanupDisks": "Hapuskan cakeranya",
+        "cleanupDisksHint": "Memadamkan cakera supaya boleh digunakan semula.",
+        "inUse": {
+          "lvm": "Ia masih mempunyai volum logik. Alih keluarnya dahulu; kumpulan ini mungkin memegang sistem nod sendiri.",
+          "lvmthin": "Ia masih menyimpan data. Pindahkan atau alih keluar cakera tetamu padanya dahulu."
+        }
+      },
+      "gpt": "Mulakan GPT",
+      "gptTitle": "Mulakan {{disk}} dengan GPT?",
+      "gptDescription": "Menulis jadual partition GPT kosong ke cakera.",
+      "gptLabel": "Mulakan {{disk}} pada {{node}}",
+      "wipe": "Hapuskan",
+      "wipeTitle": "Hapuskan {{disk}}?",
+      "wipeWarning": "Memadamkan jadual partition dan setiap tandatangan sistem fail, LVM dan ZFS pada cakera (kini: {{used}}). Kandungannya hilang untuk selamanya.",
+      "wipeLabel": "Hapuskan {{disk}} pada {{node}}",
+      "typePath": "Taip {{disk}} untuk mengesahkan"
+    },
+    "log": {
+      "search": "Tapis log...",
+      "empty": "Tiada baris yang sepadan."
+    },
+    "power": {
+      "menu": "Kuasa nod",
+      "termixWarning": "Jika Termix berjalan pada nod ini, ia juga turut terhenti sehingga nod kembali.",
+      "typeName": "Taip {{node}} untuk mengesahkan",
+      "reboot": {
+        "menu": "But semula nod",
+        "title": "But semula {{node}}?",
+        "submit": "But semula",
+        "label": "But semula {{node}}",
+        "warning_other": "{{count}} tetamu yang berjalan akan berhenti atau dimatikan dahulu, mengikut tetapan permulaannya."
+      },
+      "shutdown": {
+        "menu": "Matikan nod",
+        "title": "Matikan {{node}}?",
+        "submit": "Matikan",
+        "label": "Matikan {{node}}",
+        "warning_other": "{{count}} tetamu yang berjalan turut terhenti, dan tiada apa yang memulakannya semula sehingga seseorang menghidupkan nod."
+      }
+    },
+    "shell": "Shell",
+    "shellHint": "Membuka terminal SSH hos ini dalam Termix.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Domain carian",
+        "server": "Pelayan DNS {{n}}",
+        "editTitle": "DNS bagi {{node}}",
+        "saved": "DNS disimpan",
+        "problem": {
+          "search": "Masukkan domain carian, seperti example.com.",
+          "server": "Pelayan DNS ialah alamat IPv4 atau IPv6.",
+          "noServer": "Masukkan sekurang-kurangnya satu pelayan DNS."
+        }
+      },
+      "time": {
+        "title": "Masa",
+        "zone": "Zon waktu",
+        "local": "Masa tempatan",
+        "editTitle": "Zon waktu bagi {{node}}",
+        "hint": "Jam itu sendiri dikekalkan oleh NTP (chrony) pada nod.",
+        "saved": "Zon waktu ditetapkan kepada {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "/etc/hosts bagi {{node}}",
+        "warning": "Nama nod sendiri mesti terus diselesaikan kepada alamatnya, atau kluster dan antara muka webnya berhenti berfungsi.",
+        "saved": "/etc/hosts disimpan"
+      },
+      "certs": {
+        "title": "Sijil",
+        "issuer": "dikeluarkan oleh {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Sah sehingga {{date}}",
+          "expiring": "Tamat tempoh {{date}}",
+          "expired": "Telah tamat tempoh {{date}}",
+          "notYet": "Belum sah"
+        },
+        "upload": "Muat naik tersuai",
+        "uploadTitle": "Sijil tersuai untuk {{node}}",
+        "uploaded": "Sijil dimuat naik",
+        "chain": "Rantaian sijil",
+        "chainHint": "PEM: sijil nod dahulu, kemudian sijil perantara.",
+        "key": "Kunci peribadi",
+        "keyHint": "PEM, tidak disulitkan. Biarkan kosong untuk mengekalkan kunci yang sedia ada pada nod.",
+        "fromFile": "Baca dari fail",
+        "badCert": "Ini bukan sijil PEM.",
+        "badKey": "Ini bukan kunci peribadi PEM.",
+        "restart": "Mula semula antara muka web untuk menggunakannya",
+        "restartHint": "pveproxy dimulakan semula; Termix kehilangan API selama beberapa saat.",
+        "remove": "Alih keluar tersuai",
+        "removeTitle": "Alih keluar sijil tersuai?",
+        "removeDescription": "Nod kembali kepada sijil yang ditandatangani sendiri, dan antara muka web dimulakan semula.",
+        "removed": "Sijil tersuai dialih keluar"
+      }
+    },
+    "repos": {
+      "on": "Didayakan",
+      "off": "Dinyahdayakan",
+      "enable": "Dayakan",
+      "disable": "Nyahdayakan",
+      "enableTitle": "Dayakan repositori ini?",
+      "enabled": "Repositori didayakan",
+      "disabled": "Repositori dinyahdayakan",
+      "add": "Tambah:",
+      "added": "Repositori {{name}} ditambah",
+      "hint": "Jalankan Muat semula senarai pakej di bawah Pakej selepas perubahan. Repositori Enterprise memerlukan langganan."
+    },
+    "taskHistory": {
+      "type": "Jenis, seperti vzdump",
+      "vmid": "VM/CT ID",
+      "user": "Pengguna",
+      "errorsOnly": "Hanya tugas yang gagal",
+      "none": "Tiada tugas yang sepadan.",
+      "more": "Muat lagi",
+      "state": {
+        "running": "Berjalan",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Pesan sijil",
+      "renew": "Perbaharui",
+      "orderLabel": "Pesan sijil ACME untuk {{node}}",
+      "renewLabel": "Perbaharui sijil ACME untuk {{node}}",
+      "usesAccount": "Akaun: {{account}}",
+      "none": "tiada",
+      "noDomains": "Belum ada domain. Edit untuk menambah nama yang dijawab oleh nod ini.",
+      "viaHttp": "Cabaran HTTP",
+      "viaDns": "Cabaran DNS melalui {{plugin}}",
+      "accounts": "Akaun",
+      "plugins": "Pemalam cabaran DNS",
+      "remove": "Alih keluar",
+      "domainsTitle": "Domain ACME bagi {{node}}",
+      "domainsSaved": "Domain ACME disimpan",
+      "domain": "Domain",
+      "challenge": "Cabaran",
+      "alias": "Alias",
+      "addDomain": "Tambah domain",
+      "httpHint": "Cabaran HTTP memerlukan port 80 nod ini boleh dicapai dari internet di bawah domain tersebut. DNS berfungsi tanpanya, dan untuk wildcard.",
+      "hint": "Akaun dan pemalam dikongsi oleh seluruh kluster; domain adalah bagi setiap nod.",
+      "problem": {
+        "noDomain": "Tambah sekurang-kurangnya satu domain.",
+        "tooMany": "Nod mempunyai sehingga enam domain ACME.",
+        "domain": "Domain ialah nama penuh seperti pve.example.com.",
+        "wildcard": "Domain wildcard memerlukan pemalam cabaran DNS."
+      },
+      "account": {
+        "title": "Akaun",
+        "pick": "Pilih akaun",
+        "add": "Daftar akaun",
+        "addTitle": "Daftar akaun ACME",
+        "register": "Daftar",
+        "registerLabel": "Daftar akaun ACME {{name}}",
+        "name": "Nama",
+        "email": "E-mel",
+        "directory": "Direktori ACME",
+        "customDirectory": "URL tersuai",
+        "directoryUrl": "URL direktori",
+        "acceptTos": "Terima terma perkhidmatan",
+        "eabKid": "ID kunci EAB",
+        "eabHmac": "Kunci HMAC EAB",
+        "eabHint": "Hanya untuk CA yang meminta External Account Binding.",
+        "none": "Belum ada akaun ACME.",
+        "needOne": "Daftar akaun ACME dahulu.",
+        "removeTitle": "Nyahaktifkan akaun {{name}}?",
+        "removeDescription": "Akaun dinyahaktifkan di CA dan dialih keluar di sini. Sijil yang telah dikeluarkan terus berfungsi.",
+        "removeLabel": "Nyahaktifkan akaun ACME {{name}}",
+        "problem": {
+          "name": "Nama mengandungi huruf, digit, -, _ atau .",
+          "email": "Masukkan alamat e-mel.",
+          "directory": "Direktori ialah URL http atau https.",
+          "tos": "Terima terma perkhidmatan untuk mendaftar.",
+          "eab": "EAB memerlukan kedua-dua ID kunci dan kunci HMAC."
+        }
+      },
+      "plugin": {
+        "add": "Tambah pemalam",
+        "addTitle": "Tambah pemalam cabaran DNS",
+        "id": "ID pemalam",
+        "api": "DNS API",
+        "pickApi": "Pilih penyedia DNS",
+        "delay": "Kelewatan pengesahan (s)",
+        "delayHint": "Berapa lama menunggu rekod TXT tersebar.",
+        "noFields": "Proxmox tidak menyenaraikan medan untuk penyedia ini; lihat dokumentasi acme.sh untuk pemboleh ubah yang dibacanya.",
+        "none": "Tiada pemalam DNS. HTTP berfungsi tanpanya.",
+        "disabled": "Dinyahdayakan",
+        "removeTitle": "Alih keluar pemalam {{name}}?",
+        "removeDescription": "Domain yang menggunakannya tidak lagi boleh disahkan."
+      }
+    }
+  },
+  "console": {
+    "open": "Konsol",
+    "openHint": "Membuka hos Termix tetamu, atau menawarkan untuk menambahkannya ke Termix dahulu.",
+    "tabTitle": "Konsol Proxmox",
+    "tabLabel": "{{name}} — Konsol",
+    "pick": "Buka konsol daripada VM atau bekas yang berjalan dalam alat Proxmox.",
+    "connect": "Sambung",
+    "reconnect": "Sambung semula",
+    "disconnect": "Putuskan sambungan",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Skrin penuh",
+    "notRunning": "Mulakan tetamu untuk membuka konsolnya.",
+    "lost": "Sambungan konsol terputus.",
+    "ended": "Konsol ditutup.",
+    "status": {
+      "idle": "Tidak disambungkan",
+      "connecting": "Menyambung...",
+      "connected": "Disambungkan",
+      "closed": "Diputuskan",
+      "error": "Tidak dapat menyambung"
+    },
+    "proxmox": "Konsol Proxmox",
+    "proxmoxHint": "Konsol Proxmox sendiri melalui nod: skrin VM, shell dalam bekas. Untuk tetamu yang belum ada rangkaian."
+  },
+  "pool": {
+    "members": "Ahli",
+    "empty": "Tiada apa-apa dalam pool ini."
+  },
+  "sdn": {
+    "hint": "Zon SDN, VNet dan subnet akan hadir bersama pengurusan kluster dalam keluaran akan datang."
+  },
+  "network": {
+    "add": "Cipta",
+    "apply": "Guna",
+    "revert": "Kembalikan",
+    "pending": "Belum digunakan",
+    "hint": "Perubahan disimpan ke /etc/network/interfaces.new dan berkuat kuasa apabila Guna, yang memuat semula rangkaian nod.",
+    "type": "Jenis",
+    "name": "Nama",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Get laluan (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Get laluan (IPv6)",
+    "ports": "Port jambatan",
+    "slaves": "Slave",
+    "portsHint": "Nama antara muka, dipisahkan dengan ruang.",
+    "bondMode": "Mod",
+    "vlanDevice": "Peranti mentah VLAN",
+    "mtu": "MTU",
+    "comments": "Ulasan",
+    "autostart": "Automula",
+    "vlanAware": "Peka VLAN",
+    "vlanAwareHint": "Membolehkan tetamu pada jambatan ini menggunakan tag VLAN.",
+    "inactive": "Tidak aktif",
+    "create": "Cipta",
+    "createTitle": "Cipta antara muka",
+    "editTitle": "Edit {{iface}}",
+    "types": {
+      "bridge": "Jambatan",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Port",
+      "OVSBridge": "Jambatan OVS",
+      "alias": "Alias"
+    },
+    "nameHint": {
+      "bridge": "vmbr diikuti nombor, seperti vmbr1.",
+      "bond": "bond diikuti nombor, seperti bond0.",
+      "vlan": "device.tag seperti vmbr0.10, atau vlan10 dengan peranti mentah."
+    },
+    "addressWarning": "Antara muka ini membawa alamat yang digunakan Termix untuk mencapai nod. Kesilapan boleh memutuskan Termix sehingga seseorang membaiki nod di konsolnya.",
+    "removeTitle": "Alih keluar {{iface}}?",
+    "removeDescription": "Antara muka dialih keluar apabila perubahan digunakan.",
+    "applyTitle": "Guna perubahan rangkaian pada {{node}}?",
+    "applyDescription": "Nod memuat semula rangkaiannya. Jika tetapan baharu salah, nod dan sambungan Termix kepadanya boleh terputus.",
+    "applyLabel": "Guna rangkaian pada {{node}}",
+    "reverted": "Perubahan rangkaian dikembalikan",
+    "problem": {
+      "cidr": "Masukkan alamat seperti 10.10.0.1/24.",
+      "gateway": "Get laluan memerlukan alamat IPv4 dan IP get laluan yang sah.",
+      "cidr6": "Masukkan alamat seperti fd00::1/64.",
+      "ports": "Masukkan nama antara muka dipisahkan dengan ruang.",
+      "slaves": "Bond memerlukan sekurang-kurangnya satu slave.",
+      "vlanDevice": "Namakan peranti mentah untuk antara muka vlanN.",
+      "mtu": "MTU adalah dari 1280 hingga 65520.",
+      "name": {
+        "bridge": "Jambatan dinamakan vmbr dan nombor.",
+        "bond": "Bond dinamakan bond dan nombor.",
+        "vlan": "VLAN dinamakan device.tag atau vlan dan nombor."
+      }
+    }
+  },
+  "import": {
+    "open": "Import ke Termix",
+    "title": "Import tetamu sebagai hos Termix",
+    "hint": "Setiap VM atau bekas yang dipilih menjadi hos Termix, bertag proxmox. Mengimport juga memuat semula nama, alamat dan tag tetamu yang diimport sebelum ini, dan menandakan yang telah hilang dari Proxmox dengan tag proxmox-missing.",
+    "loading": "Mencari tetamu dan alamatnya…",
+    "counts": "{{total}} tetamu, {{imported}} sudah diimport",
+    "selectAll": "Pilih semua",
+    "selectNone": "Nyahpilih semua",
+    "none": "Kluster ini tiada VM atau bekas.",
+    "imported": "Diimport",
+    "noAddress": "tiada alamat",
+    "folder": "Folder",
+    "folderDefault": "Folder bernama {{node}}",
+    "folderSearch": "Cari atau cipta, / untuk subfolder",
+    "folderCreate": "Cipta \"{{folder}}\"",
+    "folderNone": "Belum ada folder",
+    "connection": "Sambung dengan",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Runtime bekas",
+    "runtimeOff": "Tiada Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "OS tidak diketahui"
+    },
+    "sshLogin": "Log masuk SSH",
+    "desktopLogin": "Log masuk RDP dan VNC",
+    "desktopHint": "Memerlukan pemalam Remote Desktop untuk menyambung.",
+    "login": {
+      "nodeCredential": "Kelayakan nod",
+      "nodeUser": "Nama pengguna nod",
+      "username": "Nama pengguna sahaja",
+      "none": "Tiada log masuk"
+    },
+    "username": "Nama pengguna",
+    "submit_other": "Import {{count}} tetamu",
+    "refresh": "Muat semula yang diimport",
+    "done": "Dicipta {{created}}, dikemas kini {{updated}}, ditanda hilang {{markedMissing}}",
+    "lastSync": "Segerak terakhir {{when}}.",
+    "lastSyncFailed": "Segerak terakhir {{when}} gagal: {{error}}",
+    "syncHint": "Hidupkan Kekalkan tetamu yang diimport segerak dalam tetapan Proxmox hos untuk memuat semulanya mengikut jadual.",
+    "addTitle": "Tambah {{name}} ke Termix",
+    "addHint": "Tetamu ini belum menjadi hos Termix. Tambahkannya untuk membuka terminalnya, kemudian Konsol membukanya serta-merta.",
+    "addSubmit": "Tambah dan sambung",
+    "gone": "Proxmox tidak lagi menyenaraikan tetamu ini."
+  }
+}

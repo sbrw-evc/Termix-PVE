@@ -105,7 +105,8 @@
     "reset": "Reset",
     "close": "Close",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "edit": "Edit"
   },
   "errors": {
     "tlsUntrusted": "Termix does not trust the node's certificate. In the host's Proxmox settings, paste the node's CA from /etc/pve/pve-root-ca.pem into CA certificate, or pick API over SSH tunnel.",
@@ -222,7 +223,11 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} on {{node}}",
     "done": "{{label}}: done",
-    "failed": "{{label}} failed: {{reason}}"
+    "failed": "{{label}} failed: {{reason}}",
+    "collapse": "Hide the task list",
+    "expand": "Show the task list",
+    "runningCount_one": "{{count}} running",
+    "runningCount_other": "{{count}} running"
   },
   "guests": {
     "more": "More actions",
@@ -583,11 +588,13 @@
   "nodes": {
     "tabs": {
       "summary": "Summary",
+      "network": "Network",
+      "system": "System",
       "services": "Services",
       "updates": "Updates",
       "disks": "Disks",
-      "log": "Log",
-      "network": "Network"
+      "tasks": "Tasks",
+      "log": "Log"
     },
     "services": {
       "start": "Start",
@@ -599,6 +606,15 @@
         "stop": "Stop {{name}}?",
         "restart": "Restart {{name}}?",
         "description": "Proxmox's own services keep the node and its API running; stopping one can cut off this tool until it starts again."
+      },
+      "states": {
+        "active": "active",
+        "inactive": "inactive",
+        "failed": "failed",
+        "activating": "starting",
+        "deactivating": "stopping",
+        "running": "running",
+        "dead": "stopped"
       }
     },
     "updates": {
@@ -607,7 +623,11 @@
       "count_one": "{{count}} package can be upgraded",
       "count_other": "{{count}} packages can be upgraded",
       "none": "Everything is up to date",
-      "installHint": "Install upgrades from the node's terminal with apt full-upgrade; Proxmox does not upgrade through its API."
+      "installHint": "Install upgrades from the node's terminal with apt full-upgrade; Proxmox does not upgrade through its API.",
+      "views": {
+        "packages": "Packages",
+        "repositories": "Repositories"
+      }
     },
     "disks": {
       "smart": "SMART",
@@ -615,7 +635,83 @@
       "health": "Health",
       "usedBy": "used by {{used}}",
       "unused": "unused",
-      "wearout": "{{value}}% life left"
+      "wearout": "{{value}}% life left",
+      "views": {
+        "disks": "Disks",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Directory",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "{{count}} logical volume",
+        "lvCount_other": "{{count}} logical volumes",
+        "metadata": "metadata {{used}} / {{size}}",
+        "frag": "{{value}}% fragmented",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "No LVM volume groups.",
+          "lvmthin": "No LVM-Thin pools.",
+          "directory": "No directory storage on a disk of its own.",
+          "zfs": "No ZFS pools."
+        },
+        "create": {
+          "lvm": "Create LVM volume group",
+          "lvmthin": "Create LVM-Thin pool",
+          "directory": "Create directory",
+          "zfs": "Create ZFS pool"
+        },
+        "createSubmit": "Create",
+        "createLabel": "Create {{name}} on {{node}}",
+        "wipeWarning": "The chosen disks are partitioned and formatted. Only disks with nothing on them are offered.",
+        "name": "Name",
+        "device": "Disk",
+        "devices": "Disks",
+        "pickDisk": "Pick a disk",
+        "noUnused": "There is no unused disk. Wipe one under Disks first, if what is on it can go.",
+        "filesystem": "Filesystem",
+        "raidlevel": "RAID level",
+        "raid": {
+          "single": "Single disk",
+          "mirror": "Mirror",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Compression",
+        "addStorage": "Add as storage",
+        "addStorageHint": "Makes it a Proxmox storage of the same name, for disks, containers or backups.",
+        "problem": {
+          "name": "A name starts with a letter and has letters, digits, -, _ or .",
+          "device": "Pick a disk.",
+          "oneDevice": "Pick one disk.",
+          "tooFew": "This RAID level needs at least {{count}} disks.",
+          "even": "RAID10 needs an even number of disks.",
+          "ashift": "ashift is between 9 and 16."
+        },
+        "remove": "Remove",
+        "removeTitle": "Remove {{name}}?",
+        "removeWarning": "Guests with disks on it lose them. Removing does not move anything off it first.",
+        "removeLabel": "Remove {{name}} on {{node}}",
+        "cleanupConfig": "Also remove the storage entry",
+        "cleanupDisks": "Wipe its disks",
+        "cleanupDisksHint": "Erases the disks so they can be used again.",
+        "inUse": {
+          "lvm": "It still has logical volumes. Remove them first; this group may hold the node's own system.",
+          "lvmthin": "It still holds data. Move or remove the guest disks on it first."
+        }
+      },
+      "gpt": "Initialize GPT",
+      "gptTitle": "Initialize {{disk}} with GPT?",
+      "gptDescription": "Writes an empty GPT partition table to the disk.",
+      "gptLabel": "Initialize {{disk}} on {{node}}",
+      "wipe": "Wipe",
+      "wipeTitle": "Wipe {{disk}}?",
+      "wipeWarning": "Erases the partition table and every filesystem, LVM and ZFS signature on the disk (now: {{used}}). What is on it is gone for good.",
+      "wipeLabel": "Wipe {{disk}} on {{node}}",
+      "typePath": "Type {{disk}} to confirm",
+      "wipeInUse": "In use. Remove the volume group, pool, directory or storage on it first."
     },
     "log": {
       "search": "Filter the log...",
@@ -643,7 +739,158 @@
       }
     },
     "shell": "Shell",
-    "shellHint": "Opens this host's SSH terminal in Termix."
+    "shellHint": "Opens this host's SSH terminal in Termix.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Search domain",
+        "server": "DNS server {{n}}",
+        "editTitle": "DNS of {{node}}",
+        "saved": "DNS saved",
+        "problem": {
+          "search": "Enter a search domain, such as example.com.",
+          "server": "A DNS server is an IPv4 or IPv6 address.",
+          "noServer": "Enter at least one DNS server."
+        }
+      },
+      "time": {
+        "title": "Time",
+        "zone": "Time zone",
+        "local": "Local time",
+        "editTitle": "Time zone of {{node}}",
+        "hint": "The clock itself is kept by NTP (chrony) on the node.",
+        "saved": "Time zone set to {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "/etc/hosts of {{node}}",
+        "warning": "The node's own name must keep resolving to its address, or the cluster and its web interface stop working.",
+        "saved": "/etc/hosts saved"
+      },
+      "certs": {
+        "title": "Certificates",
+        "issuer": "issued by {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Valid until {{date}}",
+          "expiring": "Expires {{date}}",
+          "expired": "Expired {{date}}",
+          "notYet": "Not valid yet"
+        },
+        "upload": "Upload custom",
+        "uploadTitle": "Custom certificate for {{node}}",
+        "uploaded": "Certificate uploaded",
+        "chain": "Certificate chain",
+        "chainHint": "PEM: the node's certificate first, then the intermediates.",
+        "key": "Private key",
+        "keyHint": "PEM, unencrypted. Leave empty to keep the key already on the node.",
+        "fromFile": "Read from file",
+        "badCert": "This is not a PEM certificate.",
+        "badKey": "This is not a PEM private key.",
+        "restart": "Restart the web interface to use it",
+        "restartHint": "pveproxy restarts; Termix loses the API for a few seconds.",
+        "remove": "Remove custom",
+        "removeTitle": "Remove the custom certificate?",
+        "removeDescription": "The node goes back to its self-signed certificate, and the web interface restarts.",
+        "removed": "Custom certificate removed"
+      }
+    },
+    "repos": {
+      "on": "Enabled",
+      "off": "Disabled",
+      "enable": "Enable",
+      "disable": "Disable",
+      "enableTitle": "Enable this repository?",
+      "enabled": "Repository enabled",
+      "disabled": "Repository disabled",
+      "add": "Add:",
+      "added": "{{name}} repository added",
+      "hint": "Run Refresh package lists under Packages after a change. The Enterprise repositories need a subscription."
+    },
+    "taskHistory": {
+      "type": "Type, such as vzdump",
+      "vmid": "VM/CT ID",
+      "user": "User",
+      "errorsOnly": "Only failed tasks",
+      "none": "No tasks match.",
+      "more": "Load more",
+      "state": {
+        "running": "Running",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Order certificate",
+      "renew": "Renew",
+      "orderLabel": "Order ACME certificate for {{node}}",
+      "renewLabel": "Renew ACME certificate for {{node}}",
+      "usesAccount": "Account: {{account}}",
+      "none": "none",
+      "noDomains": "No domains yet. Edit to add the names this node answers to.",
+      "viaHttp": "HTTP challenge",
+      "viaDns": "DNS challenge through {{plugin}}",
+      "accounts": "Accounts",
+      "plugins": "DNS challenge plugins",
+      "remove": "Remove",
+      "domainsTitle": "ACME domains of {{node}}",
+      "domainsSaved": "ACME domains saved",
+      "domain": "Domain",
+      "challenge": "Challenge",
+      "alias": "Alias",
+      "addDomain": "Add domain",
+      "httpHint": "The HTTP challenge needs port 80 of this node reachable from the internet under the domain. DNS works without that, and for wildcards.",
+      "hint": "Accounts and plugins are shared by the whole cluster; domains are per node.",
+      "problem": {
+        "noDomain": "Add at least one domain.",
+        "tooMany": "A node has up to six ACME domains.",
+        "domain": "A domain is a full name such as pve.example.com.",
+        "wildcard": "A wildcard domain needs a DNS challenge plugin."
+      },
+      "account": {
+        "title": "Account",
+        "pick": "Pick an account",
+        "add": "Register account",
+        "addTitle": "Register an ACME account",
+        "register": "Register",
+        "registerLabel": "Register ACME account {{name}}",
+        "name": "Name",
+        "email": "E-mail",
+        "directory": "ACME directory",
+        "customDirectory": "Custom URL",
+        "directoryUrl": "Directory URL",
+        "acceptTos": "Accept the terms of service",
+        "eabKid": "EAB key ID",
+        "eabHmac": "EAB HMAC key",
+        "eabHint": "Only for CAs that ask for External Account Binding.",
+        "none": "No ACME account yet.",
+        "needOne": "Register an ACME account first.",
+        "removeTitle": "Deactivate account {{name}}?",
+        "removeDescription": "The account is deactivated at the CA and removed here. Certificates already issued keep working.",
+        "removeLabel": "Deactivate ACME account {{name}}",
+        "problem": {
+          "name": "A name has letters, digits, -, _ or .",
+          "email": "Enter an e-mail address.",
+          "directory": "The directory is an http or https URL.",
+          "tos": "Accept the terms of service to register.",
+          "eab": "EAB needs both the key ID and the HMAC key."
+        }
+      },
+      "plugin": {
+        "add": "Add plugin",
+        "addTitle": "Add a DNS challenge plugin",
+        "id": "Plugin ID",
+        "api": "DNS API",
+        "pickApi": "Pick a DNS provider",
+        "delay": "Validation delay (s)",
+        "delayHint": "How long to wait for the TXT record to spread.",
+        "noFields": "Proxmox lists no fields for this provider; see acme.sh's docs for the variables it reads.",
+        "none": "No DNS plugins. HTTP works without one.",
+        "disabled": "Disabled",
+        "removeTitle": "Remove plugin {{name}}?",
+        "removeDescription": "Domains that use it can no longer be validated."
+      }
+    }
   },
   "console": {
     "open": "Console",

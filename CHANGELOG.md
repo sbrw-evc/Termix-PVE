@@ -1,5 +1,59 @@
 # Changelog
 
+## 0.2.14
+
+### Added
+
+- The task list at the bottom collapses: click its heading. It stays collapsed next time, and shows how many tasks are running while folded
+
+### Fixed
+
+- Summary labels like Kernel no longer break in the middle of a word in Japanese, Chinese and Korean
+
+## 0.2.13
+
+### Changed
+
+- Wipe is off for a disk in use (volume group, pool, mount or the system disk) until what is on it is removed
+- Uptime is written in the interface language, and service states and guest states in the import list are translated
+
+### Fixed
+
+- Short labels and table headings no longer break in the middle of a word in Japanese, Chinese and Korean
+- Russian: shorter view names so the search field fits, and wording fixes in the import dialog and the System tab
+
+## 0.2.12
+
+### Added
+
+- The plugin speaks every language Termix ships: 41 translations next to English, with plural forms per language
+
+### Changed
+
+- Removing an LVM volume group that still has logical volumes, or an LVM-Thin pool that still holds data, is blocked until they are emptied
+
+## 0.2.11
+
+### Added
+
+- Create LVM volume groups, LVM-Thin pools, directories and ZFS pools on unused disks, and remove them, optionally wiping their disks
+- Initialize a disk with GPT, or wipe it after typing its path
+- Upload a custom certificate for a node, or remove it
+- ACME: register accounts, add DNS challenge plugins, set a node's domains, and order or renew its certificate
+
+### Fixed
+
+- Task history keeps its dates on one line and cuts long error texts
+
+## 0.2.10
+
+### Added
+
+- Node System tab: DNS, time zone and /etc/hosts, with editing, and the node's certificates with their expiry
+- Updates has Repositories: turn APT repositories on and off and add Proxmox's standard ones, with the warnings Proxmox gives
+- Disks shows the LVM volume groups, LVM-Thin pools, directories and ZFS pools on the node's disks
+- Node Tasks tab: the task history of the node, filtered by type, guest, user or failures, with each task's log
+
 ## 0.2.9
 
 ### Fixed

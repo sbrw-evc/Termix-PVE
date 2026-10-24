@@ -1,0 +1,1024 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Hantera Proxmox VE från Termix: virtuella maskiner, containrar, lagring, nätverk, säkerhetskopior, brandvägg, åtkomst och klustret."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Öppna i Proxmox"
+  },
+  "permissions": {
+    "view": {
+      "title": "Visa Proxmox",
+      "description": "Se noder, gäster, lagring, diagram och uppgifter på Proxmox-värdar du kan ansluta till."
+    },
+    "operate": {
+      "title": "Hantera Proxmox-gäster",
+      "description": "Starta, stoppa, stäng av, starta om, försätt i vänteläge och återuppta VM:ar och containrar. Kräver redigeringsåtkomst till värden."
+    },
+    "console": {
+      "title": "Öppna Proxmox-konsoler",
+      "description": "Öppna skärmen för en VM och ett root-skal i en container. Kräver redigeringsåtkomst till värden."
+    },
+    "configure": {
+      "title": "Konfigurera Proxmox",
+      "description": "Skapa, klona, migrera, konvertera och ta bort VM:ar och containrar. Kräver redigeringsåtkomst till värden."
+    },
+    "administer": {
+      "title": "Administrera Proxmox",
+      "description": "Hantera användare, grupper, roller, pooler, 2FA, tokens, realms och klustret. Kräver redigeringsåtkomst till värden."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Proxmox-nod",
+      "description": "Markera den här värden som en Proxmox VE-nod. Den visas sedan i Proxmox-verktyget under Verktyg."
+    },
+    "transport": {
+      "label": "Anslut via",
+      "description": "Automatiskt använder API:et över en SSH-tunnel när en token har sparats, och pvesh över SSH fram till dess.",
+      "auto": "Automatiskt",
+      "tunnel": "API över SSH-tunnel",
+      "direct": "API direkt",
+      "pvesh": "pvesh över SSH"
+    },
+    "tokenId": {
+      "label": "API-token-ID",
+      "description": "Skapas i Proxmox under Datacenter, Behörigheter, API-tokens. Ser ut som user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "API-tokenhemlighet",
+      "description": "Visas en gång när token skapas. Lagras krypterad."
+    },
+    "apiHost": {
+      "label": "API-adress",
+      "description": "Endast för API direkt. Lämna tomt för att använda den här värdens adress."
+    },
+    "apiPort": {
+      "label": "API-port",
+      "description": "8006 om du inte har ändrat den."
+    },
+    "caCert": {
+      "label": "CA-certifikat",
+      "description": "Endast för API direkt. Nodens CA i PEM, från /etc/pve/pve-root-ca.pem. Lämna tomt om API:et har ett offentligt betrott certifikat.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Importerade gäster",
+    "importSync": {
+      "label": "Håll importerade gäster synkroniserade",
+      "description": "Uppdaterar namn, adresser och taggar för gäster som importerats från den här noden, och taggar de som tagits bort från Proxmox som proxmox-missing."
+    },
+    "importInterval": {
+      "label": "Synkronisera var (minuter)",
+      "description": "Minst 5 minuter."
+    },
+    "importAddNew": {
+      "label": "Lägg till nya gäster vid synkronisering",
+      "description": "Importerar gäster som skapats i Proxmox efter den första importen, med de standardvärden som senast användes i importdialogen."
+    },
+    "importDefaults": {
+      "label": "Standardvärden för import"
+    },
+    "importState": {
+      "label": "Senaste gästsynkronisering"
+    },
+    "source": {
+      "label": "Proxmox-gäst"
+    }
+  },
+  "app": {
+    "loading": "Läser in...",
+    "loadFailed": "Det gick inte att läsa in klustret",
+    "refreshFailed": "Uppdateringen misslyckades: {{message}}",
+    "retry": "Försök igen",
+    "refresh": "Uppdatera",
+    "search": "Sök gäster, noder och lagring...",
+    "status": "{{nodes}} noder, {{running}} av {{total}} gäster körs",
+    "pickHost": "Proxmox-värd",
+    "pickResource": "Välj en nod, gäst eller lagring till vänster",
+    "noHosts": "Inga Proxmox-värdar ännu",
+    "noHostsHint": "Öppna en värds inställningar, aktivera Proxmox-nod under SSH och välj hur anslutningen ska ske. Noden visas sedan här.",
+    "cancel": "Avbryt",
+    "working": "Arbetar...",
+    "save": "Spara",
+    "reset": "Återställ",
+    "close": "Stäng",
+    "yes": "Ja",
+    "no": "Nej",
+    "edit": "Redigera"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix litar inte på nodens certifikat. Klistra in nodens CA från /etc/pve/pve-root-ca.pem i CA-certifikat i värdens Proxmox-inställningar, eller välj API över SSH-tunnel.",
+    "tlsHostname": "Nodens certifikat gäller ett annat namn. Ställ in API-adress på ett namn eller en adress som certifikatet anger.",
+    "tlsExpired": "Nodens certifikat har gått ut eller är inte giltigt ännu. Förnya det i Proxmox under noden, System, Certifikat.",
+    "notEnabled": "Den här värden är inte markerad som en Proxmox-nod. Aktivera Proxmox-nod i värdens inställningar.",
+    "hostAccess": "Du behöver redigeringsåtkomst till den här värden för att ändra den."
+  },
+  "tree": {
+    "nothingFound": "Inget matchar sökningen.",
+    "expand": "Expandera",
+    "collapse": "Fäll ihop",
+    "datacenter": "Datacenter",
+    "folders": {
+      "lxc": "LXC-container",
+      "qemu": "Virtuell maskin",
+      "node": "Noder",
+      "pool": "Pooler",
+      "sdn": "Nätverk",
+      "storage": "Lagring"
+    },
+    "views": {
+      "folder": "Mappvy",
+      "server": "Servervy"
+    }
+  },
+  "types": {
+    "node": "Nod",
+    "qemu": "VM",
+    "lxc": "Container",
+    "storage": "Lagring",
+    "pool": "Pool",
+    "sdn": "SDN-zon"
+  },
+  "states": {
+    "running": "Körs",
+    "stopped": "Stoppad",
+    "paused": "Pausad",
+    "suspended": "Vänteläge",
+    "online": "Online",
+    "offline": "Offline",
+    "available": "Tillgänglig",
+    "unknown": "Okänd"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Minne",
+    "disk": "Disk",
+    "rootDisk": "Rotdisk",
+    "usage": "Användning",
+    "cores_one": "{{count}} kärna",
+    "cores_other": "{{count}} kärnor",
+    "swap": "Swap"
+  },
+  "summary": {
+    "title": "Sammanfattning",
+    "node": "Nod",
+    "vmid": "ID",
+    "uptime": "Drifttid",
+    "pool": "Pool",
+    "ha": "HA",
+    "tags": "Taggar",
+    "guests": "Gäster",
+    "guestsRunning": "{{running}} av {{total}} körs",
+    "cpuModel": "CPU",
+    "sockets": "socklar",
+    "load": "Genomsnittlig belastning",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Kärna",
+    "ips": "Adresser"
+  },
+  "charts": {
+    "title": "Diagram",
+    "cpu": "CPU",
+    "load": "Genomsnittlig belastning",
+    "memory": "Minne",
+    "network": "Nätverk",
+    "diskIo": "Disk-I/O",
+    "cpuUsage": "CPU-användning",
+    "ioDelay": "IO-fördröjning",
+    "used": "Använt",
+    "total": "Totalt",
+    "in": "In",
+    "out": "Ut",
+    "read": "Läsning",
+    "write": "Skrivning",
+    "timeframe": {
+      "hour": "Timme",
+      "day": "Dag",
+      "week": "Vecka",
+      "month": "Månad",
+      "year": "År"
+    },
+    "noData": "Inga data för den här perioden",
+    "serverLoad": "Serverbelastning",
+    "loadAverage": "Genomsnittlig belastning",
+    "swap": "Swap",
+    "pressureCpu": "CPU-tryckstopp",
+    "pressureMemory": "Minnestryckstopp",
+    "pressureIo": "IO-tryckstopp",
+    "some": "Vissa",
+    "full": "Fullt",
+    "average": "Genomsnitt",
+    "maximum": "Maximum"
+  },
+  "tasks": {
+    "title": "Uppgifter",
+    "started": "Startad",
+    "node": "Nod",
+    "user": "Användare",
+    "task": "Uppgift",
+    "status": "Status",
+    "running": "Körs",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} på {{node}}",
+    "done": "{{label}}: klar",
+    "failed": "{{label}} misslyckades: {{reason}}"
+  },
+  "guests": {
+    "more": "Fler åtgärder",
+    "isTemplate": "Mall",
+    "locked": "Låst: {{lock}}",
+    "power": {
+      "start": "Starta",
+      "shutdown": "Stäng av",
+      "stop": "Stoppa",
+      "reboot": "Starta om",
+      "suspend": "Vänteläge",
+      "resume": "Återuppta",
+      "reset": "Återställ",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Stoppa {{name}} nu?",
+        "reset": "Återställ {{name}} nu?",
+        "description": "Detta bryter strömmen som om kontakten drogs ur. Arbete som inte har sparats i gästen går förlorat."
+      }
+    },
+    "clone": {
+      "menu": "Klona",
+      "title": "Klona {{name}}",
+      "submit": "Klona",
+      "label": "Klona {{source}} till {{id}}",
+      "full": "Fullständig klon",
+      "fullHint": "Kopierar alla diskar, så att klonen inte är beroende av originalet.",
+      "linkedHint": "Av skapar en länkad klon som delar mallens diskar och skapas på några sekunder.",
+      "sameStorage": "Samma lagring som originalet"
+    },
+    "migrate": {
+      "menu": "Migrera",
+      "title": "Migrera {{name}}",
+      "submit": "Migrera",
+      "label": "Migrera {{name}} till {{target}}",
+      "noOtherNodes": "Det finns ingen annan nod online i det här klustret att flytta den till.",
+      "onlineHint": "VM:en körs och flyttas live utan att stoppas.",
+      "restartHint": "Containern körs. Den stoppas, flyttas och startar igen på målet."
+    },
+    "template": {
+      "menu": "Konvertera till mall",
+      "confirm": "Konvertera {{name}} till en mall?",
+      "description": "En mall kan inte startas, bara klonas. Detta kan inte ångras.",
+      "submit": "Konvertera",
+      "label": "Konvertera {{name}} till en mall"
+    },
+    "delete": {
+      "menu": "Ta bort",
+      "title": "Ta bort {{name}}",
+      "submit": "Ta bort",
+      "label": "Ta bort {{name}}",
+      "warning": "Detta tar bort gäst {{vmid}} och dess diskar. Det kan inte ångras.",
+      "stopFirst": "Stoppa gästen innan du tar bort den.",
+      "typeId": "Skriv {{vmid}} för att bekräfta",
+      "purge": "Ta bort från säkerhetskopieringsjobb, replikering och HA",
+      "purgeHint": "Lämnar inga jobb som pekar på en gäst som inte längre finns.",
+      "unreferenced": "Ta även bort diskar utan referens",
+      "unreferencedHint": "Diskar på aktiverade lagringar med detta ID som konfigurationen inte listar."
+    },
+    "create": {
+      "vmButton": "Skapa VM",
+      "ctButton": "Skapa CT",
+      "vmTitle": "Skapa virtuell maskin",
+      "ctTitle": "Skapa container",
+      "submit": "Skapa",
+      "vmLabel": "Skapa VM {{id}} ({{name}})",
+      "ctLabel": "Skapa CT {{id}} ({{name}})",
+      "noTemplates": "Inga containermallar på den här noden. Ladda ned en i Proxmox under en lagring, CT-mallar.",
+      "noIso": "Inget installationsmedium",
+      "unprivilegedHint": "Säkrare: root i containern är inte root på noden.",
+      "loginHint": "Ange ett root-lösenord, SSH-nycklar eller båda.",
+      "problem": {
+        "vmid": "Välj ett ID på 100 eller mer.",
+        "hostname": "Ange ett värdnamn: bokstäver, siffror och bindestreck.",
+        "name": "Ange ett namn: bokstäver, siffror och bindestreck.",
+        "template": "Välj en mall.",
+        "storage": "Välj en lagring.",
+        "disk": "Ange en diskstorlek.",
+        "cores": "Ange antal kärnor.",
+        "sockets": "Ange antal socklar.",
+        "memory": "Ange minst 16 MiB minne.",
+        "swap": "Ange swap i MiB, 0 för ingen.",
+        "network": "Välj en brygga och, för en statisk adress, ange den som 192.168.0.60/24.",
+        "login": "Ange ett root-lösenord eller SSH-nycklar så att du kan logga in.",
+        "password": "Lösenordet måste ha minst 5 tecken."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Annat"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Namn",
+      "hostname": "Värdnamn",
+      "node": "Nod",
+      "targetNode": "Målnod",
+      "targetStorage": "Mållagring",
+      "storage": "Lagring",
+      "template": "Mall",
+      "iso": "Installationsmedium",
+      "ostype": "Gäst-OS",
+      "rootPassword": "Root-lösenord",
+      "sshKeys": "Publika SSH-nycklar",
+      "unprivileged": "Oprivilegierad container",
+      "diskGiB": "Disk (GiB)",
+      "cores": "Kärnor",
+      "sockets": "Socklar",
+      "memoryMiB": "Minne (MiB)",
+      "swapMiB": "Swap (MiB)",
+      "bridge": "Nätverksbrygga",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Statisk",
+      "cidr": "Adress/prefix",
+      "gateway": "Gateway",
+      "startAfter": "Starta efter skapande",
+      "pick": "Välj en"
+    },
+    "tabs": {
+      "summary": "Sammanfattning",
+      "hardware": "Hårdvara",
+      "options": "Alternativ",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Redigera",
+    "add": "Lägg till",
+    "remove": "Ta bort",
+    "removed": "{{key}} borttagen",
+    "pending": "Väntande",
+    "pendingHint": "Ändringar markerade Väntande gäller när gästen startas om från Proxmox: en omstart inuti gästen räcker inte.",
+    "processors": "Processorer",
+    "processorsValue": "{{sockets}} sockel × {{cores}} kärnor, {{cpu}}",
+    "allCores": "Alla",
+    "swap": "Swap",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "Processor och minne",
+      "title": "Processor och minne"
+    },
+    "cpuType": "CPU-typ",
+    "cpulimit": "CPU-gräns",
+    "cpulimitHint": "0 för ingen gräns. 1,5 är en och en halv kärnas tid.",
+    "balloon": "Minsta minne (MiB)",
+    "balloonHint": "Med ballongdrivrutinen lämnar gästen tillbaka minne ned till detta. Lika med minnet stänger av den, 0 tar bort drivrutinen.",
+    "disks": "Diskar",
+    "volumes": "Rotdisk och monteringspunkter",
+    "bus": "Buss",
+    "slot": "Blir {{key}}",
+    "iothread": "IO-tråd",
+    "discard": "Discard",
+    "discardHint": "Låter gästen frigöra oanvända block på tunn lagring.",
+    "ssd": "SSD-emulering",
+    "mountPath": "Monteringssökväg i containern",
+    "backup": "Inkludera i säkerhetskopior",
+    "addDisk": {
+      "button": "Lägg till disk",
+      "title": "Lägg till disk",
+      "label": "Lägg till {{key}}"
+    },
+    "addMount": {
+      "button": "Lägg till monteringspunkt",
+      "title": "Lägg till monteringspunkt"
+    },
+    "resize": {
+      "menu": "Ändra storlek",
+      "title": "Utöka {{key}}",
+      "grow": "Lägg till (GiB)",
+      "result": "{{from}} GiB blir {{to}} GiB",
+      "noShrink": "Diskar kan bara växa. Gästens partition och filsystem måste sedan utökas inuti gästen, om den inte gör det vid start.",
+      "submit": "Utöka",
+      "label": "Utöka {{key}} med {{size}} GiB"
+    },
+    "move": {
+      "menu": "Flytta till lagring",
+      "title": "Flytta {{key}}",
+      "submit": "Flytta",
+      "deleteSource": "Ta bort originalet",
+      "deleteSourceHint": "Av behåller den som en oanvänd disk.",
+      "label": "Flytta {{key}} till {{storage}}"
+    },
+    "detach": {
+      "menu": "Koppla från",
+      "title": "Koppla från {{key}}?",
+      "description": "Disken ligger kvar på sin lagring som en oanvänd disk och kan tas bort eller kopplas in igen."
+    },
+    "unused": {
+      "delete": "Ta bort",
+      "title": "Ta bort {{volume}}?",
+      "description": "Detta tar bort disken och allt på den. Det kan inte ångras."
+    },
+    "cd": {
+      "heading": "CD/DVD-enheter",
+      "title": "Medium i {{key}}",
+      "empty": "Inget medium"
+    },
+    "nic": {
+      "heading": "Nätverkskort",
+      "add": "Lägg till nätverkskort",
+      "addTitle": "Lägg till {{key}}",
+      "editTitle": "Redigera {{key}}",
+      "none": "Inga nätverkskort.",
+      "model": "Modell",
+      "name": "Namn i containern",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Statisk",
+        "none": "Ingen",
+        "auto": "SLAAC"
+      },
+      "tag": "VLAN-tagg",
+      "tagHint": "Tomt för otaggad.",
+      "rate": "Hastighetsgräns (MB/s)",
+      "rateHint": "Tomt för ingen gräns.",
+      "firewall": "Brandvägg",
+      "firewallShort": "brandvägg",
+      "removeTitle": "Ta bort {{key}}?",
+      "removeDescription": "Gästen förlorar detta nätverkskort och dess adress."
+    },
+    "problem": {
+      "cpu": "Ange minst en sockel och kärna.",
+      "cpulimit": "CPU-gränsen går från 0 till 8192.",
+      "memory": "Ange minst 16 MiB minne.",
+      "balloon": "Minsta minne kan inte vara mer än minnet.",
+      "swap": "Ange swap i MiB, 0 för ingen.",
+      "noSlot": "Alla platser av den här typen är upptagna.",
+      "storage": "Välj en lagring.",
+      "size": "Ange en storlek i hela GiB.",
+      "path": "Ange en absolut sökväg som /data, inte / själv.",
+      "bridge": "Välj en brygga.",
+      "tag": "En VLAN-tagg går från 1 till 4094.",
+      "rate": "Ange en hastighet över 0, eller lämna tomt.",
+      "name": "Ange ett namn som eth0.",
+      "ip4": "Ange adressen som 192.168.0.60/24 och en giltig gateway.",
+      "ip6": "Ange adressen som fd00::10/64."
+    },
+    "detached": "{{key}} frånkopplad; den finns kvar som en oanvänd disk",
+    "coresHint": "Tomt använder alla nodens kärnor."
+  },
+  "options": {
+    "general": "Allmänt",
+    "tags": "Taggar",
+    "tagsHint": "Avgränsade med kommatecken.",
+    "onboot": "Starta när noden startar",
+    "protection": "Skydd",
+    "protectionHint": "Blockerar borttagning av gästen och dess diskar tills det stängs av.",
+    "agent": "QEMU-gästagent",
+    "agentHint": "Aktivera när agenten körs i gästen, för dess adresser och rena avstängningar.",
+    "startup": "Start- och avstängningsordning",
+    "startupOrder": "Ordning",
+    "startupUp": "Fördröjning efter start (s)",
+    "startupDown": "Tidsgräns för avstängning (s)",
+    "dns": "DNS",
+    "nameserver": "DNS-servrar",
+    "searchdomain": "Sökdomän",
+    "useHost": "Tomt använder nodens.",
+    "notes": "Anteckningar",
+    "saved": "Alternativ sparade",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Annat"
+    },
+    "problem": {
+      "name": "Ange ett namn.",
+      "startup": "Ordning och fördröjningar är heltal.",
+      "tags": "Taggar använder bokstäver, siffror, bindestreck, punkter och understreck.",
+      "nameserver": "Ange IP-adresser avgränsade med blanksteg."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "Den här VM:en har ingen cloud-init-enhet. Lägg till en och ange sedan användare, nycklar och nätverk här; gästavbilden måste stödja cloud-init.",
+    "addDrive": "Lägg till cloud-init-enhet",
+    "driveAdded": "Cloud-init-enhet tillagd",
+    "user": "Användare",
+    "username": "Användarnamn",
+    "usernameHint": "Tomt använder avbildens standardanvändare.",
+    "password": "Lösenord",
+    "passwordHint": "Tomt behåller det nuvarande. Lagras hashat av Proxmox.",
+    "network": "Nätverk",
+    "saved": "Cloud-init-inställningar sparade",
+    "regenerate": "Generera om avbild",
+    "regenerated": "Cloud-init-avbild genererad på nytt",
+    "regenerateHint": "Skriver inställningarna till {{drive}}. Gästen läser dem vid nästa start."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Sammanfattning",
+      "iso": "ISO-avbilder",
+      "vztmpl": "CT-mallar",
+      "backup": "Säkerhetskopior",
+      "images": "Diskavbilder"
+    },
+    "content": "Innehåller",
+    "contentTypes": {
+      "images": "VM-diskar",
+      "rootdir": "Containerdiskar",
+      "iso": "ISO-avbilder",
+      "vztmpl": "CT-mallar",
+      "backup": "Säkerhetskopior",
+      "snippets": "Snippets",
+      "import": "Import"
+    },
+    "shared": "Delad",
+    "empty": "Inget här ännu.",
+    "owner": "gäst {{vmid}}",
+    "protected": "Skyddad",
+    "download": {
+      "button": "Ladda ned från URL",
+      "title": {
+        "iso": "Ladda ned en ISO-avbild till {{storage}}",
+        "vztmpl": "Ladda ned en CT-mall till {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Filnamn",
+      "algorithm": "Kontrollsummetyp",
+      "noChecksum": "Ingen",
+      "checksum": "Kontrollsumma",
+      "verify": "Kontrollera serverns certifikat",
+      "submit": "Ladda ned",
+      "label": "Ladda ned {{name}}",
+      "problem": {
+        "url": "Ange en http- eller https-URL.",
+        "filename": "Filnamnet använder bokstäver, siffror, punkter, bindestreck och understreck.",
+        "extension": "ISO-avbilder slutar på .iso eller .img; mallar på .tar.gz, .tar.xz eller .tar.zst.",
+        "checksum": "Välj en kontrollsummetyp och ange kontrollsumman i hex, eller lämna båda tomma."
+      }
+    },
+    "catalog": {
+      "button": "Mallar",
+      "title": "Containermallar för {{storage}}",
+      "search": "Sök mallar...",
+      "have": "Nedladdad",
+      "label": "Ladda ned {{name}}"
+    },
+    "delete": {
+      "title": "Ta bort {{name}}?",
+      "description": "Detta tar bort filen från lagringen. Det kan inte ångras.",
+      "submit": "Ta bort",
+      "done": "{{name}} borttagen"
+    },
+    "upload": {
+      "button": "Ladda upp",
+      "cancel": "Avbryt uppladdning",
+      "done": "{{name}} uppladdad",
+      "failed": "{{name}} kunde inte laddas upp: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Sammanfattning",
+      "network": "Nätverk",
+      "system": "System",
+      "services": "Tjänster",
+      "updates": "Uppdateringar",
+      "disks": "Diskar",
+      "tasks": "Uppgifter",
+      "log": "Logg"
+    },
+    "services": {
+      "start": "Starta",
+      "stop": "Stoppa",
+      "restart": "Starta om",
+      "reload": "Läs in igen",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Stoppa {{name}}?",
+        "restart": "Starta om {{name}}?",
+        "description": "Proxmox egna tjänster håller noden och dess API igång; om en stoppas kan det här verktyget kopplas bort tills den startar igen."
+      }
+    },
+    "updates": {
+      "refresh": "Uppdatera paketlistor",
+      "refreshLabel": "Uppdatera paketlistor på {{node}}",
+      "count_one": "{{count}} paket kan uppgraderas",
+      "count_other": "{{count}} paket kan uppgraderas",
+      "none": "Allt är uppdaterat",
+      "installHint": "Installera uppgraderingar från nodens terminal med apt full-upgrade; Proxmox uppgraderar inte via sitt API.",
+      "views": {
+        "packages": "Paket",
+        "repositories": "Förråd"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART för {{disk}}",
+      "health": "Hälsa",
+      "usedBy": "används av {{used}}",
+      "unused": "oanvänd",
+      "wearout": "{{value}}% livslängd kvar",
+      "views": {
+        "disks": "Diskar",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Katalog",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "{{count}} logisk volym",
+        "lvCount_other": "{{count}} logiska volymer",
+        "metadata": "metadata {{used}} / {{size}}",
+        "frag": "{{value}}% fragmenterad",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "Inga LVM-volymgrupper.",
+          "lvmthin": "Inga LVM-Thin-pooler.",
+          "directory": "Ingen kataloglagring på en egen disk.",
+          "zfs": "Inga ZFS-pooler."
+        },
+        "create": {
+          "lvm": "Skapa LVM-volymgrupp",
+          "lvmthin": "Skapa LVM-Thin-pool",
+          "directory": "Skapa katalog",
+          "zfs": "Skapa ZFS-pool"
+        },
+        "createSubmit": "Skapa",
+        "createLabel": "Skapa {{name}} på {{node}}",
+        "wipeWarning": "De valda diskarna partitioneras och formateras. Endast diskar utan innehåll erbjuds.",
+        "name": "Namn",
+        "device": "Disk",
+        "devices": "Diskar",
+        "pickDisk": "Välj en disk",
+        "noUnused": "Det finns ingen oanvänd disk. Rensa först en under Diskar, om innehållet kan tas bort.",
+        "filesystem": "Filsystem",
+        "raidlevel": "RAID-nivå",
+        "raid": {
+          "single": "Enskild disk",
+          "mirror": "Spegel",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Komprimering",
+        "addStorage": "Lägg till som lagring",
+        "addStorageHint": "Gör den till en Proxmox-lagring med samma namn, för diskar, containrar eller säkerhetskopior.",
+        "problem": {
+          "name": "Ett namn börjar med en bokstav och har bokstäver, siffror, -, _ eller .",
+          "device": "Välj en disk.",
+          "oneDevice": "Välj en disk.",
+          "tooFew": "Den här RAID-nivån kräver minst {{count}} diskar.",
+          "even": "RAID10 kräver ett jämnt antal diskar.",
+          "ashift": "ashift är mellan 9 och 16."
+        },
+        "remove": "Ta bort",
+        "removeTitle": "Ta bort {{name}}?",
+        "removeWarning": "Gäster med diskar på den förlorar dem. Borttagning flyttar inte bort något först.",
+        "removeLabel": "Ta bort {{name}} på {{node}}",
+        "cleanupConfig": "Ta även bort lagringsposten",
+        "cleanupDisks": "Rensa dess diskar",
+        "cleanupDisksHint": "Raderar diskarna så att de kan användas igen.",
+        "inUse": {
+          "lvm": "Den har fortfarande logiska volymer. Ta bort dem först; den här gruppen kan innehålla nodens eget system.",
+          "lvmthin": "Den innehåller fortfarande data. Flytta eller ta bort gästdiskarna på den först."
+        }
+      },
+      "gpt": "Initiera GPT",
+      "gptTitle": "Initiera {{disk}} med GPT?",
+      "gptDescription": "Skriver en tom GPT-partitionstabell till disken.",
+      "gptLabel": "Initiera {{disk}} på {{node}}",
+      "wipe": "Rensa",
+      "wipeTitle": "Rensa {{disk}}?",
+      "wipeWarning": "Raderar partitionstabellen och alla filsystems-, LVM- och ZFS-signaturer på disken (nu: {{used}}). Innehållet försvinner för gott.",
+      "wipeLabel": "Rensa {{disk}} på {{node}}",
+      "typePath": "Skriv {{disk}} för att bekräfta"
+    },
+    "log": {
+      "search": "Filtrera loggen...",
+      "empty": "Inga rader matchar."
+    },
+    "power": {
+      "menu": "Nodens ström",
+      "termixWarning": "Om Termix körs på den här noden går den också ned tills noden är tillbaka.",
+      "typeName": "Skriv {{node}} för att bekräfta",
+      "reboot": {
+        "menu": "Starta om nod",
+        "title": "Starta om {{node}}?",
+        "submit": "Starta om",
+        "label": "Starta om {{node}}",
+        "warning_one": "{{count}} gäst som körs stoppas eller stängs av först, enligt dess startinställningar.",
+        "warning_other": "{{count}} gäster som körs stoppas eller stängs av först, enligt deras startinställningar."
+      },
+      "shutdown": {
+        "menu": "Stäng av nod",
+        "title": "Stäng av {{node}}?",
+        "submit": "Stäng av",
+        "label": "Stäng av {{node}}",
+        "warning_one": "{{count}} gäst som körs går ned med den, och inget startar den igen förrän någon slår på noden.",
+        "warning_other": "{{count}} gäster som körs går ned med den, och inget startar dem igen förrän någon slår på noden."
+      }
+    },
+    "shell": "Skal",
+    "shellHint": "Öppnar den här värdens SSH-terminal i Termix.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Sökdomän",
+        "server": "DNS-server {{n}}",
+        "editTitle": "DNS för {{node}}",
+        "saved": "DNS sparad",
+        "problem": {
+          "search": "Ange en sökdomän, till exempel example.com.",
+          "server": "En DNS-server är en IPv4- eller IPv6-adress.",
+          "noServer": "Ange minst en DNS-server."
+        }
+      },
+      "time": {
+        "title": "Tid",
+        "zone": "Tidszon",
+        "local": "Lokal tid",
+        "editTitle": "Tidszon för {{node}}",
+        "hint": "Själva klockan hålls av NTP (chrony) på noden.",
+        "saved": "Tidszon inställd på {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "/etc/hosts för {{node}}",
+        "warning": "Nodens eget namn måste fortsätta att matcha dess adress, annars slutar klustret och dess webbgränssnitt att fungera.",
+        "saved": "/etc/hosts sparad"
+      },
+      "certs": {
+        "title": "Certifikat",
+        "issuer": "utfärdat av {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Giltigt till {{date}}",
+          "expiring": "Går ut {{date}}",
+          "expired": "Gick ut {{date}}",
+          "notYet": "Inte giltigt ännu"
+        },
+        "upload": "Ladda upp anpassat",
+        "uploadTitle": "Anpassat certifikat för {{node}}",
+        "uploaded": "Certifikat uppladdat",
+        "chain": "Certifikatkedja",
+        "chainHint": "PEM: nodens certifikat först, sedan mellanliggande certifikat.",
+        "key": "Privat nyckel",
+        "keyHint": "PEM, okrypterad. Lämna tomt för att behålla nyckeln som redan finns på noden.",
+        "fromFile": "Läs från fil",
+        "badCert": "Detta är inte ett PEM-certifikat.",
+        "badKey": "Detta är inte en privat PEM-nyckel.",
+        "restart": "Starta om webbgränssnittet för att använda det",
+        "restartHint": "pveproxy startas om; Termix förlorar API:et i några sekunder.",
+        "remove": "Ta bort anpassat",
+        "removeTitle": "Ta bort det anpassade certifikatet?",
+        "removeDescription": "Noden återgår till sitt självsignerade certifikat och webbgränssnittet startas om.",
+        "removed": "Anpassat certifikat borttaget"
+      }
+    },
+    "repos": {
+      "on": "Aktiverad",
+      "off": "Inaktiverad",
+      "enable": "Aktivera",
+      "disable": "Inaktivera",
+      "enableTitle": "Aktivera det här förrådet?",
+      "enabled": "Förråd aktiverat",
+      "disabled": "Förråd inaktiverat",
+      "add": "Lägg till:",
+      "added": "Förrådet {{name}} tillagt",
+      "hint": "Kör Uppdatera paketlistor under Paket efter en ändring. Enterprise-förråden kräver en prenumeration."
+    },
+    "taskHistory": {
+      "type": "Typ, till exempel vzdump",
+      "vmid": "VM/CT-ID",
+      "user": "Användare",
+      "errorsOnly": "Endast misslyckade uppgifter",
+      "none": "Inga uppgifter matchar.",
+      "more": "Läs in fler",
+      "state": {
+        "running": "Körs",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Beställ certifikat",
+      "renew": "Förnya",
+      "orderLabel": "Beställ ACME-certifikat för {{node}}",
+      "renewLabel": "Förnya ACME-certifikat för {{node}}",
+      "usesAccount": "Konto: {{account}}",
+      "none": "inget",
+      "noDomains": "Inga domäner ännu. Redigera för att lägga till de namn som den här noden svarar på.",
+      "viaHttp": "HTTP-utmaning",
+      "viaDns": "DNS-utmaning via {{plugin}}",
+      "accounts": "Konton",
+      "plugins": "Plugins för DNS-utmaning",
+      "remove": "Ta bort",
+      "domainsTitle": "ACME-domäner för {{node}}",
+      "domainsSaved": "ACME-domäner sparade",
+      "domain": "Domän",
+      "challenge": "Utmaning",
+      "alias": "Alias",
+      "addDomain": "Lägg till domän",
+      "httpHint": "HTTP-utmaningen kräver att port 80 på den här noden kan nås från internet under domänen. DNS fungerar utan det, och för jokertecken.",
+      "hint": "Konton och plugins delas av hela klustret; domäner gäller per nod.",
+      "problem": {
+        "noDomain": "Lägg till minst en domän.",
+        "tooMany": "En nod har högst sex ACME-domäner.",
+        "domain": "En domän är ett fullständigt namn som pve.example.com.",
+        "wildcard": "En jokerteckendomän kräver ett plugin för DNS-utmaning."
+      },
+      "account": {
+        "title": "Konto",
+        "pick": "Välj ett konto",
+        "add": "Registrera konto",
+        "addTitle": "Registrera ett ACME-konto",
+        "register": "Registrera",
+        "registerLabel": "Registrera ACME-konto {{name}}",
+        "name": "Namn",
+        "email": "E-post",
+        "directory": "ACME-katalog",
+        "customDirectory": "Anpassad URL",
+        "directoryUrl": "Katalog-URL",
+        "acceptTos": "Godkänn användarvillkoren",
+        "eabKid": "EAB-nyckel-ID",
+        "eabHmac": "EAB HMAC-nyckel",
+        "eabHint": "Endast för CA:er som kräver External Account Binding.",
+        "none": "Inget ACME-konto ännu.",
+        "needOne": "Registrera ett ACME-konto först.",
+        "removeTitle": "Inaktivera kontot {{name}}?",
+        "removeDescription": "Kontot inaktiveras hos CA:n och tas bort här. Redan utfärdade certifikat fortsätter att fungera.",
+        "removeLabel": "Inaktivera ACME-konto {{name}}",
+        "problem": {
+          "name": "Ett namn har bokstäver, siffror, -, _ eller .",
+          "email": "Ange en e-postadress.",
+          "directory": "Katalogen är en http- eller https-URL.",
+          "tos": "Godkänn användarvillkoren för att registrera.",
+          "eab": "EAB kräver både nyckel-ID och HMAC-nyckel."
+        }
+      },
+      "plugin": {
+        "add": "Lägg till plugin",
+        "addTitle": "Lägg till ett plugin för DNS-utmaning",
+        "id": "Plugin-ID",
+        "api": "DNS API",
+        "pickApi": "Välj en DNS-leverantör",
+        "delay": "Valideringsfördröjning (s)",
+        "delayHint": "Hur länge det ska väntas på att TXT-posten sprids.",
+        "noFields": "Proxmox listar inga fält för den här leverantören; se dokumentationen för acme.sh för de variabler den läser.",
+        "none": "Inga DNS-plugins. HTTP fungerar utan.",
+        "disabled": "Inaktiverad",
+        "removeTitle": "Ta bort pluginet {{name}}?",
+        "removeDescription": "Domäner som använder det kan inte längre valideras."
+      }
+    }
+  },
+  "console": {
+    "open": "Konsol",
+    "openHint": "Öppnar gästens Termix-värd, eller erbjuder att först lägga till den i Termix.",
+    "tabTitle": "Proxmox-konsol",
+    "tabLabel": "{{name}} — Konsol",
+    "pick": "Öppna en konsol från en VM eller container som körs i Proxmox-verktyget.",
+    "connect": "Anslut",
+    "reconnect": "Anslut igen",
+    "disconnect": "Koppla från",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Helskärm",
+    "notRunning": "Starta gästen för att öppna dess konsol.",
+    "lost": "Konsolanslutningen bröts.",
+    "ended": "Konsolen stängd.",
+    "status": {
+      "idle": "Inte ansluten",
+      "connecting": "Ansluter...",
+      "connected": "Ansluten",
+      "closed": "Frånkopplad",
+      "error": "Det gick inte att ansluta"
+    },
+    "proxmox": "Proxmox-konsol",
+    "proxmoxHint": "Proxmox egen konsol via noden: skärmen för en VM, ett skal i en container. För en gäst som ännu saknar nätverk."
+  },
+  "pool": {
+    "members": "Medlemmar",
+    "empty": "Det finns inget i den här poolen."
+  },
+  "sdn": {
+    "hint": "SDN-zoner, VNets och subnät kommer med klusterhantering i en senare version."
+  },
+  "network": {
+    "add": "Skapa",
+    "apply": "Verkställ",
+    "revert": "Återställ",
+    "pending": "Inte verkställt ännu",
+    "hint": "Ändringar sparas i /etc/network/interfaces.new och börjar gälla vid Verkställ, som läser in nodens nätverk igen.",
+    "type": "Typ",
+    "name": "Namn",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Gateway (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Gateway (IPv6)",
+    "ports": "Bryggportar",
+    "slaves": "Slavar",
+    "portsHint": "Gränssnittsnamn, avgränsade med blanksteg.",
+    "bondMode": "Läge",
+    "vlanDevice": "VLAN-råenhet",
+    "mtu": "MTU",
+    "comments": "Kommentar",
+    "autostart": "Autostart",
+    "vlanAware": "VLAN-medveten",
+    "vlanAwareHint": "Låter gäster på den här bryggan använda VLAN-taggar.",
+    "inactive": "Inaktiv",
+    "create": "Skapa",
+    "createTitle": "Skapa gränssnitt",
+    "editTitle": "Redigera {{iface}}",
+    "types": {
+      "bridge": "Brygga",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Port",
+      "OVSBridge": "OVS-brygga",
+      "alias": "Alias"
+    },
+    "nameHint": {
+      "bridge": "vmbr följt av ett nummer, till exempel vmbr1.",
+      "bond": "bond följt av ett nummer, till exempel bond0.",
+      "vlan": "enhet.tagg som vmbr0.10, eller vlan10 med en råenhet."
+    },
+    "addressWarning": "Det här gränssnittet bär adressen som Termix når noden på. Ett misstag kan koppla bort Termix tills någon åtgärdar noden vid dess konsol.",
+    "removeTitle": "Ta bort {{iface}}?",
+    "removeDescription": "Gränssnittet tas bort när ändringen verkställs.",
+    "applyTitle": "Verkställ nätverksändringar på {{node}}?",
+    "applyDescription": "Noden läser in sitt nätverk igen. Om de nya inställningarna är fel kan noden och Termix anslutning till den gå offline.",
+    "applyLabel": "Verkställ nätverk på {{node}}",
+    "reverted": "Nätverksändringar återställda",
+    "problem": {
+      "cidr": "Ange adressen som 10.10.0.1/24.",
+      "gateway": "En gateway kräver en IPv4-adress och en giltig gateway-IP.",
+      "cidr6": "Ange adressen som fd00::1/64.",
+      "ports": "Ange gränssnittsnamn avgränsade med blanksteg.",
+      "slaves": "En bond kräver minst en slav.",
+      "vlanDevice": "Ange råenheten för ett vlanN-gränssnitt.",
+      "mtu": "MTU går från 1280 till 65520.",
+      "name": {
+        "bridge": "En brygga heter vmbr och ett nummer.",
+        "bond": "En bond heter bond och ett nummer.",
+        "vlan": "Ett VLAN heter enhet.tagg eller vlan och ett nummer."
+      }
+    }
+  },
+  "import": {
+    "open": "Importera till Termix",
+    "title": "Importera gäster som Termix-värdar",
+    "hint": "Varje vald VM eller container blir en Termix-värd, taggad proxmox. Importen uppdaterar också namn, adresser och taggar för tidigare importerade gäster, och taggar de som försvunnit från Proxmox som proxmox-missing.",
+    "loading": "Söker efter gäster och deras adresser…",
+    "counts": "{{total}} gäster, {{imported}} redan importerade",
+    "selectAll": "Markera alla",
+    "selectNone": "Markera inga",
+    "none": "Det här klustret har inga VM:ar eller containrar.",
+    "imported": "Importerad",
+    "noAddress": "ingen adress",
+    "folder": "Mapp",
+    "folderDefault": "Mapp med namnet {{node}}",
+    "folderSearch": "Sök eller skapa, / för en undermapp",
+    "folderCreate": "Skapa \"{{folder}}\"",
+    "folderNone": "Inga mappar ännu",
+    "connection": "Anslut med",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Containerkörmiljö",
+    "runtimeOff": "Ingen Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "Okänt OS"
+    },
+    "sshLogin": "SSH-inloggning",
+    "desktopLogin": "RDP- och VNC-inloggning",
+    "desktopHint": "Kräver pluginet Remote Desktop för att ansluta.",
+    "login": {
+      "nodeCredential": "Nodens inloggningsuppgifter",
+      "nodeUser": "Nodens användarnamn",
+      "username": "Endast användarnamn",
+      "none": "Ingen inloggning"
+    },
+    "username": "Användarnamn",
+    "submit_one": "Importera {{count}} gäst",
+    "submit_other": "Importera {{count}} gäster",
+    "refresh": "Uppdatera importerade",
+    "done": "Skapade {{created}}, uppdaterade {{updated}}, markerade som saknade {{markedMissing}}",
+    "lastSync": "Senaste synkronisering {{when}}.",
+    "lastSyncFailed": "Senaste synkronisering {{when}} misslyckades: {{error}}",
+    "syncHint": "Aktivera Håll importerade gäster synkroniserade i värdens Proxmox-inställningar för att uppdatera dem enligt ett schema.",
+    "addTitle": "Lägg till {{name}} i Termix",
+    "addHint": "Den här gästen är inte en Termix-värd ännu. Lägg till den för att öppna dess terminal, så öppnar Konsol den direkt.",
+    "addSubmit": "Lägg till och anslut",
+    "gone": "Proxmox listar inte längre den här gästen."
+  }
+}

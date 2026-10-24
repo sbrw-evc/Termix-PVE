@@ -1,0 +1,1024 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Hallitse Proxmox VE:tä Termixistä: virtuaalikoneet, kontit, tallennustila, verkko, varmuuskopiot, palomuuri, käyttöoikeudet ja klusteri."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Avaa Proxmoxissa"
+  },
+  "permissions": {
+    "view": {
+      "title": "Näytä Proxmox",
+      "description": "Näe solmut, vieraat, tallennustilat, kaaviot ja tehtävät Proxmox-isännillä, joihin voit muodostaa yhteyden."
+    },
+    "operate": {
+      "title": "Käytä Proxmox-vieraita",
+      "description": "Käynnistä, pysäytä, sammuta, käynnistä uudelleen, keskeytä ja jatka VM:iä ja kontteja. Vaatii isännän muokkausoikeuden."
+    },
+    "console": {
+      "title": "Avaa Proxmox-konsoleita",
+      "description": "Avaa VM:n näyttö ja root-komentotulkki kontissa. Vaatii isännän muokkausoikeuden."
+    },
+    "configure": {
+      "title": "Määritä Proxmox",
+      "description": "Luo, kloonaa, siirrä, muunna ja poista VM:iä ja kontteja. Vaatii isännän muokkausoikeuden."
+    },
+    "administer": {
+      "title": "Ylläpidä Proxmoxia",
+      "description": "Hallitse käyttäjiä, ryhmiä, rooleja, pooleja, 2FA:ta, tunnuksia, realmeja ja klusteria. Vaatii isännän muokkausoikeuden."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Proxmox-solmu",
+      "description": "Merkitse tämä isäntä Proxmox VE -solmuksi. Se näkyy sen jälkeen Proxmox-työkalussa kohdassa Työkalut."
+    },
+    "transport": {
+      "label": "Yhdistä kautta",
+      "description": "Automaattinen käyttää API:a SSH-tunnelin kautta, kun tunnus on tallennettu, ja siihen asti pveshiä SSH:n kautta.",
+      "auto": "Automaattinen",
+      "tunnel": "API SSH-tunnelin kautta",
+      "direct": "API suoraan",
+      "pvesh": "pvesh SSH:n kautta"
+    },
+    "tokenId": {
+      "label": "API-tunnuksen ID",
+      "description": "Luodaan Proxmoxissa kohdassa Datakeskus, Käyttöoikeudet, API-tunnukset. Muotoa user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "API-tunnuksen salaisuus",
+      "description": "Näytetään kerran, kun tunnus luodaan. Tallennetaan salattuna."
+    },
+    "apiHost": {
+      "label": "API-osoite",
+      "description": "Vain API suoraan -tilassa. Jätä tyhjäksi käyttääksesi tämän isännän osoitetta."
+    },
+    "apiPort": {
+      "label": "API-portti",
+      "description": "8006, ellet ole muuttanut sitä."
+    },
+    "caCert": {
+      "label": "CA-varmenne",
+      "description": "Vain API suoraan -tilassa. Solmun CA PEM-muodossa tiedostosta /etc/pve/pve-root-ca.pem. Jätä tyhjäksi, jos API:lla on julkisesti luotettu varmenne.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Tuodut vieraat",
+    "importSync": {
+      "label": "Pidä tuodut vieraat synkronoituina",
+      "description": "Päivittää tästä solmusta tuotujen vieraiden nimet, osoitteet ja tunnisteet ja merkitsee Proxmoxista poistetut tunnisteella proxmox-missing."
+    },
+    "importInterval": {
+      "label": "Synkronoi välein (minuuttia)",
+      "description": "Vähintään 5 minuuttia."
+    },
+    "importAddNew": {
+      "label": "Lisää uudet vieraat synkronoinnissa",
+      "description": "Tuo ensimmäisen tuonnin jälkeen Proxmoxissa luodut vieraat käyttäen tuontivalintaikkunassa viimeksi käytettyjä oletuksia."
+    },
+    "importDefaults": {
+      "label": "Tuonnin oletukset"
+    },
+    "importState": {
+      "label": "Viimeisin vieraiden synkronointi"
+    },
+    "source": {
+      "label": "Proxmox-vieras"
+    }
+  },
+  "app": {
+    "loading": "Ladataan...",
+    "loadFailed": "Klusteria ei voitu ladata",
+    "refreshFailed": "Päivitys epäonnistui: {{message}}",
+    "retry": "Yritä uudelleen",
+    "refresh": "Päivitä",
+    "search": "Hae vieraita, solmuja ja tallennustiloja...",
+    "status": "{{nodes}} solmua, {{running}}/{{total}} vierasta käynnissä",
+    "pickHost": "Proxmox-isäntä",
+    "pickResource": "Valitse solmu, vieras tai tallennustila vasemmalta",
+    "noHosts": "Ei vielä Proxmox-isäntiä",
+    "noHostsHint": "Avaa isännän asetukset, ota Proxmox-solmu käyttöön kohdassa SSH ja valitse yhteystapa. Solmu näkyy sen jälkeen tässä.",
+    "cancel": "Peruuta",
+    "working": "Käsitellään...",
+    "save": "Tallenna",
+    "reset": "Palauta",
+    "close": "Sulje",
+    "yes": "Kyllä",
+    "no": "Ei",
+    "edit": "Muokkaa"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix ei luota solmun varmenteeseen. Liitä isännän Proxmox-asetuksissa solmun CA tiedostosta /etc/pve/pve-root-ca.pem kenttään CA-varmenne tai valitse API SSH-tunnelin kautta.",
+    "tlsHostname": "Solmun varmenne on toiselle nimelle. Aseta API-osoitteeksi nimi tai osoite, joka on varmenteessa.",
+    "tlsExpired": "Solmun varmenne on vanhentunut tai ei ole vielä voimassa. Uusi se Proxmoxissa kohdassa solmu, Järjestelmä, Varmenteet.",
+    "notEnabled": "Tätä isäntää ei ole merkitty Proxmox-solmuksi. Ota Proxmox-solmu käyttöön isännän asetuksissa.",
+    "hostAccess": "Tarvitset tämän isännän muokkausoikeuden muuttaaksesi sitä."
+  },
+  "tree": {
+    "nothingFound": "Mikään ei vastaa hakua.",
+    "expand": "Laajenna",
+    "collapse": "Tiivistä",
+    "datacenter": "Datakeskus",
+    "folders": {
+      "lxc": "LXC-kontti",
+      "qemu": "Virtuaalikone",
+      "node": "Solmut",
+      "pool": "Poolit",
+      "sdn": "Verkko",
+      "storage": "Tallennustila"
+    },
+    "views": {
+      "folder": "Kansionäkymä",
+      "server": "Palvelinnäkymä"
+    }
+  },
+  "types": {
+    "node": "Solmu",
+    "qemu": "VM",
+    "lxc": "Kontti",
+    "storage": "Tallennustila",
+    "pool": "Pooli",
+    "sdn": "SDN-vyöhyke"
+  },
+  "states": {
+    "running": "Käynnissä",
+    "stopped": "Pysäytetty",
+    "paused": "Tauotettu",
+    "suspended": "Keskeytetty",
+    "online": "Verkossa",
+    "offline": "Ei verkossa",
+    "available": "Käytettävissä",
+    "unknown": "Tuntematon"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Muisti",
+    "disk": "Levy",
+    "rootDisk": "Juurilevy",
+    "usage": "Käyttö",
+    "cores_one": "{{count}} ydin",
+    "cores_other": "{{count}} ydintä",
+    "swap": "Swap"
+  },
+  "summary": {
+    "title": "Yhteenveto",
+    "node": "Solmu",
+    "vmid": "ID",
+    "uptime": "Käyttöaika",
+    "pool": "Pooli",
+    "ha": "HA",
+    "tags": "Tunnisteet",
+    "guests": "Vieraat",
+    "guestsRunning": "{{running}}/{{total}} käynnissä",
+    "cpuModel": "CPU",
+    "sockets": "kantaa",
+    "load": "Kuormituskeskiarvo",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Ydin",
+    "ips": "Osoitteet"
+  },
+  "charts": {
+    "title": "Kaaviot",
+    "cpu": "CPU",
+    "load": "Kuormituskeskiarvo",
+    "memory": "Muisti",
+    "network": "Verkko",
+    "diskIo": "Levyn I/O",
+    "cpuUsage": "CPU-käyttö",
+    "ioDelay": "IO-viive",
+    "used": "Käytetty",
+    "total": "Yhteensä",
+    "in": "Sisään",
+    "out": "Ulos",
+    "read": "Luku",
+    "write": "Kirjoitus",
+    "timeframe": {
+      "hour": "Tunti",
+      "day": "Päivä",
+      "week": "Viikko",
+      "month": "Kuukausi",
+      "year": "Vuosi"
+    },
+    "noData": "Ei tietoja tältä ajalta",
+    "serverLoad": "Palvelimen kuormitus",
+    "loadAverage": "Kuormituskeskiarvo",
+    "swap": "Swap",
+    "pressureCpu": "CPU-painepysähdys",
+    "pressureMemory": "Muistin painepysähdys",
+    "pressureIo": "IO-painepysähdys",
+    "some": "Osittainen",
+    "full": "Täysi",
+    "average": "Keskiarvo",
+    "maximum": "Enimmäisarvo"
+  },
+  "tasks": {
+    "title": "Tehtävät",
+    "started": "Aloitettu",
+    "node": "Solmu",
+    "user": "Käyttäjä",
+    "task": "Tehtävä",
+    "status": "Tila",
+    "running": "Käynnissä",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} solmussa {{node}}",
+    "done": "{{label}}: valmis",
+    "failed": "{{label}} epäonnistui: {{reason}}"
+  },
+  "guests": {
+    "more": "Lisää toimintoja",
+    "isTemplate": "Malli",
+    "locked": "Lukittu: {{lock}}",
+    "power": {
+      "start": "Käynnistä",
+      "shutdown": "Sammuta",
+      "stop": "Pysäytä",
+      "reboot": "Käynnistä uudelleen",
+      "suspend": "Keskeytä",
+      "resume": "Jatka",
+      "reset": "Nollaa",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Pysäytetäänkö {{name}} nyt?",
+        "reset": "Nollataanko {{name}} nyt?",
+        "description": "Tämä katkaisee virran kuin pistoke vedettäisiin irti. Vieraassa tallentamaton työ menetetään."
+      }
+    },
+    "clone": {
+      "menu": "Kloonaa",
+      "title": "Kloonaa {{name}}",
+      "submit": "Kloonaa",
+      "label": "Kloonaa {{source}} kohteeseen {{id}}",
+      "full": "Täysi klooni",
+      "fullHint": "Kopioi kaikki levyt, joten klooni ei riipu alkuperäisestä.",
+      "linkedHint": "Pois päältä luo linkitetyn kloonin, joka jakaa mallin levyt ja valmistuu sekunneissa.",
+      "sameStorage": "Sama tallennustila kuin alkuperäisellä"
+    },
+    "migrate": {
+      "menu": "Siirrä",
+      "title": "Siirrä {{name}}",
+      "submit": "Siirrä",
+      "label": "Siirrä {{name}} kohteeseen {{target}}",
+      "noOtherNodes": "Tässä klusterissa ei ole muuta verkossa olevaa solmua, johon sen voisi siirtää.",
+      "onlineHint": "VM on käynnissä ja siirtyy livenä pysähtymättä.",
+      "restartHint": "Kontti on käynnissä. Se pysähtyy, siirtyy ja käynnistyy uudelleen kohteessa."
+    },
+    "template": {
+      "menu": "Muunna malliksi",
+      "confirm": "Muunnetaanko {{name}} malliksi?",
+      "description": "Mallia ei voi käynnistää, vain kloonata. Tätä ei voi kumota.",
+      "submit": "Muunna",
+      "label": "Muunna {{name}} malliksi"
+    },
+    "delete": {
+      "menu": "Poista",
+      "title": "Poista {{name}}",
+      "submit": "Poista",
+      "label": "Poista {{name}}",
+      "warning": "Tämä poistaa vieraan {{vmid}} ja sen levyt. Tätä ei voi kumota.",
+      "stopFirst": "Pysäytä vieras ennen sen poistamista.",
+      "typeId": "Vahvista kirjoittamalla {{vmid}}",
+      "purge": "Poista varmuuskopiotöistä, replikoinnista ja HA:sta",
+      "purgeHint": "Ei jätä töitä, jotka osoittavat poistettuun vieraaseen.",
+      "unreferenced": "Poista myös viittaamattomat levyt",
+      "unreferencedHint": "Levyt käytössä olevilla tallennustiloilla tällä ID:llä, joita kokoonpano ei luettele."
+    },
+    "create": {
+      "vmButton": "Luo VM",
+      "ctButton": "Luo CT",
+      "vmTitle": "Luo virtuaalikone",
+      "ctTitle": "Luo kontti",
+      "submit": "Luo",
+      "vmLabel": "Luo VM {{id}} ({{name}})",
+      "ctLabel": "Luo CT {{id}} ({{name}})",
+      "noTemplates": "Tässä solmussa ei ole konttimalleja. Lataa sellainen Proxmoxissa tallennustilan kohdasta CT-mallit.",
+      "noIso": "Ei asennusmediaa",
+      "unprivilegedHint": "Turvallisempi: kontin root ei ole solmun root.",
+      "loginHint": "Aseta root-salasana, SSH-avaimet tai molemmat.",
+      "problem": {
+        "vmid": "Valitse ID, joka on vähintään 100.",
+        "hostname": "Anna isäntänimi: kirjaimia, numeroita ja yhdysmerkkejä.",
+        "name": "Anna nimi: kirjaimia, numeroita ja yhdysmerkkejä.",
+        "template": "Valitse malli.",
+        "storage": "Valitse tallennustila.",
+        "disk": "Anna levyn koko.",
+        "cores": "Anna ytimien määrä.",
+        "sockets": "Anna kantojen määrä.",
+        "memory": "Anna vähintään 16 MiB muistia.",
+        "swap": "Anna swap MiB:nä, 0 = ei mitään.",
+        "network": "Valitse silta ja anna kiinteä osoite muodossa 192.168.0.60/24.",
+        "login": "Aseta root-salasana tai SSH-avaimet, jotta voit kirjautua.",
+        "password": "Salasanassa on oltava vähintään 5 merkkiä."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Muu"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Nimi",
+      "hostname": "Isäntänimi",
+      "node": "Solmu",
+      "targetNode": "Kohdesolmu",
+      "targetStorage": "Kohdetallennustila",
+      "storage": "Tallennustila",
+      "template": "Malli",
+      "iso": "Asennusmedia",
+      "ostype": "Vieraan käyttöjärjestelmä",
+      "rootPassword": "Root-salasana",
+      "sshKeys": "Julkiset SSH-avaimet",
+      "unprivileged": "Etuoikeudeton kontti",
+      "diskGiB": "Levy (GiB)",
+      "cores": "Ytimet",
+      "sockets": "Kannat",
+      "memoryMiB": "Muisti (MiB)",
+      "swapMiB": "Swap (MiB)",
+      "bridge": "Verkkosilta",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Kiinteä",
+      "cidr": "Osoite/etuliite",
+      "gateway": "Yhdyskäytävä",
+      "startAfter": "Käynnistä luonnin jälkeen",
+      "pick": "Valitse"
+    },
+    "tabs": {
+      "summary": "Yhteenveto",
+      "hardware": "Laitteisto",
+      "options": "Asetukset",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Muokkaa",
+    "add": "Lisää",
+    "remove": "Poista",
+    "removed": "{{key}} poistettu",
+    "pending": "Odottaa",
+    "pendingHint": "Odottaa-merkityt muutokset tulevat voimaan, kun vieras käynnistetään uudelleen Proxmoxista: uudelleenkäynnistys vieraan sisällä ei riitä.",
+    "processors": "Suorittimet",
+    "processorsValue": "{{sockets}} kanta × {{cores}} ydintä, {{cpu}}",
+    "allCores": "Kaikki",
+    "swap": "Swap",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "Suoritin ja muisti",
+      "title": "Suoritin ja muisti"
+    },
+    "cpuType": "CPU-tyyppi",
+    "cpulimit": "CPU-raja",
+    "cpulimitHint": "0 = ei rajaa. 1,5 on puolentoista ytimen aika.",
+    "balloon": "Vähimmäismuisti (MiB)",
+    "balloonHint": "Balloon-ajurin avulla vieras palauttaa muistia tähän määrään asti. Sama kuin muisti poistaa sen käytöstä, 0 poistaa ajurin.",
+    "disks": "Levyt",
+    "volumes": "Juurilevy ja liitospisteet",
+    "bus": "Väylä",
+    "slot": "Tulee olemaan {{key}}",
+    "iothread": "IO-säie",
+    "discard": "Discard",
+    "discardHint": "Antaa vieraan vapauttaa käyttämättömät lohkot ohuessa tallennustilassa.",
+    "ssd": "SSD-emulointi",
+    "mountPath": "Liitospolku kontissa",
+    "backup": "Sisällytä varmuuskopioihin",
+    "addDisk": {
+      "button": "Lisää levy",
+      "title": "Lisää levy",
+      "label": "Lisää {{key}}"
+    },
+    "addMount": {
+      "button": "Lisää liitospiste",
+      "title": "Lisää liitospiste"
+    },
+    "resize": {
+      "menu": "Muuta kokoa",
+      "title": "Kasvata {{key}}",
+      "grow": "Lisää (GiB)",
+      "result": "{{from}} GiB muuttuu {{to}} GiB:ksi",
+      "noShrink": "Levyt voivat vain kasvaa. Vieraan osio ja tiedostojärjestelmä on kasvatettava vieraan sisällä jälkeenpäin, ellei se tee sitä käynnistyessään.",
+      "submit": "Kasvata",
+      "label": "Kasvata {{key}} {{size}} GiB"
+    },
+    "move": {
+      "menu": "Siirrä tallennustilaan",
+      "title": "Siirrä {{key}}",
+      "submit": "Siirrä",
+      "deleteSource": "Poista alkuperäinen",
+      "deleteSourceHint": "Pois päältä säilyttää sen käyttämättömänä levynä.",
+      "label": "Siirrä {{key}} kohteeseen {{storage}}"
+    },
+    "detach": {
+      "menu": "Irrota",
+      "title": "Irrotetaanko {{key}}?",
+      "description": "Levy jää tallennustilaansa käyttämättömänä levynä, ja sen voi poistaa tai liittää uudelleen."
+    },
+    "unused": {
+      "delete": "Poista",
+      "title": "Poistetaanko {{volume}}?",
+      "description": "Tämä poistaa levyn ja kaiken sillä olevan. Tätä ei voi kumota."
+    },
+    "cd": {
+      "heading": "CD/DVD-asemat",
+      "title": "Media asemassa {{key}}",
+      "empty": "Ei mediaa"
+    },
+    "nic": {
+      "heading": "Verkkosovittimet",
+      "add": "Lisää sovitin",
+      "addTitle": "Lisää {{key}}",
+      "editTitle": "Muokkaa {{key}}",
+      "none": "Ei verkkosovittimia.",
+      "model": "Malli",
+      "name": "Nimi kontissa",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Kiinteä",
+        "none": "Ei mitään",
+        "auto": "SLAAC"
+      },
+      "tag": "VLAN-tunniste",
+      "tagHint": "Tyhjä = ei tunnistetta.",
+      "rate": "Nopeusraja (MB/s)",
+      "rateHint": "Tyhjä = ei rajaa.",
+      "firewall": "Palomuuri",
+      "firewallShort": "palomuuri",
+      "removeTitle": "Poistetaanko {{key}}?",
+      "removeDescription": "Vieras menettää tämän sovittimen ja sen osoitteen."
+    },
+    "problem": {
+      "cpu": "Anna vähintään yksi kanta ja ydin.",
+      "cpulimit": "CPU-raja on välillä 0–8192.",
+      "memory": "Anna vähintään 16 MiB muistia.",
+      "balloon": "Vähimmäismuisti ei voi olla suurempi kuin muisti.",
+      "swap": "Anna swap MiB:nä, 0 = ei mitään.",
+      "noSlot": "Kaikki tämän tyypin paikat ovat käytössä.",
+      "storage": "Valitse tallennustila.",
+      "size": "Anna koko kokonaisina GiB:inä.",
+      "path": "Anna absoluuttinen polku, kuten /data, ei pelkkä /.",
+      "bridge": "Valitse silta.",
+      "tag": "VLAN-tunniste on välillä 1–4094.",
+      "rate": "Anna nopeus, joka on yli 0, tai jätä tyhjäksi.",
+      "name": "Anna nimi, kuten eth0.",
+      "ip4": "Anna osoite muodossa 192.168.0.60/24 ja kelvollinen yhdyskäytävä.",
+      "ip6": "Anna osoite muodossa fd00::10/64."
+    },
+    "detached": "{{key}} irrotettu; se jää käyttämättömäksi levyksi",
+    "coresHint": "Tyhjä käyttää kaikkia solmun ytimiä."
+  },
+  "options": {
+    "general": "Yleiset",
+    "tags": "Tunnisteet",
+    "tagsHint": "Pilkuilla erotettuina.",
+    "onboot": "Käynnistä, kun solmu käynnistyy",
+    "protection": "Suojaus",
+    "protectionHint": "Estää vieraan ja sen levyjen poistamisen, kunnes suojaus poistetaan käytöstä.",
+    "agent": "QEMU-vierasagentti",
+    "agentHint": "Ota käyttöön, kun agentti toimii vieraassa, osoitteita ja hallittuja sammutuksia varten.",
+    "startup": "Käynnistys- ja sammutusjärjestys",
+    "startupOrder": "Järjestys",
+    "startupUp": "Viive käynnistyksen jälkeen (s)",
+    "startupDown": "Sammutuksen aikakatkaisu (s)",
+    "dns": "DNS",
+    "nameserver": "DNS-palvelimet",
+    "searchdomain": "Hakutoimialue",
+    "useHost": "Tyhjä käyttää solmun asetusta.",
+    "notes": "Muistiinpanot",
+    "saved": "Asetukset tallennettu",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Muu"
+    },
+    "problem": {
+      "name": "Anna nimi.",
+      "startup": "Järjestys ja viiveet ovat kokonaislukuja.",
+      "tags": "Tunnisteissa käytetään kirjaimia, numeroita, yhdysmerkkejä, pisteitä ja alaviivoja.",
+      "nameserver": "Anna IP-osoitteet välilyönneillä erotettuina."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "Tällä VM:llä ei ole cloud-init-asemaa. Lisää sellainen ja aseta sitten käyttäjä, avaimet ja verkko tässä; vieraan levykuvan on tuettava cloud-initiä.",
+    "addDrive": "Lisää cloud-init-asema",
+    "driveAdded": "Cloud-init-asema lisätty",
+    "user": "Käyttäjä",
+    "username": "Käyttäjänimi",
+    "usernameHint": "Tyhjä käyttää levykuvan oletuskäyttäjää.",
+    "password": "Salasana",
+    "passwordHint": "Tyhjä säilyttää nykyisen. Proxmox tallentaa sen tiivisteenä.",
+    "network": "Verkko",
+    "saved": "Cloud-init-asetukset tallennettu",
+    "regenerate": "Luo levykuva uudelleen",
+    "regenerated": "Cloud-init-levykuva luotu uudelleen",
+    "regenerateHint": "Kirjoittaa asetukset asemaan {{drive}}. Vieras lukee ne seuraavalla käynnistyskerralla."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Yhteenveto",
+      "iso": "ISO-levykuvat",
+      "vztmpl": "CT-mallit",
+      "backup": "Varmuuskopiot",
+      "images": "Levykuvat"
+    },
+    "content": "Sisältää",
+    "contentTypes": {
+      "images": "VM-levyt",
+      "rootdir": "Konttilevyt",
+      "iso": "ISO-levykuvat",
+      "vztmpl": "CT-mallit",
+      "backup": "Varmuuskopiot",
+      "snippets": "Snippetit",
+      "import": "Tuonti"
+    },
+    "shared": "Jaettu",
+    "empty": "Täällä ei ole vielä mitään.",
+    "owner": "vieras {{vmid}}",
+    "protected": "Suojattu",
+    "download": {
+      "button": "Lataa URL-osoitteesta",
+      "title": {
+        "iso": "Lataa ISO-levykuva tallennustilaan {{storage}}",
+        "vztmpl": "Lataa CT-malli tallennustilaan {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Tiedostonimi",
+      "algorithm": "Tarkistussumman tyyppi",
+      "noChecksum": "Ei mitään",
+      "checksum": "Tarkistussumma",
+      "verify": "Tarkista palvelimen varmenne",
+      "submit": "Lataa",
+      "label": "Lataa {{name}}",
+      "problem": {
+        "url": "Anna http- tai https-URL.",
+        "filename": "Tiedostonimessä käytetään kirjaimia, numeroita, pisteitä, yhdysmerkkejä ja alaviivoja.",
+        "extension": "ISO-levykuvien pääte on .iso tai .img; mallien .tar.gz, .tar.xz tai .tar.zst.",
+        "checksum": "Valitse tarkistussumman tyyppi ja anna tarkistussumma heksana, tai jätä molemmat tyhjiksi."
+      }
+    },
+    "catalog": {
+      "button": "Mallit",
+      "title": "Konttimallit tallennustilalle {{storage}}",
+      "search": "Hae malleja...",
+      "have": "Ladattu",
+      "label": "Lataa {{name}}"
+    },
+    "delete": {
+      "title": "Poistetaanko {{name}}?",
+      "description": "Tämä poistaa tiedoston tallennustilasta. Tätä ei voi kumota.",
+      "submit": "Poista",
+      "done": "{{name}} poistettu"
+    },
+    "upload": {
+      "button": "Lähetä",
+      "cancel": "Peruuta lähetys",
+      "done": "{{name}} lähetetty",
+      "failed": "Tiedoston {{name}} lähetys epäonnistui: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Yhteenveto",
+      "network": "Verkko",
+      "system": "Järjestelmä",
+      "services": "Palvelut",
+      "updates": "Päivitykset",
+      "disks": "Levyt",
+      "tasks": "Tehtävät",
+      "log": "Loki"
+    },
+    "services": {
+      "start": "Käynnistä",
+      "stop": "Pysäytä",
+      "restart": "Käynnistä uudelleen",
+      "reload": "Lataa uudelleen",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Pysäytetäänkö {{name}}?",
+        "restart": "Käynnistetäänkö {{name}} uudelleen?",
+        "description": "Proxmoxin omat palvelut pitävät solmun ja sen API:n käynnissä; yhden pysäyttäminen voi katkaista tämän työkalun yhteyden, kunnes se käynnistyy uudelleen."
+      }
+    },
+    "updates": {
+      "refresh": "Päivitä pakettiluettelot",
+      "refreshLabel": "Päivitä pakettiluettelot solmussa {{node}}",
+      "count_one": "{{count}} paketti voidaan päivittää",
+      "count_other": "{{count}} pakettia voidaan päivittää",
+      "none": "Kaikki on ajan tasalla",
+      "installHint": "Asenna päivitykset solmun päätteestä komennolla apt full-upgrade; Proxmox ei päivitä API:nsa kautta.",
+      "views": {
+        "packages": "Paketit",
+        "repositories": "Ohjelmistolähteet"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART: {{disk}}",
+      "health": "Kunto",
+      "usedBy": "käyttäjä: {{used}}",
+      "unused": "käyttämätön",
+      "wearout": "{{value}} % käyttöikää jäljellä",
+      "views": {
+        "disks": "Levyt",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Hakemisto",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "{{count}} looginen taltio",
+        "lvCount_other": "{{count}} loogista taltiota",
+        "metadata": "metatiedot {{used}} / {{size}}",
+        "frag": "{{value}} % pirstoutunut",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "Ei LVM-taltioryhmiä.",
+          "lvmthin": "Ei LVM-Thin-pooleja.",
+          "directory": "Ei hakemistotallennustilaa omalla levyllään.",
+          "zfs": "Ei ZFS-pooleja."
+        },
+        "create": {
+          "lvm": "Luo LVM-taltioryhmä",
+          "lvmthin": "Luo LVM-Thin-pooli",
+          "directory": "Luo hakemisto",
+          "zfs": "Luo ZFS-pooli"
+        },
+        "createSubmit": "Luo",
+        "createLabel": "Luo {{name}} solmuun {{node}}",
+        "wipeWarning": "Valitut levyt osioidaan ja alustetaan. Vain tyhjiä levyjä tarjotaan.",
+        "name": "Nimi",
+        "device": "Levy",
+        "devices": "Levyt",
+        "pickDisk": "Valitse levy",
+        "noUnused": "Käyttämätöntä levyä ei ole. Tyhjennä ensin jokin kohdassa Levyt, jos sen sisällön voi hävittää.",
+        "filesystem": "Tiedostojärjestelmä",
+        "raidlevel": "RAID-taso",
+        "raid": {
+          "single": "Yksi levy",
+          "mirror": "Peili",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Pakkaus",
+        "addStorage": "Lisää tallennustilaksi",
+        "addStorageHint": "Tekee siitä samannimisen Proxmox-tallennustilan levyille, konteille tai varmuuskopioille.",
+        "problem": {
+          "name": "Nimi alkaa kirjaimella ja sisältää kirjaimia, numeroita, -, _ tai .",
+          "device": "Valitse levy.",
+          "oneDevice": "Valitse yksi levy.",
+          "tooFew": "Tämä RAID-taso vaatii vähintään {{count}} levyä.",
+          "even": "RAID10 vaatii parillisen määrän levyjä.",
+          "ashift": "ashift on välillä 9–16."
+        },
+        "remove": "Poista",
+        "removeTitle": "Poistetaanko {{name}}?",
+        "removeWarning": "Vieraat, joiden levyt ovat siinä, menettävät ne. Poisto ei siirrä mitään pois ensin.",
+        "removeLabel": "Poista {{name}} solmusta {{node}}",
+        "cleanupConfig": "Poista myös tallennustilamerkintä",
+        "cleanupDisks": "Tyhjennä sen levyt",
+        "cleanupDisksHint": "Tyhjentää levyt, jotta niitä voi käyttää uudelleen.",
+        "inUse": {
+          "lvm": "Siinä on yhä loogisia taltioita. Poista ne ensin; tämä ryhmä voi sisältää solmun oman järjestelmän.",
+          "lvmthin": "Siinä on yhä tietoja. Siirrä tai poista siinä olevat vieraiden levyt ensin."
+        }
+      },
+      "gpt": "Alusta GPT",
+      "gptTitle": "Alustetaanko {{disk}} GPT:llä?",
+      "gptDescription": "Kirjoittaa levylle tyhjän GPT-osiotaulun.",
+      "gptLabel": "Alusta {{disk}} solmussa {{node}}",
+      "wipe": "Tyhjennä",
+      "wipeTitle": "Tyhjennetäänkö {{disk}}?",
+      "wipeWarning": "Poistaa levyltä osiotaulun ja kaikki tiedostojärjestelmä-, LVM- ja ZFS-allekirjoitukset (nyt: {{used}}). Sen sisältö häviää pysyvästi.",
+      "wipeLabel": "Tyhjennä {{disk}} solmussa {{node}}",
+      "typePath": "Vahvista kirjoittamalla {{disk}}"
+    },
+    "log": {
+      "search": "Suodata lokia...",
+      "empty": "Mikään rivi ei vastaa."
+    },
+    "power": {
+      "menu": "Solmun virta",
+      "termixWarning": "Jos Termix toimii tässä solmussa, sekin sammuu, kunnes solmu on taas käynnissä.",
+      "typeName": "Vahvista kirjoittamalla {{node}}",
+      "reboot": {
+        "menu": "Käynnistä solmu uudelleen",
+        "title": "Käynnistetäänkö {{node}} uudelleen?",
+        "submit": "Käynnistä uudelleen",
+        "label": "Käynnistä {{node}} uudelleen",
+        "warning_one": "{{count}} käynnissä oleva vieras pysäytetään tai sammutetaan ensin sen käynnistysasetusten mukaisesti.",
+        "warning_other": "{{count}} käynnissä olevaa vierasta pysäytetään tai sammutetaan ensin niiden käynnistysasetusten mukaisesti."
+      },
+      "shutdown": {
+        "menu": "Sammuta solmu",
+        "title": "Sammutetaanko {{node}}?",
+        "submit": "Sammuta",
+        "label": "Sammuta {{node}}",
+        "warning_one": "{{count}} käynnissä oleva vieras sammuu sen mukana, eikä mikään käynnistä sitä uudelleen ennen kuin joku kytkee solmuun virran.",
+        "warning_other": "{{count}} käynnissä olevaa vierasta sammuu sen mukana, eikä mikään käynnistä niitä uudelleen ennen kuin joku kytkee solmuun virran."
+      }
+    },
+    "shell": "Komentotulkki",
+    "shellHint": "Avaa tämän isännän SSH-päätteen Termixissä.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Hakutoimialue",
+        "server": "DNS-palvelin {{n}}",
+        "editTitle": "Solmun {{node}} DNS",
+        "saved": "DNS tallennettu",
+        "problem": {
+          "search": "Anna hakutoimialue, esimerkiksi example.com.",
+          "server": "DNS-palvelin on IPv4- tai IPv6-osoite.",
+          "noServer": "Anna vähintään yksi DNS-palvelin."
+        }
+      },
+      "time": {
+        "title": "Aika",
+        "zone": "Aikavyöhyke",
+        "local": "Paikallinen aika",
+        "editTitle": "Solmun {{node}} aikavyöhyke",
+        "hint": "Kellon pitää ajassa NTP (chrony) solmussa.",
+        "saved": "Aikavyöhykkeeksi asetettu {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "Solmun {{node}} /etc/hosts",
+        "warning": "Solmun oman nimen on edelleen osoitettava sen osoitteeseen, muuten klusteri ja sen verkkokäyttöliittymä lakkaavat toimimasta.",
+        "saved": "/etc/hosts tallennettu"
+      },
+      "certs": {
+        "title": "Varmenteet",
+        "issuer": "myöntäjä {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Voimassa {{date}} asti",
+          "expiring": "Vanhenee {{date}}",
+          "expired": "Vanhentui {{date}}",
+          "notYet": "Ei vielä voimassa"
+        },
+        "upload": "Lähetä oma",
+        "uploadTitle": "Oma varmenne solmulle {{node}}",
+        "uploaded": "Varmenne lähetetty",
+        "chain": "Varmenneketju",
+        "chainHint": "PEM: ensin solmun varmenne, sitten välivarmenteet.",
+        "key": "Yksityinen avain",
+        "keyHint": "PEM, salaamaton. Jätä tyhjäksi säilyttääksesi solmussa jo olevan avaimen.",
+        "fromFile": "Lue tiedostosta",
+        "badCert": "Tämä ei ole PEM-varmenne.",
+        "badKey": "Tämä ei ole yksityinen PEM-avain.",
+        "restart": "Käynnistä verkkokäyttöliittymä uudelleen ottaaksesi sen käyttöön",
+        "restartHint": "pveproxy käynnistyy uudelleen; Termix menettää API:n muutamaksi sekunniksi.",
+        "remove": "Poista oma",
+        "removeTitle": "Poistetaanko oma varmenne?",
+        "removeDescription": "Solmu palaa itse allekirjoitettuun varmenteeseensa, ja verkkokäyttöliittymä käynnistyy uudelleen.",
+        "removed": "Oma varmenne poistettu"
+      }
+    },
+    "repos": {
+      "on": "Käytössä",
+      "off": "Pois käytöstä",
+      "enable": "Ota käyttöön",
+      "disable": "Poista käytöstä",
+      "enableTitle": "Otetaanko tämä ohjelmistolähde käyttöön?",
+      "enabled": "Ohjelmistolähde otettu käyttöön",
+      "disabled": "Ohjelmistolähde poistettu käytöstä",
+      "add": "Lisää:",
+      "added": "Ohjelmistolähde {{name}} lisätty",
+      "hint": "Suorita muutoksen jälkeen Päivitä pakettiluettelot kohdassa Paketit. Enterprise-ohjelmistolähteet vaativat tilauksen."
+    },
+    "taskHistory": {
+      "type": "Tyyppi, esimerkiksi vzdump",
+      "vmid": "VM/CT-ID",
+      "user": "Käyttäjä",
+      "errorsOnly": "Vain epäonnistuneet tehtävät",
+      "none": "Mikään tehtävä ei vastaa.",
+      "more": "Lataa lisää",
+      "state": {
+        "running": "Käynnissä",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Tilaa varmenne",
+      "renew": "Uusi",
+      "orderLabel": "Tilaa ACME-varmenne solmulle {{node}}",
+      "renewLabel": "Uusi ACME-varmenne solmulle {{node}}",
+      "usesAccount": "Tili: {{account}}",
+      "none": "ei mitään",
+      "noDomains": "Ei vielä toimialueita. Lisää muokkaamalla nimet, joihin tämä solmu vastaa.",
+      "viaHttp": "HTTP-haaste",
+      "viaDns": "DNS-haaste liitännäisellä {{plugin}}",
+      "accounts": "Tilit",
+      "plugins": "DNS-haasteliitännäiset",
+      "remove": "Poista",
+      "domainsTitle": "Solmun {{node}} ACME-toimialueet",
+      "domainsSaved": "ACME-toimialueet tallennettu",
+      "domain": "Toimialue",
+      "challenge": "Haaste",
+      "alias": "Alias",
+      "addDomain": "Lisää toimialue",
+      "httpHint": "HTTP-haaste edellyttää, että tämän solmun portti 80 on tavoitettavissa internetistä toimialueen nimellä. DNS toimii ilman sitä, myös jokerimerkeille.",
+      "hint": "Tilit ja liitännäiset ovat koko klusterin yhteisiä; toimialueet ovat solmukohtaisia.",
+      "problem": {
+        "noDomain": "Lisää vähintään yksi toimialue.",
+        "tooMany": "Solmulla voi olla enintään kuusi ACME-toimialuetta.",
+        "domain": "Toimialue on täydellinen nimi, kuten pve.example.com.",
+        "wildcard": "Jokerimerkkitoimialue vaatii DNS-haasteliitännäisen."
+      },
+      "account": {
+        "title": "Tili",
+        "pick": "Valitse tili",
+        "add": "Rekisteröi tili",
+        "addTitle": "Rekisteröi ACME-tili",
+        "register": "Rekisteröi",
+        "registerLabel": "Rekisteröi ACME-tili {{name}}",
+        "name": "Nimi",
+        "email": "Sähköposti",
+        "directory": "ACME-hakemisto",
+        "customDirectory": "Mukautettu URL",
+        "directoryUrl": "Hakemiston URL",
+        "acceptTos": "Hyväksy käyttöehdot",
+        "eabKid": "EAB-avaimen ID",
+        "eabHmac": "EAB HMAC -avain",
+        "eabHint": "Vain CA:ille, jotka vaativat External Account Bindingin.",
+        "none": "Ei vielä ACME-tiliä.",
+        "needOne": "Rekisteröi ensin ACME-tili.",
+        "removeTitle": "Poistetaanko tili {{name}} käytöstä?",
+        "removeDescription": "Tili poistetaan käytöstä CA:ssa ja poistetaan täältä. Jo myönnetyt varmenteet toimivat edelleen.",
+        "removeLabel": "Poista ACME-tili {{name}} käytöstä",
+        "problem": {
+          "name": "Nimessä on kirjaimia, numeroita, -, _ tai .",
+          "email": "Anna sähköpostiosoite.",
+          "directory": "Hakemisto on http- tai https-URL.",
+          "tos": "Hyväksy käyttöehdot rekisteröityäksesi.",
+          "eab": "EAB vaatii sekä avaimen ID:n että HMAC-avaimen."
+        }
+      },
+      "plugin": {
+        "add": "Lisää liitännäinen",
+        "addTitle": "Lisää DNS-haasteliitännäinen",
+        "id": "Liitännäisen ID",
+        "api": "DNS API",
+        "pickApi": "Valitse DNS-palveluntarjoaja",
+        "delay": "Vahvistusviive (s)",
+        "delayHint": "Kuinka kauan odotetaan TXT-tietueen leviämistä.",
+        "noFields": "Proxmox ei luettele kenttiä tälle palveluntarjoajalle; katso acme.sh:n ohjeista sen lukemat muuttujat.",
+        "none": "Ei DNS-liitännäisiä. HTTP toimii ilman.",
+        "disabled": "Pois käytöstä",
+        "removeTitle": "Poistetaanko liitännäinen {{name}}?",
+        "removeDescription": "Sitä käyttäviä toimialueita ei voi enää vahvistaa."
+      }
+    }
+  },
+  "console": {
+    "open": "Konsoli",
+    "openHint": "Avaa vieraan Termix-isännän tai tarjoutuu lisäämään sen ensin Termixiin.",
+    "tabTitle": "Proxmox-konsoli",
+    "tabLabel": "{{name}} — Konsoli",
+    "pick": "Avaa konsoli käynnissä olevasta VM:stä tai kontista Proxmox-työkalussa.",
+    "connect": "Yhdistä",
+    "reconnect": "Yhdistä uudelleen",
+    "disconnect": "Katkaise yhteys",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Koko näyttö",
+    "notRunning": "Käynnistä vieras avataksesi sen konsolin.",
+    "lost": "Konsoliyhteys katkesi.",
+    "ended": "Konsoli suljettu.",
+    "status": {
+      "idle": "Ei yhdistetty",
+      "connecting": "Yhdistetään...",
+      "connected": "Yhdistetty",
+      "closed": "Yhteys katkaistu",
+      "error": "Yhteyttä ei voitu muodostaa"
+    },
+    "proxmox": "Proxmox-konsoli",
+    "proxmoxHint": "Proxmoxin oma konsoli solmun kautta: VM:n näyttö, komentotulkki kontissa. Vieraalle, jolla ei vielä ole verkkoa."
+  },
+  "pool": {
+    "members": "Jäsenet",
+    "empty": "Tässä poolissa ei ole mitään."
+  },
+  "sdn": {
+    "hint": "SDN-vyöhykkeet, VNetit ja aliverkot tulevat klusterin hallinnan myötä myöhemmässä versiossa."
+  },
+  "network": {
+    "add": "Luo",
+    "apply": "Ota käyttöön",
+    "revert": "Peru",
+    "pending": "Ei vielä käytössä",
+    "hint": "Muutokset tallennetaan tiedostoon /etc/network/interfaces.new ja tulevat voimaan valinnalla Ota käyttöön, joka lataa solmun verkon uudelleen.",
+    "type": "Tyyppi",
+    "name": "Nimi",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Yhdyskäytävä (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Yhdyskäytävä (IPv6)",
+    "ports": "Sillan portit",
+    "slaves": "Orjat",
+    "portsHint": "Liitäntöjen nimet välilyönneillä erotettuina.",
+    "bondMode": "Tila",
+    "vlanDevice": "VLAN-raakalaite",
+    "mtu": "MTU",
+    "comments": "Kommentti",
+    "autostart": "Automaattinen käynnistys",
+    "vlanAware": "VLAN-tietoinen",
+    "vlanAwareHint": "Antaa tämän sillan vieraiden käyttää VLAN-tunnisteita.",
+    "inactive": "Ei aktiivinen",
+    "create": "Luo",
+    "createTitle": "Luo liitäntä",
+    "editTitle": "Muokkaa {{iface}}",
+    "types": {
+      "bridge": "Silta",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Portti",
+      "OVSBridge": "OVS-silta",
+      "alias": "Alias"
+    },
+    "nameHint": {
+      "bridge": "vmbr ja numero, esimerkiksi vmbr1.",
+      "bond": "bond ja numero, esimerkiksi bond0.",
+      "vlan": "laite.tunniste, kuten vmbr0.10, tai vlan10 raakalaitteen kanssa."
+    },
+    "addressWarning": "Tällä liitännällä on osoite, jonka kautta Termix tavoittaa solmun. Virhe voi katkaista Termixin yhteyden, kunnes joku korjaa solmun sen konsolista.",
+    "removeTitle": "Poistetaanko {{iface}}?",
+    "removeDescription": "Liitäntä poistetaan, kun muutos otetaan käyttöön.",
+    "applyTitle": "Otetaanko verkkomuutokset käyttöön solmussa {{node}}?",
+    "applyDescription": "Solmu lataa verkkonsa uudelleen. Jos uudet asetukset ovat virheelliset, solmu ja Termixin yhteys siihen voivat katketa.",
+    "applyLabel": "Ota verkko käyttöön solmussa {{node}}",
+    "reverted": "Verkkomuutokset peruttu",
+    "problem": {
+      "cidr": "Anna osoite muodossa 10.10.0.1/24.",
+      "gateway": "Yhdyskäytävä vaatii IPv4-osoitteen ja kelvollisen yhdyskäytävän IP-osoitteen.",
+      "cidr6": "Anna osoite muodossa fd00::1/64.",
+      "ports": "Anna liitäntöjen nimet välilyönneillä erotettuina.",
+      "slaves": "Bond vaatii vähintään yhden orjan.",
+      "vlanDevice": "Anna raakalaite vlanN-liitännälle.",
+      "mtu": "MTU on välillä 1280–65520.",
+      "name": {
+        "bridge": "Sillan nimi on vmbr ja numero.",
+        "bond": "Bondin nimi on bond ja numero.",
+        "vlan": "VLANin nimi on laite.tunniste tai vlan ja numero."
+      }
+    }
+  },
+  "import": {
+    "open": "Tuo Termixiin",
+    "title": "Tuo vieraat Termix-isänniksi",
+    "hint": "Jokaisesta valitusta VM:stä tai kontista tulee Termix-isäntä tunnisteella proxmox. Tuonti päivittää myös aiemmin tuotujen vieraiden nimet, osoitteet ja tunnisteet ja merkitsee Proxmoxista kadonneet tunnisteella proxmox-missing.",
+    "loading": "Etsitään vieraita ja niiden osoitteita…",
+    "counts": "{{total}} vierasta, {{imported}} jo tuotu",
+    "selectAll": "Valitse kaikki",
+    "selectNone": "Poista valinnat",
+    "none": "Tässä klusterissa ei ole VM:iä eikä kontteja.",
+    "imported": "Tuotu",
+    "noAddress": "ei osoitetta",
+    "folder": "Kansio",
+    "folderDefault": "Kansio nimeltä {{node}}",
+    "folderSearch": "Hae tai luo, / alikansiolle",
+    "folderCreate": "Luo \"{{folder}}\"",
+    "folderNone": "Ei vielä kansioita",
+    "connection": "Yhteystapa",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Konttien ajoympäristö",
+    "runtimeOff": "Ei Dockeria",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "Tuntematon käyttöjärjestelmä"
+    },
+    "sshLogin": "SSH-kirjautuminen",
+    "desktopLogin": "RDP- ja VNC-kirjautuminen",
+    "desktopHint": "Yhteys vaatii Remote Desktop -liitännäisen.",
+    "login": {
+      "nodeCredential": "Solmun tunnistetiedot",
+      "nodeUser": "Solmun käyttäjänimi",
+      "username": "Vain käyttäjänimi",
+      "none": "Ei kirjautumista"
+    },
+    "username": "Käyttäjänimi",
+    "submit_one": "Tuo {{count}} vieras",
+    "submit_other": "Tuo {{count}} vierasta",
+    "refresh": "Päivitä tuodut",
+    "done": "Luotu {{created}}, päivitetty {{updated}}, merkitty puuttuviksi {{markedMissing}}",
+    "lastSync": "Viimeisin synkronointi {{when}}.",
+    "lastSyncFailed": "Viimeisin synkronointi {{when}} epäonnistui: {{error}}",
+    "syncHint": "Ota käyttöön Pidä tuodut vieraat synkronoituina isännän Proxmox-asetuksissa päivittääksesi ne aikataulun mukaan.",
+    "addTitle": "Lisää {{name}} Termixiin",
+    "addHint": "Tämä vieras ei ole vielä Termix-isäntä. Lisää se avataksesi sen päätteen, minkä jälkeen Konsoli avaa sen suoraan.",
+    "addSubmit": "Lisää ja yhdistä",
+    "gone": "Proxmox ei enää luettele tätä vierasta."
+  }
+}

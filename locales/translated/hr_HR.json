@@ -1,0 +1,1030 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Upravljajte Proxmox VE-om iz Termixa: virtualni strojevi, kontejneri, pohrana, mreža, sigurnosne kopije, vatrozid, pristup i klaster."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Otvori u Proxmoxu"
+  },
+  "permissions": {
+    "view": {
+      "title": "Pregled Proxmoxa",
+      "description": "Pregled čvorova, gostiju, pohrane, grafikona i zadataka na Proxmox hostovima na koje se možete spojiti."
+    },
+    "operate": {
+      "title": "Upravljanje Proxmox gostima",
+      "description": "Pokretanje, zaustavljanje, gašenje, ponovno pokretanje, pauziranje i nastavak rada VM-ova i kontejnera. Potreban je pristup za uređivanje hosta."
+    },
+    "console": {
+      "title": "Otvaranje Proxmox konzola",
+      "description": "Otvaranje zaslona VM-a i root ljuske u kontejneru. Potreban je pristup za uređivanje hosta."
+    },
+    "configure": {
+      "title": "Konfiguriranje Proxmoxa",
+      "description": "Stvaranje, kloniranje, migracija, pretvaranje i brisanje VM-ova i kontejnera. Potreban je pristup za uređivanje hosta."
+    },
+    "administer": {
+      "title": "Administriranje Proxmoxa",
+      "description": "Upravljanje korisnicima, grupama, ulogama, skupovima, 2FA, tokenima, područjima i klasterom. Potreban je pristup za uređivanje hosta."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Proxmox čvor",
+      "description": "Označite ovaj host kao Proxmox VE čvor. Tada se prikazuje u alatu Proxmox pod Alati."
+    },
+    "transport": {
+      "label": "Poveži putem",
+      "description": "Automatski koristi API kroz SSH tunel nakon što se spremi token, a do tada pvesh preko SSH-a.",
+      "auto": "Automatski",
+      "tunnel": "API kroz SSH tunel",
+      "direct": "API izravno",
+      "pvesh": "pvesh preko SSH-a"
+    },
+    "tokenId": {
+      "label": "ID API tokena",
+      "description": "Stvara se u Proxmoxu pod Podatkovni centar, Dozvole, API tokeni. Izgleda ovako: user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "Tajna API tokena",
+      "description": "Prikazuje se samo jednom pri stvaranju tokena. Sprema se šifrirano."
+    },
+    "apiHost": {
+      "label": "API adresa",
+      "description": "Samo za API izravno. Ostavite prazno za adresu ovog hosta."
+    },
+    "apiPort": {
+      "label": "API port",
+      "description": "8006 ako ga niste promijenili."
+    },
+    "caCert": {
+      "label": "CA certifikat",
+      "description": "Samo za API izravno. CA čvora u PEM formatu, iz /etc/pve/pve-root-ca.pem. Ostavite prazno ako API ima javno pouzdan certifikat.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Uvezeni gosti",
+    "importSync": {
+      "label": "Održavaj uvezene goste sinkroniziranima",
+      "description": "Ažurira nazive, adrese i oznake gostiju uvezenih s ovog čvora, a one uklonjene iz Proxmoxa označava kao proxmox-missing."
+    },
+    "importInterval": {
+      "label": "Sinkroniziraj svakih (minuta)",
+      "description": "Najmanje 5 minuta."
+    },
+    "importAddNew": {
+      "label": "Dodaj nove goste pri sinkronizaciji",
+      "description": "Uvozi goste stvorene u Proxmoxu nakon prvog uvoza, sa zadanim postavkama zadnje korištenima u dijalogu uvoza."
+    },
+    "importDefaults": {
+      "label": "Zadane postavke uvoza"
+    },
+    "importState": {
+      "label": "Zadnja sinkronizacija gostiju"
+    },
+    "source": {
+      "label": "Proxmox gost"
+    }
+  },
+  "app": {
+    "loading": "Učitavanje...",
+    "loadFailed": "Nije moguće učitati klaster",
+    "refreshFailed": "Osvježavanje nije uspjelo: {{message}}",
+    "retry": "Pokušaj ponovno",
+    "refresh": "Osvježi",
+    "search": "Pretraži goste, čvorove i pohranu...",
+    "status": "Čvorova: {{nodes}}, pokrenuto gostiju: {{running}} od {{total}}",
+    "pickHost": "Proxmox host",
+    "pickResource": "Odaberite čvor, gosta ili pohranu s lijeve strane",
+    "noHosts": "Još nema Proxmox hostova",
+    "noHostsHint": "Otvorite postavke hosta, uključite Proxmox čvor pod SSH i odaberite način povezivanja. Čvor se tada prikazuje ovdje.",
+    "cancel": "Odustani",
+    "working": "Obrada...",
+    "save": "Spremi",
+    "reset": "Poništi",
+    "close": "Zatvori",
+    "yes": "Da",
+    "no": "Ne",
+    "edit": "Uredi"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix ne vjeruje certifikatu čvora. U Proxmox postavkama hosta zalijepite CA čvora iz /etc/pve/pve-root-ca.pem u CA certifikat ili odaberite API kroz SSH tunel.",
+    "tlsHostname": "Certifikat čvora izdan je za drugi naziv. Postavite API adresu na naziv ili adresu navedenu u certifikatu.",
+    "tlsExpired": "Certifikat čvora je istekao ili još nije valjan. Obnovite ga u Proxmoxu pod čvorom, Sustav, Certifikati.",
+    "notEnabled": "Ovaj host nije označen kao Proxmox čvor. Uključite Proxmox čvor u postavkama hosta.",
+    "hostAccess": "Za promjenu ovog hosta potreban vam je pristup za uređivanje."
+  },
+  "tree": {
+    "nothingFound": "Ništa ne odgovara pretrazi.",
+    "expand": "Proširi",
+    "collapse": "Sažmi",
+    "datacenter": "Podatkovni centar",
+    "folders": {
+      "lxc": "LXC kontejner",
+      "qemu": "Virtualni stroj",
+      "node": "Čvorovi",
+      "pool": "Skupovi",
+      "sdn": "Mreža",
+      "storage": "Pohrana"
+    },
+    "views": {
+      "folder": "Prikaz mapa",
+      "server": "Prikaz poslužitelja"
+    }
+  },
+  "types": {
+    "node": "Čvor",
+    "qemu": "VM",
+    "lxc": "Kontejner",
+    "storage": "Pohrana",
+    "pool": "Skup",
+    "sdn": "SDN zona"
+  },
+  "states": {
+    "running": "Pokrenuto",
+    "stopped": "Zaustavljeno",
+    "paused": "Pauzirano",
+    "suspended": "Suspendirano",
+    "online": "Na mreži",
+    "offline": "Izvan mreže",
+    "available": "Dostupno",
+    "unknown": "Nepoznato"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Memorija",
+    "disk": "Disk",
+    "rootDisk": "Root disk",
+    "usage": "Iskorištenost",
+    "cores_one": "{{count}} jezgra",
+    "cores_few": "{{count}} jezgre",
+    "cores_other": "{{count}} jezgri",
+    "swap": "Swap"
+  },
+  "summary": {
+    "title": "Sažetak",
+    "node": "Čvor",
+    "vmid": "ID",
+    "uptime": "Vrijeme rada",
+    "pool": "Skup",
+    "ha": "HA",
+    "tags": "Oznake",
+    "guests": "Gosti",
+    "guestsRunning": "Pokrenuto {{running}} od {{total}}",
+    "cpuModel": "CPU",
+    "sockets": "utičnica",
+    "load": "Prosječno opterećenje",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Jezgra",
+    "ips": "Adrese"
+  },
+  "charts": {
+    "title": "Grafikoni",
+    "cpu": "CPU",
+    "load": "Prosječno opterećenje",
+    "memory": "Memorija",
+    "network": "Mreža",
+    "diskIo": "Disk I/O",
+    "cpuUsage": "Iskorištenost CPU-a",
+    "ioDelay": "IO kašnjenje",
+    "used": "Iskorišteno",
+    "total": "Ukupno",
+    "in": "Ulaz",
+    "out": "Izlaz",
+    "read": "Čitanje",
+    "write": "Pisanje",
+    "timeframe": {
+      "hour": "Sat",
+      "day": "Dan",
+      "week": "Tjedan",
+      "month": "Mjesec",
+      "year": "Godina"
+    },
+    "noData": "Nema podataka za ovo razdoblje",
+    "serverLoad": "Opterećenje poslužitelja",
+    "loadAverage": "Prosječno opterećenje",
+    "swap": "Swap",
+    "pressureCpu": "Zastoj zbog pritiska na CPU",
+    "pressureMemory": "Zastoj zbog pritiska na memoriju",
+    "pressureIo": "Zastoj zbog pritiska na IO",
+    "some": "Djelomično",
+    "full": "Potpuno",
+    "average": "Prosjek",
+    "maximum": "Maksimum"
+  },
+  "tasks": {
+    "title": "Zadaci",
+    "started": "Pokrenuto",
+    "node": "Čvor",
+    "user": "Korisnik",
+    "task": "Zadatak",
+    "status": "Status",
+    "running": "U tijeku",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} na {{node}}",
+    "done": "{{label}}: gotovo",
+    "failed": "{{label}} nije uspjelo: {{reason}}"
+  },
+  "guests": {
+    "more": "Više radnji",
+    "isTemplate": "Predložak",
+    "locked": "Zaključano: {{lock}}",
+    "power": {
+      "start": "Pokreni",
+      "shutdown": "Ugasi",
+      "stop": "Zaustavi",
+      "reboot": "Ponovno pokreni",
+      "suspend": "Suspendiraj",
+      "resume": "Nastavi",
+      "reset": "Resetiraj",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Odmah zaustaviti {{name}}?",
+        "reset": "Odmah resetirati {{name}}?",
+        "description": "Ovo prekida napajanje kao izvlačenje utikača. Nespremljeni rad u gostu bit će izgubljen."
+      }
+    },
+    "clone": {
+      "menu": "Kloniraj",
+      "title": "Kloniraj {{name}}",
+      "submit": "Kloniraj",
+      "label": "Kloniraj {{source}} u {{id}}",
+      "full": "Potpuni klon",
+      "fullHint": "Kopira svaki disk, pa klon ne ovisi o izvorniku.",
+      "linkedHint": "Isključeno stvara povezani klon koji dijeli diskove predloška i nastaje u nekoliko sekundi.",
+      "sameStorage": "Ista pohrana kao izvornik"
+    },
+    "migrate": {
+      "menu": "Migriraj",
+      "title": "Migriraj {{name}}",
+      "submit": "Migriraj",
+      "label": "Migriraj {{name}} na {{target}}",
+      "noOtherNodes": "U ovom klasteru nema drugog čvora na mreži na koji se može premjestiti.",
+      "onlineHint": "VM je pokrenut i premješta se uživo, bez zaustavljanja.",
+      "restartHint": "Kontejner je pokrenut. Zaustavlja se, premješta i ponovno pokreće na odredištu."
+    },
+    "template": {
+      "menu": "Pretvori u predložak",
+      "confirm": "Pretvoriti {{name}} u predložak?",
+      "description": "Predložak se ne može pokrenuti, samo klonirati. Ovo se ne može poništiti.",
+      "submit": "Pretvori",
+      "label": "Pretvori {{name}} u predložak"
+    },
+    "delete": {
+      "menu": "Izbriši",
+      "title": "Izbriši {{name}}",
+      "submit": "Izbriši",
+      "label": "Izbriši {{name}}",
+      "warning": "Ovo briše gosta {{vmid}} i njegove diskove. Ne može se poništiti.",
+      "stopFirst": "Zaustavite gosta prije brisanja.",
+      "typeId": "Upišite {{vmid}} za potvrdu",
+      "purge": "Ukloni iz poslova sigurnosnog kopiranja, replikacije i HA",
+      "purgeHint": "Ne ostavlja poslove koji upućuju na gosta kojeg više nema.",
+      "unreferenced": "Izbriši i nereferencirane diskove",
+      "unreferencedHint": "Diskovi s ovim ID-om na omogućenim pohranama koje konfiguracija ne navodi."
+    },
+    "create": {
+      "vmButton": "Stvori VM",
+      "ctButton": "Stvori CT",
+      "vmTitle": "Stvori virtualni stroj",
+      "ctTitle": "Stvori kontejner",
+      "submit": "Stvori",
+      "vmLabel": "Stvori VM {{id}} ({{name}})",
+      "ctLabel": "Stvori CT {{id}} ({{name}})",
+      "noTemplates": "Na ovom čvoru nema predložaka kontejnera. Preuzmite jedan u Proxmoxu pod pohranom, CT predlošci.",
+      "noIso": "Nema instalacijskog medija",
+      "unprivilegedHint": "Sigurnije: root u kontejneru nije root na čvoru.",
+      "loginHint": "Postavite root lozinku, SSH ključeve ili oboje.",
+      "problem": {
+        "vmid": "Odaberite ID od 100 ili više.",
+        "hostname": "Unesite naziv hosta: slova, znamenke i crtice.",
+        "name": "Unesite naziv: slova, znamenke i crtice.",
+        "template": "Odaberite predložak.",
+        "storage": "Odaberite pohranu.",
+        "disk": "Unesite veličinu diska.",
+        "cores": "Unesite broj jezgri.",
+        "sockets": "Unesite broj utičnica.",
+        "memory": "Unesite najmanje 16 MiB memorije.",
+        "swap": "Unesite swap u MiB, 0 za bez.",
+        "network": "Odaberite most i, za statičku adresu, unesite je u obliku 192.168.0.60/24.",
+        "login": "Postavite root lozinku ili SSH ključeve kako biste se mogli prijaviti.",
+        "password": "Lozinka mora imati najmanje 5 znakova."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Ostalo"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Naziv",
+      "hostname": "Naziv hosta",
+      "node": "Čvor",
+      "targetNode": "Odredišni čvor",
+      "targetStorage": "Odredišna pohrana",
+      "storage": "Pohrana",
+      "template": "Predložak",
+      "iso": "Instalacijski medij",
+      "ostype": "OS gosta",
+      "rootPassword": "Root lozinka",
+      "sshKeys": "Javni SSH ključevi",
+      "unprivileged": "Neprivilegirani kontejner",
+      "diskGiB": "Disk (GiB)",
+      "cores": "Jezgre",
+      "sockets": "Utičnice",
+      "memoryMiB": "Memorija (MiB)",
+      "swapMiB": "Swap (MiB)",
+      "bridge": "Mrežni most",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Statički",
+      "cidr": "Adresa/prefiks",
+      "gateway": "Pristupnik",
+      "startAfter": "Pokreni nakon stvaranja",
+      "pick": "Odaberite"
+    },
+    "tabs": {
+      "summary": "Sažetak",
+      "hardware": "Hardver",
+      "options": "Opcije",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Uredi",
+    "add": "Dodaj",
+    "remove": "Ukloni",
+    "removed": "{{key}} uklonjen",
+    "pending": "Na čekanju",
+    "pendingHint": "Promjene označene kao Na čekanju primjenjuju se kad se gost ponovno pokrene iz Proxmoxa: ponovno pokretanje unutar gosta nije dovoljno.",
+    "processors": "Procesori",
+    "processorsValue": "{{sockets}} utičnica × {{cores}} jezgri, {{cpu}}",
+    "allCores": "Sve",
+    "swap": "Swap",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "Procesor i memorija",
+      "title": "Procesor i memorija"
+    },
+    "cpuType": "Vrsta CPU-a",
+    "cpulimit": "Ograničenje CPU-a",
+    "cpulimitHint": "0 za bez ograničenja. 1.5 je vrijeme jedne i pol jezgre.",
+    "balloon": "Minimalna memorija (MiB)",
+    "balloonHint": "S balloon upravljačkim programom gost vraća memoriju do ove vrijednosti. Jednako memoriji ga isključuje, 0 uklanja upravljački program.",
+    "disks": "Diskovi",
+    "volumes": "Root disk i točke montiranja",
+    "bus": "Sabirnica",
+    "slot": "Bit će {{key}}",
+    "iothread": "IO nit",
+    "discard": "Discard",
+    "discardHint": "Omogućuje gostu oslobađanje neiskorištenih blokova na tankoj pohrani.",
+    "ssd": "SSD emulacija",
+    "mountPath": "Putanja montiranja u kontejneru",
+    "backup": "Uključi u sigurnosne kopije",
+    "addDisk": {
+      "button": "Dodaj disk",
+      "title": "Dodaj disk",
+      "label": "Dodaj {{key}}"
+    },
+    "addMount": {
+      "button": "Dodaj točku montiranja",
+      "title": "Dodaj točku montiranja"
+    },
+    "resize": {
+      "menu": "Promijeni veličinu",
+      "title": "Povećaj {{key}}",
+      "grow": "Dodaj (GiB)",
+      "result": "{{from}} GiB postaje {{to}} GiB",
+      "noShrink": "Diskovi se mogu samo povećati. Particiju i datotečni sustav gosta potrebno je zatim povećati unutar gosta, osim ako to ne učini pri pokretanju.",
+      "submit": "Povećaj",
+      "label": "Povećaj {{key}} za {{size}} GiB"
+    },
+    "move": {
+      "menu": "Premjesti u pohranu",
+      "title": "Premjesti {{key}}",
+      "submit": "Premjesti",
+      "deleteSource": "Izbriši izvornik",
+      "deleteSourceHint": "Isključeno ga zadržava kao neiskorišteni disk.",
+      "label": "Premjesti {{key}} u {{storage}}"
+    },
+    "detach": {
+      "menu": "Odvoji",
+      "title": "Odvojiti {{key}}?",
+      "description": "Disk ostaje na svojoj pohrani kao neiskorišteni disk i može se izbrisati ili ponovno priključiti."
+    },
+    "unused": {
+      "delete": "Izbriši",
+      "title": "Izbrisati {{volume}}?",
+      "description": "Ovo briše disk i sve na njemu. Ne može se poništiti."
+    },
+    "cd": {
+      "heading": "CD/DVD pogoni",
+      "title": "Medij u {{key}}",
+      "empty": "Nema medija"
+    },
+    "nic": {
+      "heading": "Mrežni adapteri",
+      "add": "Dodaj adapter",
+      "addTitle": "Dodaj {{key}}",
+      "editTitle": "Uredi {{key}}",
+      "none": "Nema mrežnih adaptera.",
+      "model": "Model",
+      "name": "Naziv u kontejneru",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Statički",
+        "none": "Nema",
+        "auto": "SLAAC"
+      },
+      "tag": "VLAN oznaka",
+      "tagHint": "Prazno za bez oznake.",
+      "rate": "Ograničenje brzine (MB/s)",
+      "rateHint": "Prazno za bez ograničenja.",
+      "firewall": "Vatrozid",
+      "firewallShort": "vatrozid",
+      "removeTitle": "Ukloniti {{key}}?",
+      "removeDescription": "Gost gubi ovaj adapter i njegovu adresu."
+    },
+    "problem": {
+      "cpu": "Unesite najmanje jednu utičnicu i jezgru.",
+      "cpulimit": "Ograničenje CPU-a kreće se od 0 do 8192.",
+      "memory": "Unesite najmanje 16 MiB memorije.",
+      "balloon": "Minimalna memorija ne može biti veća od memorije.",
+      "swap": "Unesite swap u MiB, 0 za bez.",
+      "noSlot": "Svi utori ove vrste su zauzeti.",
+      "storage": "Odaberite pohranu.",
+      "size": "Unesite veličinu u cijelim GiB.",
+      "path": "Unesite apsolutnu putanju poput /data, ali ne sam /.",
+      "bridge": "Odaberite most.",
+      "tag": "VLAN oznaka kreće se od 1 do 4094.",
+      "rate": "Unesite brzinu veću od 0 ili ostavite prazno.",
+      "name": "Unesite naziv poput eth0.",
+      "ip4": "Unesite adresu poput 192.168.0.60/24 i valjani pristupnik.",
+      "ip6": "Unesite adresu poput fd00::10/64."
+    },
+    "detached": "{{key}} odvojen; ostaje kao neiskorišteni disk",
+    "coresHint": "Prazno koristi sve jezgre čvora."
+  },
+  "options": {
+    "general": "Općenito",
+    "tags": "Oznake",
+    "tagsHint": "Odvojene zarezima.",
+    "onboot": "Pokreni pri pokretanju čvora",
+    "protection": "Zaštita",
+    "protectionHint": "Sprječava brisanje gosta i njegovih diskova dok se ne isključi.",
+    "agent": "QEMU agent gosta",
+    "agentHint": "Uključite kad agent radi u gostu, za njegove adrese i čisto gašenje.",
+    "startup": "Redoslijed pokretanja i gašenja",
+    "startupOrder": "Redoslijed",
+    "startupUp": "Odgoda nakon pokretanja (s)",
+    "startupDown": "Vremensko ograničenje gašenja (s)",
+    "dns": "DNS",
+    "nameserver": "DNS poslužitelji",
+    "searchdomain": "Domena pretraživanja",
+    "useHost": "Prazno koristi postavke čvora.",
+    "notes": "Bilješke",
+    "saved": "Opcije spremljene",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Ostalo"
+    },
+    "problem": {
+      "name": "Unesite naziv.",
+      "startup": "Redoslijed i odgode su cijeli brojevi.",
+      "tags": "Oznake koriste slova, znamenke, crtice, točke i podvlake.",
+      "nameserver": "Unesite IP adrese odvojene razmacima."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "Ovaj VM nema cloud-init pogon. Dodajte ga, zatim ovdje postavite korisnika, ključeve i mrežu; slika gosta mora podržavati cloud-init.",
+    "addDrive": "Dodaj cloud-init pogon",
+    "driveAdded": "Cloud-init pogon dodan",
+    "user": "Korisnik",
+    "username": "Korisničko ime",
+    "usernameHint": "Prazno koristi zadanog korisnika slike.",
+    "password": "Lozinka",
+    "passwordHint": "Prazno zadržava trenutačnu. Proxmox je sprema kao hash.",
+    "network": "Mreža",
+    "saved": "Cloud-init postavke spremljene",
+    "regenerate": "Ponovno generiraj sliku",
+    "regenerated": "Cloud-init slika ponovno generirana",
+    "regenerateHint": "Zapisuje postavke na {{drive}}. Gost ih čita pri sljedećem pokretanju."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Sažetak",
+      "iso": "ISO slike",
+      "vztmpl": "CT predlošci",
+      "backup": "Sigurnosne kopije",
+      "images": "Slike diskova"
+    },
+    "content": "Sadrži",
+    "contentTypes": {
+      "images": "VM diskovi",
+      "rootdir": "Diskovi kontejnera",
+      "iso": "ISO slike",
+      "vztmpl": "CT predlošci",
+      "backup": "Sigurnosne kopije",
+      "snippets": "Isječci",
+      "import": "Uvoz"
+    },
+    "shared": "Dijeljeno",
+    "empty": "Ovdje još nema ničega.",
+    "owner": "gost {{vmid}}",
+    "protected": "Zaštićeno",
+    "download": {
+      "button": "Preuzmi s URL-a",
+      "title": {
+        "iso": "Preuzmi ISO sliku u {{storage}}",
+        "vztmpl": "Preuzmi CT predložak u {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Naziv datoteke",
+      "algorithm": "Vrsta kontrolnog zbroja",
+      "noChecksum": "Nema",
+      "checksum": "Kontrolni zbroj",
+      "verify": "Provjeri certifikat poslužitelja",
+      "submit": "Preuzmi",
+      "label": "Preuzmi {{name}}",
+      "problem": {
+        "url": "Unesite http ili https URL.",
+        "filename": "Naziv datoteke koristi slova, znamenke, točke, crtice i podvlake.",
+        "extension": "ISO slike završavaju na .iso ili .img; predlošci na .tar.gz, .tar.xz ili .tar.zst.",
+        "checksum": "Odaberite vrstu kontrolnog zbroja i unesite ga heksadecimalno ili ostavite oboje prazno."
+      }
+    },
+    "catalog": {
+      "button": "Predlošci",
+      "title": "Predlošci kontejnera za {{storage}}",
+      "search": "Pretraži predloške...",
+      "have": "Preuzeto",
+      "label": "Preuzmi {{name}}"
+    },
+    "delete": {
+      "title": "Izbrisati {{name}}?",
+      "description": "Ovo briše datoteku iz pohrane. Ne može se poništiti.",
+      "submit": "Izbriši",
+      "done": "{{name}} izbrisano"
+    },
+    "upload": {
+      "button": "Prenesi",
+      "cancel": "Otkaži prijenos",
+      "done": "{{name}} preneseno",
+      "failed": "Prijenos {{name}} nije uspio: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Sažetak",
+      "network": "Mreža",
+      "system": "Sustav",
+      "services": "Usluge",
+      "updates": "Ažuriranja",
+      "disks": "Diskovi",
+      "tasks": "Zadaci",
+      "log": "Zapisnik"
+    },
+    "services": {
+      "start": "Pokreni",
+      "stop": "Zaustavi",
+      "restart": "Ponovno pokreni",
+      "reload": "Ponovno učitaj",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Zaustaviti {{name}}?",
+        "restart": "Ponovno pokrenuti {{name}}?",
+        "description": "Vlastite usluge Proxmoxa održavaju rad čvora i njegovog API-ja; zaustavljanje jedne može prekinuti ovaj alat dok se ponovno ne pokrene."
+      }
+    },
+    "updates": {
+      "refresh": "Osvježi popise paketa",
+      "refreshLabel": "Osvježi popise paketa na {{node}}",
+      "count_one": "{{count}} paket može se nadograditi",
+      "count_few": "{{count}} paketa mogu se nadograditi",
+      "count_other": "{{count}} paketa može se nadograditi",
+      "none": "Sve je ažurno",
+      "installHint": "Instalirajte nadogradnje iz terminala čvora naredbom apt full-upgrade; Proxmox ne nadograđuje putem svog API-ja.",
+      "views": {
+        "packages": "Paketi",
+        "repositories": "Repozitoriji"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART za {{disk}}",
+      "health": "Stanje",
+      "usedBy": "koristi {{used}}",
+      "unused": "neiskorišteno",
+      "wearout": "Preostalo {{value}}% vijeka",
+      "views": {
+        "disks": "Diskovi",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Direktorij",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "{{count}} logički volumen",
+        "lvCount_few": "{{count}} logička volumena",
+        "lvCount_other": "{{count}} logičkih volumena",
+        "metadata": "metapodaci {{used}} / {{size}}",
+        "frag": "{{value}}% fragmentirano",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "Nema LVM grupa volumena.",
+          "lvmthin": "Nema LVM-Thin skupova.",
+          "directory": "Nema pohrane direktorija na zasebnom disku.",
+          "zfs": "Nema ZFS skupova."
+        },
+        "create": {
+          "lvm": "Stvori LVM grupu volumena",
+          "lvmthin": "Stvori LVM-Thin skup",
+          "directory": "Stvori direktorij",
+          "zfs": "Stvori ZFS skup"
+        },
+        "createSubmit": "Stvori",
+        "createLabel": "Stvori {{name}} na {{node}}",
+        "wipeWarning": "Odabrani diskovi bit će particionirani i formatirani. Nude se samo diskovi na kojima nema ničega.",
+        "name": "Naziv",
+        "device": "Disk",
+        "devices": "Diskovi",
+        "pickDisk": "Odaberite disk",
+        "noUnused": "Nema neiskorištenog diska. Najprije obrišite jedan pod Diskovi, ako sadržaj na njemu nije potreban.",
+        "filesystem": "Datotečni sustav",
+        "raidlevel": "RAID razina",
+        "raid": {
+          "single": "Jedan disk",
+          "mirror": "Zrcalo",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Kompresija",
+        "addStorage": "Dodaj kao pohranu",
+        "addStorageHint": "Stvara Proxmox pohranu istog naziva, za diskove, kontejnere ili sigurnosne kopije.",
+        "problem": {
+          "name": "Naziv počinje slovom i sadrži slova, znamenke, -, _ ili .",
+          "device": "Odaberite disk.",
+          "oneDevice": "Odaberite jedan disk.",
+          "tooFew": "Ova RAID razina zahtijeva najmanje {{count}} diskova.",
+          "even": "RAID10 zahtijeva paran broj diskova.",
+          "ashift": "ashift je između 9 i 16."
+        },
+        "remove": "Ukloni",
+        "removeTitle": "Ukloniti {{name}}?",
+        "removeWarning": "Gosti s diskovima na njemu gube ih. Uklanjanje prethodno ništa ne premješta.",
+        "removeLabel": "Ukloni {{name}} na {{node}}",
+        "cleanupConfig": "Ukloni i unos pohrane",
+        "cleanupDisks": "Obriši njegove diskove",
+        "cleanupDisksHint": "Briše diskove kako bi se mogli ponovno koristiti.",
+        "inUse": {
+          "lvm": "Još ima logičkih volumena. Najprije ih uklonite; ova grupa može sadržavati sustav samog čvora.",
+          "lvmthin": "Još sadrži podatke. Najprije premjestite ili uklonite diskove gostiju na njoj."
+        }
+      },
+      "gpt": "Inicijaliziraj GPT",
+      "gptTitle": "Inicijalizirati {{disk}} s GPT?",
+      "gptDescription": "Zapisuje praznu GPT tablicu particija na disk.",
+      "gptLabel": "Inicijaliziraj {{disk}} na {{node}}",
+      "wipe": "Obriši",
+      "wipeTitle": "Obrisati {{disk}}?",
+      "wipeWarning": "Briše tablicu particija i svaki potpis datotečnog sustava, LVM-a i ZFS-a na disku (sada: {{used}}). Sadržaj se trajno gubi.",
+      "wipeLabel": "Obriši {{disk}} na {{node}}",
+      "typePath": "Upišite {{disk}} za potvrdu"
+    },
+    "log": {
+      "search": "Filtriraj zapisnik...",
+      "empty": "Nijedan redak ne odgovara."
+    },
+    "power": {
+      "menu": "Napajanje čvora",
+      "termixWarning": "Ako Termix radi na ovom čvoru, i on se gasi dok se čvor ne vrati.",
+      "typeName": "Upišite {{node}} za potvrdu",
+      "reboot": {
+        "menu": "Ponovno pokreni čvor",
+        "title": "Ponovno pokrenuti {{node}}?",
+        "submit": "Ponovno pokreni",
+        "label": "Ponovno pokreni {{node}}",
+        "warning_one": "{{count}} pokrenuti gost najprije se zaustavlja ili gasi, prema svojim postavkama pokretanja.",
+        "warning_few": "{{count}} pokrenuta gosta najprije se zaustavljaju ili gase, prema svojim postavkama pokretanja.",
+        "warning_other": "{{count}} pokrenutih gostiju najprije se zaustavlja ili gasi, prema svojim postavkama pokretanja."
+      },
+      "shutdown": {
+        "menu": "Ugasi čvor",
+        "title": "Ugasiti {{node}}?",
+        "submit": "Ugasi",
+        "label": "Ugasi {{node}}",
+        "warning_one": "{{count}} pokrenuti gost gasi se zajedno s njim i ništa ga ne pokreće ponovno dok netko ne uključi čvor.",
+        "warning_few": "{{count}} pokrenuta gosta gase se zajedno s njim i ništa ih ne pokreće ponovno dok netko ne uključi čvor.",
+        "warning_other": "{{count}} pokrenutih gostiju gasi se zajedno s njim i ništa ih ne pokreće ponovno dok netko ne uključi čvor."
+      }
+    },
+    "shell": "Ljuska",
+    "shellHint": "Otvara SSH terminal ovog hosta u Termixu.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Domena pretraživanja",
+        "server": "DNS poslužitelj {{n}}",
+        "editTitle": "DNS čvora {{node}}",
+        "saved": "DNS spremljen",
+        "problem": {
+          "search": "Unesite domenu pretraživanja, npr. example.com.",
+          "server": "DNS poslužitelj je IPv4 ili IPv6 adresa.",
+          "noServer": "Unesite najmanje jedan DNS poslužitelj."
+        }
+      },
+      "time": {
+        "title": "Vrijeme",
+        "zone": "Vremenska zona",
+        "local": "Lokalno vrijeme",
+        "editTitle": "Vremenska zona čvora {{node}}",
+        "hint": "Sam sat održava NTP (chrony) na čvoru.",
+        "saved": "Vremenska zona postavljena na {{zone}}"
+      },
+      "hosts": {
+        "title": "Hostovi",
+        "editTitle": "/etc/hosts čvora {{node}}",
+        "warning": "Vlastiti naziv čvora mora se i dalje razlučivati u njegovu adresu, inače klaster i njegovo web sučelje prestaju raditi.",
+        "saved": "/etc/hosts spremljen"
+      },
+      "certs": {
+        "title": "Certifikati",
+        "issuer": "izdao {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Valjan do {{date}}",
+          "expiring": "Istječe {{date}}",
+          "expired": "Istekao {{date}}",
+          "notYet": "Još nije valjan"
+        },
+        "upload": "Prenesi vlastiti",
+        "uploadTitle": "Vlastiti certifikat za {{node}}",
+        "uploaded": "Certifikat prenesen",
+        "chain": "Lanac certifikata",
+        "chainHint": "PEM: najprije certifikat čvora, zatim posrednički.",
+        "key": "Privatni ključ",
+        "keyHint": "PEM, nešifriran. Ostavite prazno da se zadrži ključ koji je već na čvoru.",
+        "fromFile": "Učitaj iz datoteke",
+        "badCert": "Ovo nije PEM certifikat.",
+        "badKey": "Ovo nije PEM privatni ključ.",
+        "restart": "Ponovno pokreni web sučelje da bi se koristio",
+        "restartHint": "pveproxy se ponovno pokreće; Termix na nekoliko sekundi gubi API.",
+        "remove": "Ukloni vlastiti",
+        "removeTitle": "Ukloniti vlastiti certifikat?",
+        "removeDescription": "Čvor se vraća na samopotpisani certifikat, a web sučelje se ponovno pokreće.",
+        "removed": "Vlastiti certifikat uklonjen"
+      }
+    },
+    "repos": {
+      "on": "Omogućeno",
+      "off": "Onemogućeno",
+      "enable": "Omogući",
+      "disable": "Onemogući",
+      "enableTitle": "Omogućiti ovaj repozitorij?",
+      "enabled": "Repozitorij omogućen",
+      "disabled": "Repozitorij onemogućen",
+      "add": "Dodaj:",
+      "added": "Repozitorij {{name}} dodan",
+      "hint": "Nakon promjene pokrenite Osvježi popise paketa pod Paketi. Enterprise repozitoriji zahtijevaju pretplatu."
+    },
+    "taskHistory": {
+      "type": "Vrsta, npr. vzdump",
+      "vmid": "VM/CT ID",
+      "user": "Korisnik",
+      "errorsOnly": "Samo neuspjeli zadaci",
+      "none": "Nijedan zadatak ne odgovara.",
+      "more": "Učitaj još",
+      "state": {
+        "running": "U tijeku",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Naruči certifikat",
+      "renew": "Obnovi",
+      "orderLabel": "Naruči ACME certifikat za {{node}}",
+      "renewLabel": "Obnovi ACME certifikat za {{node}}",
+      "usesAccount": "Račun: {{account}}",
+      "none": "nema",
+      "noDomains": "Još nema domena. Uredite kako biste dodali nazive na koje ovaj čvor odgovara.",
+      "viaHttp": "HTTP izazov",
+      "viaDns": "DNS izazov putem {{plugin}}",
+      "accounts": "Računi",
+      "plugins": "Dodaci za DNS izazov",
+      "remove": "Ukloni",
+      "domainsTitle": "ACME domene čvora {{node}}",
+      "domainsSaved": "ACME domene spremljene",
+      "domain": "Domena",
+      "challenge": "Izazov",
+      "alias": "Alias",
+      "addDomain": "Dodaj domenu",
+      "httpHint": "HTTP izazov zahtijeva da port 80 ovog čvora bude dostupan s interneta pod domenom. DNS radi i bez toga, te za zamjenske znakove.",
+      "hint": "Računi i dodaci dijele se u cijelom klasteru; domene su po čvoru.",
+      "problem": {
+        "noDomain": "Dodajte najmanje jednu domenu.",
+        "tooMany": "Čvor ima najviše šest ACME domena.",
+        "domain": "Domena je puni naziv, npr. pve.example.com.",
+        "wildcard": "Domena sa zamjenskim znakom zahtijeva dodatak za DNS izazov."
+      },
+      "account": {
+        "title": "Račun",
+        "pick": "Odaberite račun",
+        "add": "Registriraj račun",
+        "addTitle": "Registriraj ACME račun",
+        "register": "Registriraj",
+        "registerLabel": "Registriraj ACME račun {{name}}",
+        "name": "Naziv",
+        "email": "E-pošta",
+        "directory": "ACME direktorij",
+        "customDirectory": "Prilagođeni URL",
+        "directoryUrl": "URL direktorija",
+        "acceptTos": "Prihvati uvjete korištenja",
+        "eabKid": "EAB ID ključa",
+        "eabHmac": "EAB HMAC ključ",
+        "eabHint": "Samo za CA-ove koji traže External Account Binding.",
+        "none": "Još nema ACME računa.",
+        "needOne": "Najprije registrirajte ACME račun.",
+        "removeTitle": "Deaktivirati račun {{name}}?",
+        "removeDescription": "Račun se deaktivira kod CA-a i uklanja ovdje. Već izdani certifikati i dalje rade.",
+        "removeLabel": "Deaktiviraj ACME račun {{name}}",
+        "problem": {
+          "name": "Naziv sadrži slova, znamenke, -, _ ili .",
+          "email": "Unesite adresu e-pošte.",
+          "directory": "Direktorij je http ili https URL.",
+          "tos": "Prihvatite uvjete korištenja za registraciju.",
+          "eab": "EAB zahtijeva i ID ključa i HMAC ključ."
+        }
+      },
+      "plugin": {
+        "add": "Dodaj dodatak",
+        "addTitle": "Dodaj dodatak za DNS izazov",
+        "id": "ID dodatka",
+        "api": "DNS API",
+        "pickApi": "Odaberite DNS pružatelja",
+        "delay": "Odgoda provjere (s)",
+        "delayHint": "Koliko čekati da se TXT zapis proširi.",
+        "noFields": "Proxmox ne navodi polja za ovog pružatelja; varijable koje čita potražite u dokumentaciji za acme.sh.",
+        "none": "Nema DNS dodataka. HTTP radi i bez njih.",
+        "disabled": "Onemogućeno",
+        "removeTitle": "Ukloniti dodatak {{name}}?",
+        "removeDescription": "Domene koje ga koriste više se ne mogu provjeriti."
+      }
+    }
+  },
+  "console": {
+    "open": "Konzola",
+    "openHint": "Otvara Termix host gosta ili najprije nudi da ga dodate u Termix.",
+    "tabTitle": "Proxmox konzola",
+    "tabLabel": "{{name}} — Konzola",
+    "pick": "Otvorite konzolu pokrenutog VM-a ili kontejnera u alatu Proxmox.",
+    "connect": "Poveži",
+    "reconnect": "Ponovno poveži",
+    "disconnect": "Prekini vezu",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Cijeli zaslon",
+    "notRunning": "Pokrenite gosta da biste otvorili njegovu konzolu.",
+    "lost": "Veza s konzolom je izgubljena.",
+    "ended": "Konzola zatvorena.",
+    "status": {
+      "idle": "Nije povezano",
+      "connecting": "Povezivanje...",
+      "connected": "Povezano",
+      "closed": "Veza prekinuta",
+      "error": "Povezivanje nije uspjelo"
+    },
+    "proxmox": "Proxmox konzola",
+    "proxmoxHint": "Vlastita konzola Proxmoxa putem čvora: zaslon VM-a, ljuska u kontejneru. Za gosta koji još nema mrežu."
+  },
+  "pool": {
+    "members": "Članovi",
+    "empty": "U ovom skupu nema ničega."
+  },
+  "sdn": {
+    "hint": "SDN zone, VNet-ovi i podmreže dolaze s upravljanjem klasterom u kasnijem izdanju."
+  },
+  "network": {
+    "add": "Stvori",
+    "apply": "Primijeni",
+    "revert": "Vrati",
+    "pending": "Još nije primijenjeno",
+    "hint": "Promjene se spremaju u /etc/network/interfaces.new i stupaju na snagu pri Primijeni, što ponovno učitava mrežu čvora.",
+    "type": "Vrsta",
+    "name": "Naziv",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Pristupnik (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Pristupnik (IPv6)",
+    "ports": "Portovi mosta",
+    "slaves": "Podređena sučelja",
+    "portsHint": "Nazivi sučelja odvojeni razmacima.",
+    "bondMode": "Način",
+    "vlanDevice": "VLAN izvorni uređaj",
+    "mtu": "MTU",
+    "comments": "Komentar",
+    "autostart": "Automatsko pokretanje",
+    "vlanAware": "Svjestan VLAN-a",
+    "vlanAwareHint": "Omogućuje gostima na ovom mostu korištenje VLAN oznaka.",
+    "inactive": "Neaktivno",
+    "create": "Stvori",
+    "createTitle": "Stvori sučelje",
+    "editTitle": "Uredi {{iface}}",
+    "types": {
+      "bridge": "Most",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Port",
+      "OVSBridge": "OVS most",
+      "alias": "Alias"
+    },
+    "nameHint": {
+      "bridge": "vmbr i broj, npr. vmbr1.",
+      "bond": "bond i broj, npr. bond0.",
+      "vlan": "uređaj.oznaka poput vmbr0.10 ili vlan10 s izvornim uređajem."
+    },
+    "addressWarning": "Ovo sučelje nosi adresu preko koje Termix dolazi do čvora. Pogreška može odspojiti Termix dok netko ne popravi čvor na njegovoj konzoli.",
+    "removeTitle": "Ukloniti {{iface}}?",
+    "removeDescription": "Sučelje se uklanja kad se promjena primijeni.",
+    "applyTitle": "Primijeniti mrežne promjene na {{node}}?",
+    "applyDescription": "Čvor ponovno učitava mrežu. Ako su nove postavke pogrešne, čvor i veza Termixa s njim mogu otići izvan mreže.",
+    "applyLabel": "Primijeni mrežu na {{node}}",
+    "reverted": "Mrežne promjene vraćene",
+    "problem": {
+      "cidr": "Unesite adresu poput 10.10.0.1/24.",
+      "gateway": "Pristupnik zahtijeva IPv4 adresu i valjanu IP adresu pristupnika.",
+      "cidr6": "Unesite adresu poput fd00::1/64.",
+      "ports": "Unesite nazive sučelja odvojene razmacima.",
+      "slaves": "Bond zahtijeva najmanje jedno podređeno sučelje.",
+      "vlanDevice": "Navedite izvorni uređaj za sučelje vlanN.",
+      "mtu": "MTU se kreće od 1280 do 65520.",
+      "name": {
+        "bridge": "Most se zove vmbr i broj.",
+        "bond": "Bond se zove bond i broj.",
+        "vlan": "VLAN se zove uređaj.oznaka ili vlan i broj."
+      }
+    }
+  },
+  "import": {
+    "open": "Uvezi u Termix",
+    "title": "Uvezi goste kao Termix hostove",
+    "hint": "Svaki odabrani VM ili kontejner postaje Termix host s oznakom proxmox. Uvoz također osvježava nazive, adrese i oznake prethodno uvezenih gostiju, a one kojih više nema u Proxmoxu označava kao proxmox-missing.",
+    "loading": "Traženje gostiju i njihovih adresa…",
+    "counts": "Gostiju: {{total}}, već uvezeno: {{imported}}",
+    "selectAll": "Odaberi sve",
+    "selectNone": "Poništi odabir",
+    "none": "Ovaj klaster nema VM-ova ni kontejnera.",
+    "imported": "Uvezeno",
+    "noAddress": "nema adrese",
+    "folder": "Mapa",
+    "folderDefault": "Mapa nazvana {{node}}",
+    "folderSearch": "Pretražite ili stvorite, / za podmapu",
+    "folderCreate": "Stvori \"{{folder}}\"",
+    "folderNone": "Još nema mapa",
+    "connection": "Poveži se putem",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Okruženje kontejnera",
+    "runtimeOff": "Bez Dockera",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "Nepoznati OS"
+    },
+    "sshLogin": "SSH prijava",
+    "desktopLogin": "RDP i VNC prijava",
+    "desktopHint": "Za povezivanje potreban je dodatak Remote Desktop.",
+    "login": {
+      "nodeCredential": "Vjerodajnica čvora",
+      "nodeUser": "Korisničko ime čvora",
+      "username": "Samo korisničko ime",
+      "none": "Bez prijave"
+    },
+    "username": "Korisničko ime",
+    "submit_one": "Uvezi {{count}} gosta",
+    "submit_few": "Uvezi {{count}} gosta",
+    "submit_other": "Uvezi {{count}} gostiju",
+    "refresh": "Osvježi uvezene",
+    "done": "Stvoreno {{created}}, ažurirano {{updated}}, označeno kao nedostajuće {{markedMissing}}",
+    "lastSync": "Zadnja sinkronizacija {{when}}.",
+    "lastSyncFailed": "Zadnja sinkronizacija {{when}} nije uspjela: {{error}}",
+    "syncHint": "Uključite Održavaj uvezene goste sinkroniziranima u Proxmox postavkama hosta kako bi se osvježavali prema rasporedu.",
+    "addTitle": "Dodaj {{name}} u Termix",
+    "addHint": "Ovaj gost još nije Termix host. Dodajte ga kako biste otvorili njegov terminal, a zatim ga Konzola odmah otvara.",
+    "addSubmit": "Dodaj i poveži",
+    "gone": "Proxmox više ne navodi ovog gosta."
+  }
+}

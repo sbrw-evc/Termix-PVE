@@ -15,15 +15,16 @@ import { RefreshCw } from "lucide-react";
 import { app, pve, toCallError } from "../api";
 import { formatBytes } from "../format";
 import { useTasks } from "../tasks";
+import { WipeDiskDialog } from "./DiskStorageDialogs";
 
-interface NodeTabProps {
+export interface NodeTabProps {
   hostId: number;
   node: string;
   isVisible: boolean;
 }
 
 /** Loads one node endpoint while the tab is open. */
-function useNodeData<T>(
+export function useNodeData<T>(
   hostId: number,
   path: string[],
   params: Record<string, string | number> | undefined,
@@ -48,7 +49,13 @@ function useNodeData<T>(
   return { data, error, load };
 }
 
-function State({ error, loading }: { error: string | null; loading: boolean }) {
+export function State({
+  error,
+  loading,
+}: {
+  error: string | null;
+  loading: boolean;
+}) {
   const { t } = useTranslation();
   if (error)
     return (
@@ -164,7 +171,9 @@ export function ServicesTab({ hostId, node, isVisible }: NodeTabProps) {
                   </div>
                 )}
               </div>
-              <span className="text-[11px] text-muted-foreground">{state}</span>
+              <span className="text-[11px] text-muted-foreground">
+                {t(`nodes.services.states.${state}`, { defaultValue: state })}
+              </span>
               {serviceActions(service).map((action) => (
                 <Button
                   key={action}
@@ -274,6 +283,16 @@ export function UpdatesTab({ hostId, node, isVisible }: NodeTabProps) {
 
 // Disks
 
+/**
+ * A disk holding a volume group, a pool, a mount or the system. Wiping one can
+ * take a storage or the node down, and Proxmox does not refuse every case (an
+ * empty volume group has no holders), so it is freed first. Leftover
+ * partitions may be wiped.
+ */
+export function inUse(disk: { used?: string }): boolean {
+  return !!disk.used && disk.used !== "partitions";
+}
+
 interface NodeDisk {
   devpath: string;
   model?: string;
@@ -283,6 +302,7 @@ interface NodeDisk {
   health?: string;
   used?: string;
   wearout?: number | string;
+  gpt?: number;
 }
 
 function SmartDialog({
@@ -344,13 +364,43 @@ function SmartDialog({
 
 export function DisksTab({ hostId, node, isVisible }: NodeTabProps) {
   const { t } = useTranslation();
-  const { data, error } = useNodeData<NodeDisk[]>(
+  const toast = useToast();
+  const { track } = useTasks();
+  const { data, error, load } = useNodeData<NodeDisk[]>(
     hostId,
     ["nodes", node, "disks", "list"],
     undefined,
     isVisible,
   );
   const [smart, setSmart] = useState<NodeDisk | null>(null);
+  const [wiping, setWiping] = useState<NodeDisk | null>(null);
+
+  const initGpt = async (disk: NodeDisk) => {
+    const ok = await app().confirm({
+      title: t("nodes.disks.gptTitle", { disk: disk.devpath }),
+      description: t("nodes.disks.gptDescription"),
+      confirmLabel: t("nodes.disks.gpt"),
+    });
+    if (!ok) return;
+    try {
+      const upid = await pve(
+        hostId,
+        "POST",
+        ["nodes", node, "disks", "initgpt"],
+        {
+          disk: disk.devpath,
+        },
+      );
+      await track(
+        upid,
+        t("nodes.disks.gptLabel", { disk: disk.devpath, node }),
+      );
+    } catch (err) {
+      toast.error(toCallError(err).message);
+    } finally {
+      void load();
+    }
+  };
   return (
     <div className="flex flex-col">
       <State error={error} loading={!data && !error} />
@@ -395,9 +445,38 @@ export function DisksTab({ hostId, node, isVisible }: NodeTabProps) {
             >
               {t("nodes.disks.smart")}
             </Button>
+            {!disk.used && !disk.gpt && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 px-2"
+                onClick={() => void initGpt(disk)}
+              >
+                {t("nodes.disks.gpt")}
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 px-2 text-destructive"
+              disabled={inUse(disk)}
+              title={inUse(disk) ? t("nodes.disks.wipeInUse") : undefined}
+              onClick={() => setWiping(disk)}
+            >
+              {t("nodes.disks.wipe")}
+            </Button>
           </div>
         );
       })}
+      {wiping && (
+        <WipeDiskDialog
+          hostId={hostId}
+          node={node}
+          disk={wiping}
+          onClose={() => setWiping(null)}
+          onDone={load}
+        />
+      )}
       {smart && (
         <SmartDialog
           hostId={hostId}

@@ -163,6 +163,20 @@ describe("POST /hosts/:hostId/call", () => {
     expect(node.commands).toEqual([]);
   });
 
+  it("refuses node config parameters outside ACME", async () => {
+    const { call, node } = await start({
+      permissions: ["pve.view", "pve.administer"],
+    });
+    const res = await call({
+      method: "PUT",
+      path: ["nodes", "pve1", "config"],
+      params: { description: "changed" },
+    });
+    expect(res.status).toBe(403);
+    expect((await res.json()).code).toBe("PVE_PARAMS_NOT_ALLOWED");
+    expect(node.commands.some((c) => c.includes("/config"))).toBe(false);
+  });
+
   it("refuses a host that is not a Proxmox node", async () => {
     const { call } = await start({ permissions: ["pve.view"], enabled: false });
     const res = await call({ path: ["cluster", "resources"] });

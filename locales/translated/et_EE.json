@@ -1,0 +1,1024 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Halda Proxmox VE-d Termixist: virtuaalmasinad, konteinerid, andmehoidlad, võrk, varukoopiad, tulemüür, juurdepääs ja klaster."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Ava Proxmoxis"
+  },
+  "permissions": {
+    "view": {
+      "title": "Proxmoxi vaatamine",
+      "description": "Näe sõlmi, külalisi, andmehoidlaid, graafikuid ja ülesandeid Proxmoxi hostides, millega saad ühenduse luua."
+    },
+    "operate": {
+      "title": "Proxmoxi külaliste juhtimine",
+      "description": "Käivita, peata, lülita välja, taaskäivita, peata ajutiselt ja jätka VM-e ja konteinereid. Vajab hosti muutmisõigust."
+    },
+    "console": {
+      "title": "Proxmoxi konsoolide avamine",
+      "description": "Ava VM-i ekraan ja root-kest konteineris. Vajab hosti muutmisõigust."
+    },
+    "configure": {
+      "title": "Proxmoxi seadistamine",
+      "description": "Loo, klooni, migreeri, teisenda ja kustuta VM-e ja konteinereid. Vajab hosti muutmisõigust."
+    },
+    "administer": {
+      "title": "Proxmoxi haldamine",
+      "description": "Halda kasutajaid, gruppe, rolle, kogumeid, 2FA-d, tokeneid, realme ja klastrit. Vajab hosti muutmisõigust."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Proxmoxi sõlm",
+      "description": "Märgi see host Proxmox VE sõlmeks. Seejärel kuvatakse see Proxmoxi tööriistas jaotises Tööriistad."
+    },
+    "transport": {
+      "label": "Ühenda kaudu",
+      "description": "Automaatne kasutab pärast tokeni salvestamist API-t SSH-tunneli kaudu ja seni pveshi SSH kaudu.",
+      "auto": "Automaatne",
+      "tunnel": "API SSH-tunneli kaudu",
+      "direct": "API otse",
+      "pvesh": "pvesh SSH kaudu"
+    },
+    "tokenId": {
+      "label": "API tokeni ID",
+      "description": "Luuakse Proxmoxis jaotises Andmekeskus, Õigused, API tokenid. Kujul user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "API tokeni saladus",
+      "description": "Kuvatakse üks kord tokeni loomisel. Salvestatakse krüpteeritult."
+    },
+    "apiHost": {
+      "label": "API aadress",
+      "description": "Ainult API otse puhul. Jäta tühjaks, et kasutada selle hosti aadressi."
+    },
+    "apiPort": {
+      "label": "API port",
+      "description": "8006, kui sa pole seda muutnud."
+    },
+    "caCert": {
+      "label": "CA sertifikaat",
+      "description": "Ainult API otse puhul. Sõlme CA PEM-vormingus failist /etc/pve/pve-root-ca.pem. Jäta tühjaks, kui API-l on avalikult usaldatud sertifikaat.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Imporditud külalised",
+    "importSync": {
+      "label": "Hoia imporditud külalised sünkroonis",
+      "description": "Uuendab sellest sõlmest imporditud külaliste nimesid, aadresse ja silte ning märgib Proxmoxist eemaldatud külalised sildiga proxmox-missing."
+    },
+    "importInterval": {
+      "label": "Sünkrooni iga (minutit)",
+      "description": "Vähemalt 5 minutit."
+    },
+    "importAddNew": {
+      "label": "Lisa sünkroonimisel uued külalised",
+      "description": "Impordib pärast esimest importi Proxmoxis loodud külalised, kasutades impordidialoogis viimati kasutatud vaikeväärtusi."
+    },
+    "importDefaults": {
+      "label": "Impordi vaikeväärtused"
+    },
+    "importState": {
+      "label": "Viimane külaliste sünkroonimine"
+    },
+    "source": {
+      "label": "Proxmoxi külaline"
+    }
+  },
+  "app": {
+    "loading": "Laadimine...",
+    "loadFailed": "Klastrit ei õnnestunud laadida",
+    "refreshFailed": "Värskendamine nurjus: {{message}}",
+    "retry": "Proovi uuesti",
+    "refresh": "Värskenda",
+    "search": "Otsi külalisi, sõlmi ja andmehoidlaid...",
+    "status": "{{nodes}} sõlme, {{running}}/{{total}} külalist töötab",
+    "pickHost": "Proxmoxi host",
+    "pickResource": "Vali vasakult sõlm, külaline või andmehoidla",
+    "noHosts": "Proxmoxi hoste veel pole",
+    "noHostsHint": "Ava hosti seaded, lülita jaotises SSH sisse Proxmoxi sõlm ja vali ühendusviis. Seejärel kuvatakse sõlm siin.",
+    "cancel": "Tühista",
+    "working": "Töötlemine...",
+    "save": "Salvesta",
+    "reset": "Lähtesta",
+    "close": "Sulge",
+    "yes": "Jah",
+    "no": "Ei",
+    "edit": "Muuda"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix ei usalda sõlme sertifikaati. Kleebi hosti Proxmoxi seadetes sõlme CA failist /etc/pve/pve-root-ca.pem välja CA sertifikaat või vali API SSH-tunneli kaudu.",
+    "tlsHostname": "Sõlme sertifikaat on teise nime jaoks. Määra API aadressiks nimi või aadress, mis on sertifikaadis loetletud.",
+    "tlsExpired": "Sõlme sertifikaat on aegunud või pole veel kehtiv. Uuenda seda Proxmoxis jaotises sõlm, Süsteem, Sertifikaadid.",
+    "notEnabled": "See host pole märgitud Proxmoxi sõlmeks. Lülita hosti seadetes sisse Proxmoxi sõlm.",
+    "hostAccess": "Selle hosti muutmiseks vajad muutmisõigust."
+  },
+  "tree": {
+    "nothingFound": "Otsingule ei vasta midagi.",
+    "expand": "Laienda",
+    "collapse": "Ahenda",
+    "datacenter": "Andmekeskus",
+    "folders": {
+      "lxc": "LXC konteiner",
+      "qemu": "Virtuaalmasin",
+      "node": "Sõlmed",
+      "pool": "Kogumid",
+      "sdn": "Võrk",
+      "storage": "Andmehoidla"
+    },
+    "views": {
+      "folder": "Kaustavaade",
+      "server": "Serverivaade"
+    }
+  },
+  "types": {
+    "node": "Sõlm",
+    "qemu": "VM",
+    "lxc": "Konteiner",
+    "storage": "Andmehoidla",
+    "pool": "Kogum",
+    "sdn": "SDN-tsoon"
+  },
+  "states": {
+    "running": "Töötab",
+    "stopped": "Peatatud",
+    "paused": "Pausil",
+    "suspended": "Ootel",
+    "online": "Võrgus",
+    "offline": "Võrgust väljas",
+    "available": "Saadaval",
+    "unknown": "Teadmata"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Mälu",
+    "disk": "Ketas",
+    "rootDisk": "Juurketas",
+    "usage": "Kasutus",
+    "cores_one": "{{count}} tuum",
+    "cores_other": "{{count}} tuuma",
+    "swap": "Saaleala"
+  },
+  "summary": {
+    "title": "Kokkuvõte",
+    "node": "Sõlm",
+    "vmid": "ID",
+    "uptime": "Tööaeg",
+    "pool": "Kogum",
+    "ha": "HA",
+    "tags": "Sildid",
+    "guests": "Külalised",
+    "guestsRunning": "{{running}}/{{total}} töötab",
+    "cpuModel": "CPU",
+    "sockets": "pesa",
+    "load": "Keskmine koormus",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Kernel",
+    "ips": "Aadressid"
+  },
+  "charts": {
+    "title": "Graafikud",
+    "cpu": "CPU",
+    "load": "Keskmine koormus",
+    "memory": "Mälu",
+    "network": "Võrk",
+    "diskIo": "Ketta I/O",
+    "cpuUsage": "CPU kasutus",
+    "ioDelay": "IO viivitus",
+    "used": "Kasutatud",
+    "total": "Kokku",
+    "in": "Sisse",
+    "out": "Välja",
+    "read": "Lugemine",
+    "write": "Kirjutamine",
+    "timeframe": {
+      "hour": "Tund",
+      "day": "Päev",
+      "week": "Nädal",
+      "month": "Kuu",
+      "year": "Aasta"
+    },
+    "noData": "Selle perioodi kohta andmed puuduvad",
+    "serverLoad": "Serveri koormus",
+    "loadAverage": "Keskmine koormus",
+    "swap": "Saaleala",
+    "pressureCpu": "CPU surveseisak",
+    "pressureMemory": "Mälu surveseisak",
+    "pressureIo": "IO surveseisak",
+    "some": "Osaline",
+    "full": "Täielik",
+    "average": "Keskmine",
+    "maximum": "Maksimum"
+  },
+  "tasks": {
+    "title": "Ülesanded",
+    "started": "Alustatud",
+    "node": "Sõlm",
+    "user": "Kasutaja",
+    "task": "Ülesanne",
+    "status": "Olek",
+    "running": "Töötab",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} sõlmes {{node}}",
+    "done": "{{label}}: valmis",
+    "failed": "{{label}} nurjus: {{reason}}"
+  },
+  "guests": {
+    "more": "Rohkem toiminguid",
+    "isTemplate": "Mall",
+    "locked": "Lukustatud: {{lock}}",
+    "power": {
+      "start": "Käivita",
+      "shutdown": "Lülita välja",
+      "stop": "Peata",
+      "reboot": "Taaskäivita",
+      "suspend": "Peata ajutiselt",
+      "resume": "Jätka",
+      "reset": "Lähtesta",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Kas peatada {{name}} kohe?",
+        "reset": "Kas lähtestada {{name}} kohe?",
+        "description": "See katkestab toite nagu pistiku väljatõmbamine. Külalises salvestamata töö läheb kaotsi."
+      }
+    },
+    "clone": {
+      "menu": "Klooni",
+      "title": "Klooni {{name}}",
+      "submit": "Klooni",
+      "label": "Klooni {{source}} ID-ga {{id}}",
+      "full": "Täielik kloon",
+      "fullHint": "Kopeerib kõik kettad, nii et kloon ei sõltu originaalist.",
+      "linkedHint": "Väljas loob lingitud klooni, mis jagab malli kettaid ja valmib sekunditega.",
+      "sameStorage": "Sama andmehoidla mis originaalil"
+    },
+    "migrate": {
+      "menu": "Migreeri",
+      "title": "Migreeri {{name}}",
+      "submit": "Migreeri",
+      "label": "Migreeri {{name}} sõlme {{target}}",
+      "noOtherNodes": "Selles klastris pole teist võrgus olevat sõlme, kuhu seda teisaldada.",
+      "onlineHint": "VM töötab ja teisaldatakse otse, ilma peatamata.",
+      "restartHint": "Konteiner töötab. See peatub, teisaldatakse ja käivitub sihtkohas uuesti."
+    },
+    "template": {
+      "menu": "Teisenda malliks",
+      "confirm": "Kas teisendada {{name}} malliks?",
+      "description": "Malli ei saa käivitada, ainult kloonida. Seda ei saa tagasi võtta.",
+      "submit": "Teisenda",
+      "label": "Teisenda {{name}} malliks"
+    },
+    "delete": {
+      "menu": "Kustuta",
+      "title": "Kustuta {{name}}",
+      "submit": "Kustuta",
+      "label": "Kustuta {{name}}",
+      "warning": "See kustutab külalise {{vmid}} ja selle kettad. Seda ei saa tagasi võtta.",
+      "stopFirst": "Peata külaline enne kustutamist.",
+      "typeId": "Kinnitamiseks sisesta {{vmid}}",
+      "purge": "Eemalda varundustöödest, replikatsioonist ja HA-st",
+      "purgeHint": "Ei jäta alles töid, mis viitavad kadunud külalisele.",
+      "unreferenced": "Kustuta ka viitamata kettad",
+      "unreferencedHint": "Selle ID-ga kettad lubatud andmehoidlates, mida konfiguratsioon ei loetle."
+    },
+    "create": {
+      "vmButton": "Loo VM",
+      "ctButton": "Loo CT",
+      "vmTitle": "Loo virtuaalmasin",
+      "ctTitle": "Loo konteiner",
+      "submit": "Loo",
+      "vmLabel": "Loo VM {{id}} ({{name}})",
+      "ctLabel": "Loo CT {{id}} ({{name}})",
+      "noTemplates": "Selles sõlmes pole konteineri malle. Laadi üks alla Proxmoxis andmehoidla jaotises CT mallid.",
+      "noIso": "Paigalduskandja puudub",
+      "unprivilegedHint": "Turvalisem: konteineri root ei ole sõlme root.",
+      "loginHint": "Määra root-parool, SSH-võtmed või mõlemad.",
+      "problem": {
+        "vmid": "Vali ID, mis on 100 või suurem.",
+        "hostname": "Sisesta hostinimi: tähed, numbrid ja sidekriipsud.",
+        "name": "Sisesta nimi: tähed, numbrid ja sidekriipsud.",
+        "template": "Vali mall.",
+        "storage": "Vali andmehoidla.",
+        "disk": "Sisesta ketta suurus.",
+        "cores": "Sisesta tuumade arv.",
+        "sockets": "Sisesta pesade arv.",
+        "memory": "Sisesta vähemalt 16 MiB mälu.",
+        "swap": "Sisesta saaleala MiB-des, 0 tähendab puudub.",
+        "network": "Vali sild ja staatilise aadressi korral sisesta see kujul 192.168.0.60/24.",
+        "login": "Määra root-parool või SSH-võtmed, et saaksid sisse logida.",
+        "password": "Paroolis peab olema vähemalt 5 märki."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Muu"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Nimi",
+      "hostname": "Hostinimi",
+      "node": "Sõlm",
+      "targetNode": "Sihtsõlm",
+      "targetStorage": "Sihtandmehoidla",
+      "storage": "Andmehoidla",
+      "template": "Mall",
+      "iso": "Paigalduskandja",
+      "ostype": "Külalise OS",
+      "rootPassword": "Root-parool",
+      "sshKeys": "Avalikud SSH-võtmed",
+      "unprivileged": "Privileegideta konteiner",
+      "diskGiB": "Ketas (GiB)",
+      "cores": "Tuumad",
+      "sockets": "Pesad",
+      "memoryMiB": "Mälu (MiB)",
+      "swapMiB": "Saaleala (MiB)",
+      "bridge": "Võrgusild",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Staatiline",
+      "cidr": "Aadress/prefiks",
+      "gateway": "Lüüs",
+      "startAfter": "Käivita pärast loomist",
+      "pick": "Vali"
+    },
+    "tabs": {
+      "summary": "Kokkuvõte",
+      "hardware": "Riistvara",
+      "options": "Valikud",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Muuda",
+    "add": "Lisa",
+    "remove": "Eemalda",
+    "removed": "{{key}} eemaldatud",
+    "pending": "Ootel",
+    "pendingHint": "Ootel märgitud muudatused rakenduvad, kui külaline Proxmoxist taaskäivitatakse: taaskäivitus külalise sees ei piisa.",
+    "processors": "Protsessorid",
+    "processorsValue": "{{sockets}} pesa × {{cores}} tuuma, {{cpu}}",
+    "allCores": "Kõik",
+    "swap": "Saaleala",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "Protsessor ja mälu",
+      "title": "Protsessor ja mälu"
+    },
+    "cpuType": "CPU tüüp",
+    "cpulimit": "CPU piirang",
+    "cpulimitHint": "0 tähendab piiranguta. 1,5 on poolteise tuuma aeg.",
+    "balloon": "Minimaalne mälu (MiB)",
+    "balloonHint": "Ballooni draiveriga annab külaline mälu tagasi kuni selle väärtuseni. Mäluga võrdne väärtus lülitab selle välja, 0 eemaldab draiveri.",
+    "disks": "Kettad",
+    "volumes": "Juurketas ja haakepunktid",
+    "bus": "Siin",
+    "slot": "Saab olema {{key}}",
+    "iothread": "IO lõim",
+    "discard": "Discard",
+    "discardHint": "Laseb külalisel vabastada kasutamata plokid õhukeses andmehoidlas.",
+    "ssd": "SSD emuleerimine",
+    "mountPath": "Haakimistee konteineris",
+    "backup": "Kaasa varukoopiatesse",
+    "addDisk": {
+      "button": "Lisa ketas",
+      "title": "Lisa ketas",
+      "label": "Lisa {{key}}"
+    },
+    "addMount": {
+      "button": "Lisa haakepunkt",
+      "title": "Lisa haakepunkt"
+    },
+    "resize": {
+      "menu": "Muuda suurust",
+      "title": "Suurenda {{key}}",
+      "grow": "Lisa (GiB)",
+      "result": "{{from}} GiB muutub {{to}} GiB-ks",
+      "noShrink": "Kettad saavad ainult kasvada. Külalise partitsioon ja failisüsteem tuleb seejärel külalise sees suurendada, kui see ei tee seda käivitumisel ise.",
+      "submit": "Suurenda",
+      "label": "Suurenda {{key}} {{size}} GiB võrra"
+    },
+    "move": {
+      "menu": "Teisalda andmehoidlasse",
+      "title": "Teisalda {{key}}",
+      "submit": "Teisalda",
+      "deleteSource": "Kustuta originaal",
+      "deleteSourceHint": "Väljas jätab selle kasutamata kettana alles.",
+      "label": "Teisalda {{key}} andmehoidlasse {{storage}}"
+    },
+    "detach": {
+      "menu": "Eralda",
+      "title": "Kas eraldada {{key}}?",
+      "description": "Ketas jääb oma andmehoidlasse kasutamata kettana ning selle saab kustutada või uuesti ühendada."
+    },
+    "unused": {
+      "delete": "Kustuta",
+      "title": "Kas kustutada {{volume}}?",
+      "description": "See kustutab ketta ja kõik sellel oleva. Seda ei saa tagasi võtta."
+    },
+    "cd": {
+      "heading": "CD/DVD-draivid",
+      "title": "Andmekandja seadmes {{key}}",
+      "empty": "Andmekandja puudub"
+    },
+    "nic": {
+      "heading": "Võrguadapterid",
+      "add": "Lisa adapter",
+      "addTitle": "Lisa {{key}}",
+      "editTitle": "Muuda {{key}}",
+      "none": "Võrguadaptereid pole.",
+      "model": "Mudel",
+      "name": "Nimi konteineris",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Staatiline",
+        "none": "Puudub",
+        "auto": "SLAAC"
+      },
+      "tag": "VLAN-silt",
+      "tagHint": "Tühi tähendab sildita.",
+      "rate": "Kiiruspiirang (MB/s)",
+      "rateHint": "Tühi tähendab piiranguta.",
+      "firewall": "Tulemüür",
+      "firewallShort": "tulemüür",
+      "removeTitle": "Kas eemaldada {{key}}?",
+      "removeDescription": "Külaline kaotab selle adapteri ja selle aadressi."
+    },
+    "problem": {
+      "cpu": "Sisesta vähemalt üks pesa ja tuum.",
+      "cpulimit": "CPU piirang on vahemikus 0 kuni 8192.",
+      "memory": "Sisesta vähemalt 16 MiB mälu.",
+      "balloon": "Minimaalne mälu ei saa olla suurem kui mälu.",
+      "swap": "Sisesta saaleala MiB-des, 0 tähendab puudub.",
+      "noSlot": "Kõik seda tüüpi pesad on hõivatud.",
+      "storage": "Vali andmehoidla.",
+      "size": "Sisesta suurus täisarvulistes GiB-des.",
+      "path": "Sisesta absoluutne tee, näiteks /data, mitte / ise.",
+      "bridge": "Vali sild.",
+      "tag": "VLAN-silt on vahemikus 1 kuni 4094.",
+      "rate": "Sisesta kiirus üle 0 või jäta tühjaks.",
+      "name": "Sisesta nimi, näiteks eth0.",
+      "ip4": "Sisesta aadress kujul 192.168.0.60/24 ja kehtiv lüüs.",
+      "ip6": "Sisesta aadress kujul fd00::10/64."
+    },
+    "detached": "{{key}} eraldatud; see jääb alles kasutamata kettana",
+    "coresHint": "Tühi kasutab kõiki sõlme tuumi."
+  },
+  "options": {
+    "general": "Üldine",
+    "tags": "Sildid",
+    "tagsHint": "Komadega eraldatud.",
+    "onboot": "Käivita sõlme käivitumisel",
+    "protection": "Kaitse",
+    "protectionHint": "Takistab külalise ja selle ketaste kustutamist, kuni see välja lülitatakse.",
+    "agent": "QEMU külalisagent",
+    "agentHint": "Lülita sisse, kui agent töötab külalises, et saada selle aadressid ja korrektsed väljalülitused.",
+    "startup": "Käivitus- ja väljalülitusjärjekord",
+    "startupOrder": "Järjekord",
+    "startupUp": "Viivitus pärast käivitust (s)",
+    "startupDown": "Väljalülituse ajalõpp (s)",
+    "dns": "DNS",
+    "nameserver": "DNS-serverid",
+    "searchdomain": "Otsingudomeen",
+    "useHost": "Tühi kasutab sõlme oma.",
+    "notes": "Märkmed",
+    "saved": "Valikud salvestatud",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Muu"
+    },
+    "problem": {
+      "name": "Sisesta nimi.",
+      "startup": "Järjekord ja viivitused on täisarvud.",
+      "tags": "Sildid kasutavad tähti, numbreid, sidekriipse, punkte ja alakriipse.",
+      "nameserver": "Sisesta IP-aadressid tühikutega eraldatult."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "Sellel VM-il pole cloud-init-draivi. Lisa see ning määra seejärel siin kasutaja, võtmed ja võrk; külalise tõmmis peab cloud-initi toetama.",
+    "addDrive": "Lisa cloud-init-draiv",
+    "driveAdded": "Cloud-init-draiv lisatud",
+    "user": "Kasutaja",
+    "username": "Kasutajanimi",
+    "usernameHint": "Tühi kasutab tõmmise vaikekasutajat.",
+    "password": "Parool",
+    "passwordHint": "Tühi jätab praeguse alles. Proxmox salvestab selle räsituna.",
+    "network": "Võrk",
+    "saved": "Cloud-init-seaded salvestatud",
+    "regenerate": "Loo tõmmis uuesti",
+    "regenerated": "Cloud-init-tõmmis uuesti loodud",
+    "regenerateHint": "Kirjutab seaded seadmesse {{drive}}. Külaline loeb need järgmisel käivitumisel."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Kokkuvõte",
+      "iso": "ISO-tõmmised",
+      "vztmpl": "CT mallid",
+      "backup": "Varukoopiad",
+      "images": "Kettatõmmised"
+    },
+    "content": "Sisaldab",
+    "contentTypes": {
+      "images": "VM-i kettad",
+      "rootdir": "Konteineri kettad",
+      "iso": "ISO-tõmmised",
+      "vztmpl": "CT mallid",
+      "backup": "Varukoopiad",
+      "snippets": "Snippetid",
+      "import": "Import"
+    },
+    "shared": "Jagatud",
+    "empty": "Siin pole veel midagi.",
+    "owner": "külaline {{vmid}}",
+    "protected": "Kaitstud",
+    "download": {
+      "button": "Laadi alla URL-ilt",
+      "title": {
+        "iso": "Laadi ISO-tõmmis alla andmehoidlasse {{storage}}",
+        "vztmpl": "Laadi CT mall alla andmehoidlasse {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Failinimi",
+      "algorithm": "Kontrollsumma tüüp",
+      "noChecksum": "Puudub",
+      "checksum": "Kontrollsumma",
+      "verify": "Kontrolli serveri sertifikaati",
+      "submit": "Laadi alla",
+      "label": "Laadi alla {{name}}",
+      "problem": {
+        "url": "Sisesta http- või https-URL.",
+        "filename": "Failinimi kasutab tähti, numbreid, punkte, sidekriipse ja alakriipse.",
+        "extension": "ISO-tõmmised lõpevad laiendiga .iso või .img; mallid laiendiga .tar.gz, .tar.xz või .tar.zst.",
+        "checksum": "Vali kontrollsumma tüüp ja sisesta kontrollsumma kuueteistkümnendsüsteemis või jäta mõlemad tühjaks."
+      }
+    },
+    "catalog": {
+      "button": "Mallid",
+      "title": "Konteineri mallid andmehoidlale {{storage}}",
+      "search": "Otsi malle...",
+      "have": "Alla laaditud",
+      "label": "Laadi alla {{name}}"
+    },
+    "delete": {
+      "title": "Kas kustutada {{name}}?",
+      "description": "See kustutab faili andmehoidlast. Seda ei saa tagasi võtta.",
+      "submit": "Kustuta",
+      "done": "{{name}} kustutatud"
+    },
+    "upload": {
+      "button": "Laadi üles",
+      "cancel": "Tühista üleslaadimine",
+      "done": "{{name}} üles laaditud",
+      "failed": "Faili {{name}} üleslaadimine nurjus: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Kokkuvõte",
+      "network": "Võrk",
+      "system": "Süsteem",
+      "services": "Teenused",
+      "updates": "Uuendused",
+      "disks": "Kettad",
+      "tasks": "Ülesanded",
+      "log": "Logi"
+    },
+    "services": {
+      "start": "Käivita",
+      "stop": "Peata",
+      "restart": "Taaskäivita",
+      "reload": "Laadi uuesti",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Kas peatada {{name}}?",
+        "restart": "Kas taaskäivitada {{name}}?",
+        "description": "Proxmoxi enda teenused hoiavad sõlme ja selle API töös; ühe peatamine võib selle tööriista ühenduse katkestada, kuni teenus uuesti käivitub."
+      }
+    },
+    "updates": {
+      "refresh": "Värskenda paketiloendeid",
+      "refreshLabel": "Värskenda paketiloendeid sõlmes {{node}}",
+      "count_one": "Uuendada saab {{count}} paketi",
+      "count_other": "Uuendada saab {{count}} paketti",
+      "none": "Kõik on ajakohane",
+      "installHint": "Paigalda uuendused sõlme terminalist käsuga apt full-upgrade; Proxmox ei uuenda oma API kaudu.",
+      "views": {
+        "packages": "Paketid",
+        "repositories": "Hoidlad"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART: {{disk}}",
+      "health": "Seisund",
+      "usedBy": "kasutab {{used}}",
+      "unused": "kasutamata",
+      "wearout": "{{value}}% elueast alles",
+      "views": {
+        "disks": "Kettad",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Kataloog",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "{{count}} loogiline köide",
+        "lvCount_other": "{{count}} loogilist köidet",
+        "metadata": "metaandmed {{used}} / {{size}}",
+        "frag": "{{value}}% fragmenteeritud",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "LVM-i köitegruppe pole.",
+          "lvmthin": "LVM-Thin kogumeid pole.",
+          "directory": "Eraldi kettal kataloogiandmehoidlat pole.",
+          "zfs": "ZFS-i kogumeid pole."
+        },
+        "create": {
+          "lvm": "Loo LVM-i köitegrupp",
+          "lvmthin": "Loo LVM-Thin kogum",
+          "directory": "Loo kataloog",
+          "zfs": "Loo ZFS-i kogum"
+        },
+        "createSubmit": "Loo",
+        "createLabel": "Loo {{name}} sõlmes {{node}}",
+        "wipeWarning": "Valitud kettad partitsioneeritakse ja vormindatakse. Pakutakse ainult tühje kettaid.",
+        "name": "Nimi",
+        "device": "Ketas",
+        "devices": "Kettad",
+        "pickDisk": "Vali ketas",
+        "noUnused": "Kasutamata ketast pole. Tühjenda esmalt üks jaotises Kettad, kui selle sisust võib loobuda.",
+        "filesystem": "Failisüsteem",
+        "raidlevel": "RAID-tase",
+        "raid": {
+          "single": "Üks ketas",
+          "mirror": "Peegel",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Tihendus",
+        "addStorage": "Lisa andmehoidlana",
+        "addStorageHint": "Muudab selle samanimeliseks Proxmoxi andmehoidlaks ketaste, konteinerite või varukoopiate jaoks.",
+        "problem": {
+          "name": "Nimi algab tähega ja sisaldab tähti, numbreid, -, _ või .",
+          "device": "Vali ketas.",
+          "oneDevice": "Vali üks ketas.",
+          "tooFew": "See RAID-tase vajab vähemalt {{count}} ketast.",
+          "even": "RAID10 vajab paarisarvu kettaid.",
+          "ashift": "ashift on vahemikus 9 kuni 16."
+        },
+        "remove": "Eemalda",
+        "removeTitle": "Kas eemaldada {{name}}?",
+        "removeWarning": "Külalised, mille kettad on sellel, kaotavad need. Eemaldamine ei teisalda esmalt midagi ära.",
+        "removeLabel": "Eemalda {{name}} sõlmes {{node}}",
+        "cleanupConfig": "Eemalda ka andmehoidla kirje",
+        "cleanupDisks": "Tühjenda selle kettad",
+        "cleanupDisksHint": "Kustutab ketaste sisu, et neid saaks uuesti kasutada.",
+        "inUse": {
+          "lvm": "Sellel on endiselt loogilisi köiteid. Eemalda need esmalt; see grupp võib sisaldada sõlme enda süsteemi.",
+          "lvmthin": "See sisaldab endiselt andmeid. Teisalda või eemalda esmalt sellel olevad külaliste kettad."
+        }
+      },
+      "gpt": "Lähtesta GPT-ga",
+      "gptTitle": "Kas lähtestada {{disk}} GPT-ga?",
+      "gptDescription": "Kirjutab kettale tühja GPT-partitsioonitabeli.",
+      "gptLabel": "Lähtesta {{disk}} sõlmes {{node}}",
+      "wipe": "Tühjenda",
+      "wipeTitle": "Kas tühjendada {{disk}}?",
+      "wipeWarning": "Kustutab kettalt partitsioonitabeli ning kõik failisüsteemi-, LVM- ja ZFS-signatuurid (praegu: {{used}}). Selle sisu kaob jäädavalt.",
+      "wipeLabel": "Tühjenda {{disk}} sõlmes {{node}}",
+      "typePath": "Kinnitamiseks sisesta {{disk}}"
+    },
+    "log": {
+      "search": "Filtreeri logi...",
+      "empty": "Ükski rida ei vasta."
+    },
+    "power": {
+      "menu": "Sõlme toide",
+      "termixWarning": "Kui Termix töötab selles sõlmes, läheb ka see maha, kuni sõlm on tagasi.",
+      "typeName": "Kinnitamiseks sisesta {{node}}",
+      "reboot": {
+        "menu": "Taaskäivita sõlm",
+        "title": "Kas taaskäivitada {{node}}?",
+        "submit": "Taaskäivita",
+        "label": "Taaskäivita {{node}}",
+        "warning_one": "{{count}} töötav külaline peatatakse või lülitatakse esmalt välja vastavalt selle käivitusseadetele.",
+        "warning_other": "{{count}} töötavat külalist peatatakse või lülitatakse esmalt välja vastavalt nende käivitusseadetele."
+      },
+      "shutdown": {
+        "menu": "Lülita sõlm välja",
+        "title": "Kas lülitada {{node}} välja?",
+        "submit": "Lülita välja",
+        "label": "Lülita {{node}} välja",
+        "warning_one": "{{count}} töötav külaline lülitub koos sellega välja ja miski ei käivita seda uuesti enne, kui keegi sõlme sisse lülitab.",
+        "warning_other": "{{count}} töötavat külalist lülituvad koos sellega välja ja miski ei käivita neid uuesti enne, kui keegi sõlme sisse lülitab."
+      }
+    },
+    "shell": "Kest",
+    "shellHint": "Avab selle hosti SSH-terminali Termixis.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Otsingudomeen",
+        "server": "DNS-server {{n}}",
+        "editTitle": "Sõlme {{node}} DNS",
+        "saved": "DNS salvestatud",
+        "problem": {
+          "search": "Sisesta otsingudomeen, näiteks example.com.",
+          "server": "DNS-server on IPv4- või IPv6-aadress.",
+          "noServer": "Sisesta vähemalt üks DNS-server."
+        }
+      },
+      "time": {
+        "title": "Aeg",
+        "zone": "Ajavöönd",
+        "local": "Kohalik aeg",
+        "editTitle": "Sõlme {{node}} ajavöönd",
+        "hint": "Kella ennast hoiab sõlmes täpsena NTP (chrony).",
+        "saved": "Ajavööndiks määrati {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "Sõlme {{node}} /etc/hosts",
+        "warning": "Sõlme enda nimi peab jätkuvalt lahenduma selle aadressiks, muidu lakkavad klaster ja selle veebiliides töötamast.",
+        "saved": "/etc/hosts salvestatud"
+      },
+      "certs": {
+        "title": "Sertifikaadid",
+        "issuer": "väljastaja {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Kehtib kuni {{date}}",
+          "expiring": "Aegub {{date}}",
+          "expired": "Aegus {{date}}",
+          "notYet": "Pole veel kehtiv"
+        },
+        "upload": "Laadi üles kohandatud",
+        "uploadTitle": "Kohandatud sertifikaat sõlmele {{node}}",
+        "uploaded": "Sertifikaat üles laaditud",
+        "chain": "Sertifikaadiahel",
+        "chainHint": "PEM: esmalt sõlme sertifikaat, seejärel vahesertifikaadid.",
+        "key": "Privaatvõti",
+        "keyHint": "PEM, krüpteerimata. Jäta tühjaks, et säilitada sõlmes juba olev võti.",
+        "fromFile": "Loe failist",
+        "badCert": "See ei ole PEM-sertifikaat.",
+        "badKey": "See ei ole PEM-privaatvõti.",
+        "restart": "Kasutamiseks taaskäivita veebiliides",
+        "restartHint": "pveproxy taaskäivitub; Termix kaotab mõneks sekundiks API ühenduse.",
+        "remove": "Eemalda kohandatud",
+        "removeTitle": "Kas eemaldada kohandatud sertifikaat?",
+        "removeDescription": "Sõlm naaseb oma iseallkirjastatud sertifikaadi juurde ja veebiliides taaskäivitub.",
+        "removed": "Kohandatud sertifikaat eemaldatud"
+      }
+    },
+    "repos": {
+      "on": "Lubatud",
+      "off": "Keelatud",
+      "enable": "Luba",
+      "disable": "Keela",
+      "enableTitle": "Kas lubada see hoidla?",
+      "enabled": "Hoidla lubatud",
+      "disabled": "Hoidla keelatud",
+      "add": "Lisa:",
+      "added": "Hoidla {{name}} lisatud",
+      "hint": "Käivita pärast muudatust jaotises Paketid Värskenda paketiloendeid. Enterprise-hoidlad vajavad tellimust."
+    },
+    "taskHistory": {
+      "type": "Tüüp, näiteks vzdump",
+      "vmid": "VM/CT ID",
+      "user": "Kasutaja",
+      "errorsOnly": "Ainult nurjunud ülesanded",
+      "none": "Ükski ülesanne ei vasta.",
+      "more": "Laadi rohkem",
+      "state": {
+        "running": "Töötab",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Telli sertifikaat",
+      "renew": "Uuenda",
+      "orderLabel": "Telli ACME sertifikaat sõlmele {{node}}",
+      "renewLabel": "Uuenda ACME sertifikaati sõlmele {{node}}",
+      "usesAccount": "Konto: {{account}}",
+      "none": "puudub",
+      "noDomains": "Domeene veel pole. Muuda, et lisada nimed, millele see sõlm vastab.",
+      "viaHttp": "HTTP väljakutse",
+      "viaDns": "DNS väljakutse pistikprogrammi {{plugin}} kaudu",
+      "accounts": "Kontod",
+      "plugins": "DNS väljakutse pistikprogrammid",
+      "remove": "Eemalda",
+      "domainsTitle": "Sõlme {{node}} ACME domeenid",
+      "domainsSaved": "ACME domeenid salvestatud",
+      "domain": "Domeen",
+      "challenge": "Väljakutse",
+      "alias": "Alias",
+      "addDomain": "Lisa domeen",
+      "httpHint": "HTTP väljakutse nõuab, et selle sõlme port 80 oleks domeeni all internetist kättesaadav. DNS töötab ka ilma selleta ning metamärkidega.",
+      "hint": "Kontod ja pistikprogrammid on kogu klastri peale ühised; domeenid on sõlmepõhised.",
+      "problem": {
+        "noDomain": "Lisa vähemalt üks domeen.",
+        "tooMany": "Sõlmel võib olla kuni kuus ACME domeeni.",
+        "domain": "Domeen on täisnimi, näiteks pve.example.com.",
+        "wildcard": "Metamärgiga domeen vajab DNS väljakutse pistikprogrammi."
+      },
+      "account": {
+        "title": "Konto",
+        "pick": "Vali konto",
+        "add": "Registreeri konto",
+        "addTitle": "Registreeri ACME konto",
+        "register": "Registreeri",
+        "registerLabel": "Registreeri ACME konto {{name}}",
+        "name": "Nimi",
+        "email": "E-post",
+        "directory": "ACME kataloog",
+        "customDirectory": "Kohandatud URL",
+        "directoryUrl": "Kataloogi URL",
+        "acceptTos": "Nõustu teenusetingimustega",
+        "eabKid": "EAB võtme ID",
+        "eabHmac": "EAB HMAC võti",
+        "eabHint": "Ainult CA-de jaoks, mis nõuavad External Account Bindingut.",
+        "none": "ACME kontot veel pole.",
+        "needOne": "Registreeri esmalt ACME konto.",
+        "removeTitle": "Kas deaktiveerida konto {{name}}?",
+        "removeDescription": "Konto deaktiveeritakse CA juures ja eemaldatakse siit. Juba väljastatud sertifikaadid töötavad edasi.",
+        "removeLabel": "Deaktiveeri ACME konto {{name}}",
+        "problem": {
+          "name": "Nimi sisaldab tähti, numbreid, -, _ või .",
+          "email": "Sisesta e-posti aadress.",
+          "directory": "Kataloog on http- või https-URL.",
+          "tos": "Registreerimiseks nõustu teenusetingimustega.",
+          "eab": "EAB vajab nii võtme ID-d kui ka HMAC võtit."
+        }
+      },
+      "plugin": {
+        "add": "Lisa pistikprogramm",
+        "addTitle": "Lisa DNS väljakutse pistikprogramm",
+        "id": "Pistikprogrammi ID",
+        "api": "DNS API",
+        "pickApi": "Vali DNS-teenusepakkuja",
+        "delay": "Valideerimise viivitus (s)",
+        "delayHint": "Kui kaua oodata TXT-kirje levimist.",
+        "noFields": "Proxmox ei loetle selle teenusepakkuja jaoks välju; vaata acme.sh dokumentatsioonist, milliseid muutujaid see loeb.",
+        "none": "DNS pistikprogramme pole. HTTP töötab ka ilma.",
+        "disabled": "Keelatud",
+        "removeTitle": "Kas eemaldada pistikprogramm {{name}}?",
+        "removeDescription": "Seda kasutavaid domeene ei saa enam valideerida."
+      }
+    }
+  },
+  "console": {
+    "open": "Konsool",
+    "openHint": "Avab külalise Termixi hosti või pakub selle esmalt Termixisse lisada.",
+    "tabTitle": "Proxmoxi konsool",
+    "tabLabel": "{{name}} — Konsool",
+    "pick": "Ava Proxmoxi tööriistas töötava VM-i või konteineri konsool.",
+    "connect": "Ühenda",
+    "reconnect": "Ühenda uuesti",
+    "disconnect": "Katkesta ühendus",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Täisekraan",
+    "notRunning": "Konsooli avamiseks käivita külaline.",
+    "lost": "Konsooliühendus katkes.",
+    "ended": "Konsool suletud.",
+    "status": {
+      "idle": "Pole ühendatud",
+      "connecting": "Ühendamine...",
+      "connected": "Ühendatud",
+      "closed": "Ühendus katkestatud",
+      "error": "Ühendust ei õnnestunud luua"
+    },
+    "proxmox": "Proxmoxi konsool",
+    "proxmoxHint": "Proxmoxi enda konsool sõlme kaudu: VM-i ekraan, kest konteineris. Külalisele, millel veel võrku pole."
+  },
+  "pool": {
+    "members": "Liikmed",
+    "empty": "Selles kogumis pole midagi."
+  },
+  "sdn": {
+    "hint": "SDN-tsoonid, VNetid ja alamvõrgud tulevad koos klastrihaldusega hilisemas versioonis."
+  },
+  "network": {
+    "add": "Loo",
+    "apply": "Rakenda",
+    "revert": "Võta tagasi",
+    "pending": "Pole veel rakendatud",
+    "hint": "Muudatused salvestatakse faili /etc/network/interfaces.new ja jõustuvad valikuga Rakenda, mis laadib sõlme võrgu uuesti.",
+    "type": "Tüüp",
+    "name": "Nimi",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Lüüs (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Lüüs (IPv6)",
+    "ports": "Silla pordid",
+    "slaves": "Alluvad",
+    "portsHint": "Liideste nimed tühikutega eraldatult.",
+    "bondMode": "Režiim",
+    "vlanDevice": "VLAN-i toorseade",
+    "mtu": "MTU",
+    "comments": "Kommentaar",
+    "autostart": "Automaatkäivitus",
+    "vlanAware": "VLAN-teadlik",
+    "vlanAwareHint": "Laseb selle silla külalistel kasutada VLAN-silte.",
+    "inactive": "Mitteaktiivne",
+    "create": "Loo",
+    "createTitle": "Loo liides",
+    "editTitle": "Muuda {{iface}}",
+    "types": {
+      "bridge": "Sild",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Port",
+      "OVSBridge": "OVS-sild",
+      "alias": "Alias"
+    },
+    "nameHint": {
+      "bridge": "vmbr ja number, näiteks vmbr1.",
+      "bond": "bond ja number, näiteks bond0.",
+      "vlan": "seade.silt, näiteks vmbr0.10, või vlan10 koos toorseadmega."
+    },
+    "addressWarning": "Sellel liidesel on aadress, mille kaudu Termix sõlmeni jõuab. Viga võib Termixi ühenduse katkestada, kuni keegi sõlme selle konsoolis parandab.",
+    "removeTitle": "Kas eemaldada {{iface}}?",
+    "removeDescription": "Liides eemaldatakse muudatuse rakendamisel.",
+    "applyTitle": "Kas rakendada võrgumuudatused sõlmes {{node}}?",
+    "applyDescription": "Sõlm laadib oma võrgu uuesti. Kui uued seaded on valed, võivad sõlm ja Termixi ühendus sellega võrgust kaduda.",
+    "applyLabel": "Rakenda võrk sõlmes {{node}}",
+    "reverted": "Võrgumuudatused tagasi võetud",
+    "problem": {
+      "cidr": "Sisesta aadress kujul 10.10.0.1/24.",
+      "gateway": "Lüüs vajab IPv4-aadressi ja kehtivat lüüsi IP-d.",
+      "cidr6": "Sisesta aadress kujul fd00::1/64.",
+      "ports": "Sisesta liideste nimed tühikutega eraldatult.",
+      "slaves": "Bond vajab vähemalt ühte alluvat.",
+      "vlanDevice": "Määra vlanN-liidese toorseade.",
+      "mtu": "MTU on vahemikus 1280 kuni 65520.",
+      "name": {
+        "bridge": "Silla nimi on vmbr ja number.",
+        "bond": "Bondi nimi on bond ja number.",
+        "vlan": "VLAN-i nimi on seade.silt või vlan ja number."
+      }
+    }
+  },
+  "import": {
+    "open": "Impordi Termixisse",
+    "title": "Impordi külalised Termixi hostidena",
+    "hint": "Igast valitud VM-ist või konteinerist saab Termixi host sildiga proxmox. Importimine värskendab ka varem imporditud külaliste nimesid, aadresse ja silte ning märgib Proxmoxist kadunud külalised sildiga proxmox-missing.",
+    "loading": "Külaliste ja nende aadresside otsimine…",
+    "counts": "{{total}} külalist, {{imported}} juba imporditud",
+    "selectAll": "Vali kõik",
+    "selectNone": "Tühista valik",
+    "none": "Selles klastris pole VM-e ega konteinereid.",
+    "imported": "Imporditud",
+    "noAddress": "aadress puudub",
+    "folder": "Kaust",
+    "folderDefault": "Kaust nimega {{node}}",
+    "folderSearch": "Otsi või loo, / alamkausta jaoks",
+    "folderCreate": "Loo „{{folder}}”",
+    "folderNone": "Kaustu veel pole",
+    "connection": "Ühendusviis",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Konteineri käituskeskkond",
+    "runtimeOff": "Docker puudub",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "Tundmatu OS"
+    },
+    "sshLogin": "SSH sisselogimine",
+    "desktopLogin": "RDP ja VNC sisselogimine",
+    "desktopHint": "Ühendamiseks on vaja pistikprogrammi Remote Desktop.",
+    "login": {
+      "nodeCredential": "Sõlme mandaat",
+      "nodeUser": "Sõlme kasutajanimi",
+      "username": "Ainult kasutajanimi",
+      "none": "Sisselogimiseta"
+    },
+    "username": "Kasutajanimi",
+    "submit_one": "Impordi {{count}} külaline",
+    "submit_other": "Impordi {{count}} külalist",
+    "refresh": "Värskenda imporditud",
+    "done": "Loodud {{created}}, uuendatud {{updated}}, puuduvaks märgitud {{markedMissing}}",
+    "lastSync": "Viimane sünkroonimine {{when}}.",
+    "lastSyncFailed": "Viimane sünkroonimine {{when}} nurjus: {{error}}",
+    "syncHint": "Lülita hosti Proxmoxi seadetes sisse Hoia imporditud külalised sünkroonis, et neid ajakava järgi värskendada.",
+    "addTitle": "Lisa {{name}} Termixisse",
+    "addHint": "See külaline pole veel Termixi host. Lisa see, et avada selle terminal; seejärel avab Konsool selle kohe.",
+    "addSubmit": "Lisa ja ühenda",
+    "gone": "Proxmox ei loetle enam seda külalist."
+  }
+}

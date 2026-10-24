@@ -1,0 +1,1018 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Termix에서 Proxmox VE를 관리합니다: 가상 머신, 컨테이너, 스토리지, 네트워크, 백업, 방화벽, 접근 권한, 클러스터."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Proxmox에서 열기"
+  },
+  "permissions": {
+    "view": {
+      "title": "Proxmox 보기",
+      "description": "연결할 수 있는 Proxmox 호스트의 노드, 게스트, 스토리지, 차트, 작업을 봅니다."
+    },
+    "operate": {
+      "title": "Proxmox 게스트 조작",
+      "description": "VM과 컨테이너를 시작, 정지, 종료, 재부팅, 일시 중단, 재개합니다. 호스트 편집 권한이 필요합니다."
+    },
+    "console": {
+      "title": "Proxmox 콘솔 열기",
+      "description": "VM의 화면과 컨테이너의 root 셸을 엽니다. 호스트 편집 권한이 필요합니다."
+    },
+    "configure": {
+      "title": "Proxmox 구성",
+      "description": "VM과 컨테이너를 생성, 복제, 마이그레이션, 변환, 삭제합니다. 호스트 편집 권한이 필요합니다."
+    },
+    "administer": {
+      "title": "Proxmox 관리",
+      "description": "사용자, 그룹, 역할, 풀, 2FA, 토큰, 영역, 클러스터를 관리합니다. 호스트 편집 권한이 필요합니다."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Proxmox 노드",
+      "description": "이 호스트를 Proxmox VE 노드로 표시합니다. 그러면 도구 아래의 Proxmox 도구에 나타납니다."
+    },
+    "transport": {
+      "label": "연결 방식",
+      "description": "자동은 토큰이 저장되면 SSH 터널을 통한 API를, 그 전에는 SSH를 통한 pvesh를 사용합니다.",
+      "auto": "자동",
+      "tunnel": "SSH 터널을 통한 API",
+      "direct": "API 직접 연결",
+      "pvesh": "SSH를 통한 pvesh"
+    },
+    "tokenId": {
+      "label": "API 토큰 ID",
+      "description": "Proxmox의 데이터센터 > 권한 > API 토큰에서 생성합니다. user@realm!name 형식입니다.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "API 토큰 시크릿",
+      "description": "토큰 생성 시 한 번만 표시됩니다. 암호화되어 저장됩니다."
+    },
+    "apiHost": {
+      "label": "API 주소",
+      "description": "API 직접 연결에만 해당합니다. 비워 두면 이 호스트의 주소를 사용합니다."
+    },
+    "apiPort": {
+      "label": "API 포트",
+      "description": "변경하지 않았다면 8006입니다."
+    },
+    "caCert": {
+      "label": "CA 인증서",
+      "description": "API 직접 연결에만 해당합니다. /etc/pve/pve-root-ca.pem에 있는 노드의 CA(PEM 형식). API에 공개적으로 신뢰되는 인증서가 있으면 비워 두세요.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "가져온 게스트",
+    "importSync": {
+      "label": "가져온 게스트 동기화 유지",
+      "description": "이 노드에서 가져온 게스트의 이름, 주소, 태그를 업데이트하고, Proxmox에서 제거된 게스트에 proxmox-missing 태그를 지정합니다."
+    },
+    "importInterval": {
+      "label": "동기화 주기(분)",
+      "description": "최소 5분입니다."
+    },
+    "importAddNew": {
+      "label": "동기화 시 새 게스트 추가",
+      "description": "첫 가져오기 이후 Proxmox에서 생성된 게스트를 가져오기 대화 상자에서 마지막으로 사용한 기본값으로 가져옵니다."
+    },
+    "importDefaults": {
+      "label": "가져오기 기본값"
+    },
+    "importState": {
+      "label": "마지막 게스트 동기화"
+    },
+    "source": {
+      "label": "Proxmox 게스트"
+    }
+  },
+  "app": {
+    "loading": "불러오는 중...",
+    "loadFailed": "클러스터를 불러올 수 없습니다",
+    "refreshFailed": "새로 고침 실패: {{message}}",
+    "retry": "다시 시도",
+    "refresh": "새로 고침",
+    "search": "게스트, 노드, 스토리지 검색...",
+    "status": "노드 {{nodes}}개, 게스트 {{total}}개 중 {{running}}개 실행 중",
+    "pickHost": "Proxmox 호스트",
+    "pickResource": "왼쪽에서 노드, 게스트 또는 스토리지를 선택하세요",
+    "noHosts": "아직 Proxmox 호스트가 없습니다",
+    "noHostsHint": "호스트 설정을 열고 SSH 아래의 Proxmox 노드를 켠 다음 연결 방식을 선택하세요. 그러면 노드가 여기에 표시됩니다.",
+    "cancel": "취소",
+    "working": "처리 중...",
+    "save": "저장",
+    "reset": "재설정",
+    "close": "닫기",
+    "yes": "예",
+    "no": "아니요",
+    "edit": "편집"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix가 노드의 인증서를 신뢰하지 않습니다. 호스트의 Proxmox 설정에서 /etc/pve/pve-root-ca.pem에 있는 노드의 CA를 CA 인증서에 붙여 넣거나, SSH 터널을 통한 API를 선택하세요.",
+    "tlsHostname": "노드의 인증서가 다른 이름용입니다. API 주소를 인증서에 나열된 이름이나 주소로 설정하세요.",
+    "tlsExpired": "노드의 인증서가 만료되었거나 아직 유효하지 않습니다. Proxmox의 노드 > 시스템 > 인증서에서 갱신하세요.",
+    "notEnabled": "이 호스트는 Proxmox 노드로 표시되지 않았습니다. 호스트 설정에서 Proxmox 노드를 켜세요.",
+    "hostAccess": "이 호스트를 변경하려면 편집 권한이 필요합니다."
+  },
+  "tree": {
+    "nothingFound": "검색과 일치하는 항목이 없습니다.",
+    "expand": "펼치기",
+    "collapse": "접기",
+    "datacenter": "데이터센터",
+    "folders": {
+      "lxc": "LXC 컨테이너",
+      "qemu": "가상 머신",
+      "node": "노드",
+      "pool": "풀",
+      "sdn": "네트워크",
+      "storage": "스토리지"
+    },
+    "views": {
+      "folder": "폴더 보기",
+      "server": "서버 보기"
+    }
+  },
+  "types": {
+    "node": "노드",
+    "qemu": "VM",
+    "lxc": "컨테이너",
+    "storage": "스토리지",
+    "pool": "풀",
+    "sdn": "SDN 영역"
+  },
+  "states": {
+    "running": "실행 중",
+    "stopped": "정지됨",
+    "paused": "일시 정지됨",
+    "suspended": "일시 중단됨",
+    "online": "온라인",
+    "offline": "오프라인",
+    "available": "사용 가능",
+    "unknown": "알 수 없음"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "메모리",
+    "disk": "디스크",
+    "rootDisk": "루트 디스크",
+    "usage": "사용량",
+    "cores_other": "{{count}}코어",
+    "swap": "스왑"
+  },
+  "summary": {
+    "title": "요약",
+    "node": "노드",
+    "vmid": "ID",
+    "uptime": "가동 시간",
+    "pool": "풀",
+    "ha": "HA",
+    "tags": "태그",
+    "guests": "게스트",
+    "guestsRunning": "{{total}}개 중 {{running}}개 실행 중",
+    "cpuModel": "CPU",
+    "sockets": "소켓",
+    "load": "부하 평균",
+    "pveVersion": "Proxmox VE",
+    "kernel": "커널",
+    "ips": "주소"
+  },
+  "charts": {
+    "title": "차트",
+    "cpu": "CPU",
+    "load": "부하 평균",
+    "memory": "메모리",
+    "network": "네트워크",
+    "diskIo": "디스크 I/O",
+    "cpuUsage": "CPU 사용량",
+    "ioDelay": "IO 지연",
+    "used": "사용됨",
+    "total": "전체",
+    "in": "수신",
+    "out": "송신",
+    "read": "읽기",
+    "write": "쓰기",
+    "timeframe": {
+      "hour": "시간",
+      "day": "일",
+      "week": "주",
+      "month": "월",
+      "year": "년"
+    },
+    "noData": "이 기간에 대한 데이터가 없습니다",
+    "serverLoad": "서버 부하",
+    "loadAverage": "부하 평균",
+    "swap": "스왑",
+    "pressureCpu": "CPU 압력 지연",
+    "pressureMemory": "메모리 압력 지연",
+    "pressureIo": "IO 압력 지연",
+    "some": "Some",
+    "full": "Full",
+    "average": "평균",
+    "maximum": "최대"
+  },
+  "tasks": {
+    "title": "작업",
+    "started": "시작됨",
+    "node": "노드",
+    "user": "사용자",
+    "task": "작업",
+    "status": "상태",
+    "running": "실행 중",
+    "ok": "OK",
+    "logTitle": "{{node}}의 {{type}} {{id}}",
+    "done": "{{label}}: 완료",
+    "failed": "{{label}} 실패: {{reason}}"
+  },
+  "guests": {
+    "more": "추가 작업",
+    "isTemplate": "템플릿",
+    "locked": "잠김: {{lock}}",
+    "power": {
+      "start": "시작",
+      "shutdown": "종료",
+      "stop": "정지",
+      "reboot": "재부팅",
+      "suspend": "일시 중단",
+      "resume": "재개",
+      "reset": "리셋",
+      "label": "{{name}} {{action}}",
+      "confirm": {
+        "stop": "{{name}}을(를) 지금 정지하시겠습니까?",
+        "reset": "{{name}}을(를) 지금 리셋하시겠습니까?",
+        "description": "전원 플러그를 뽑는 것처럼 전원을 차단합니다. 게스트에서 저장하지 않은 작업은 손실됩니다."
+      }
+    },
+    "clone": {
+      "menu": "복제",
+      "title": "{{name}} 복제",
+      "submit": "복제",
+      "label": "{{source}}을(를) {{id}}(으)로 복제",
+      "full": "전체 복제",
+      "fullHint": "모든 디스크를 복사하므로 복제본이 원본에 의존하지 않습니다.",
+      "linkedHint": "끄면 템플릿의 디스크를 공유하는 연결된 복제본을 몇 초 만에 만듭니다.",
+      "sameStorage": "원본과 같은 스토리지"
+    },
+    "migrate": {
+      "menu": "마이그레이션",
+      "title": "{{name}} 마이그레이션",
+      "submit": "마이그레이션",
+      "label": "{{name}}을(를) {{target}}(으)로 마이그레이션",
+      "noOtherNodes": "이 클러스터에는 옮길 다른 온라인 노드가 없습니다.",
+      "onlineHint": "VM이 실행 중이므로 정지하지 않고 라이브로 이동합니다.",
+      "restartHint": "컨테이너가 실행 중입니다. 정지한 후 이동하고 대상에서 다시 시작합니다."
+    },
+    "template": {
+      "menu": "템플릿으로 변환",
+      "confirm": "{{name}}을(를) 템플릿으로 변환하시겠습니까?",
+      "description": "템플릿은 시작할 수 없고 복제만 가능합니다. 이 작업은 되돌릴 수 없습니다.",
+      "submit": "변환",
+      "label": "{{name}}을(를) 템플릿으로 변환"
+    },
+    "delete": {
+      "menu": "삭제",
+      "title": "{{name}} 삭제",
+      "submit": "삭제",
+      "label": "{{name}} 삭제",
+      "warning": "게스트 {{vmid}}와(과) 해당 디스크를 삭제합니다. 되돌릴 수 없습니다.",
+      "stopFirst": "삭제하기 전에 게스트를 정지하세요.",
+      "typeId": "확인하려면 {{vmid}}을(를) 입력하세요",
+      "purge": "백업 작업, 복제, HA에서 제거",
+      "purgeHint": "없어진 게스트를 가리키는 작업을 남기지 않습니다.",
+      "unreferenced": "참조되지 않은 디스크도 삭제",
+      "unreferencedHint": "활성화된 스토리지에서 이 ID를 가졌지만 구성에 나열되지 않은 디스크입니다."
+    },
+    "create": {
+      "vmButton": "VM 생성",
+      "ctButton": "CT 생성",
+      "vmTitle": "가상 머신 생성",
+      "ctTitle": "컨테이너 생성",
+      "submit": "생성",
+      "vmLabel": "VM {{id}}({{name}}) 생성",
+      "ctLabel": "CT {{id}}({{name}}) 생성",
+      "noTemplates": "이 노드에 컨테이너 템플릿이 없습니다. Proxmox의 스토리지 > CT 템플릿에서 다운로드하세요.",
+      "noIso": "설치 미디어 없음",
+      "unprivilegedHint": "더 안전함: 컨테이너의 root가 노드의 root가 아닙니다.",
+      "loginHint": "root 비밀번호, SSH 키 또는 둘 다 설정하세요.",
+      "problem": {
+        "vmid": "100 이상의 ID를 선택하세요.",
+        "hostname": "호스트 이름을 입력하세요: 영문자, 숫자, 하이픈.",
+        "name": "이름을 입력하세요: 영문자, 숫자, 하이픈.",
+        "template": "템플릿을 선택하세요.",
+        "storage": "스토리지를 선택하세요.",
+        "disk": "디스크 크기를 입력하세요.",
+        "cores": "코어 수를 입력하세요.",
+        "sockets": "소켓 수를 입력하세요.",
+        "memory": "메모리를 16 MiB 이상 입력하세요.",
+        "swap": "스왑을 MiB 단위로 입력하세요. 없으면 0입니다.",
+        "network": "브리지를 선택하고, 고정 주소는 192.168.0.60/24처럼 입력하세요.",
+        "login": "로그인할 수 있도록 root 비밀번호나 SSH 키를 설정하세요.",
+        "password": "비밀번호는 5자 이상이어야 합니다."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "기타"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "이름",
+      "hostname": "호스트 이름",
+      "node": "노드",
+      "targetNode": "대상 노드",
+      "targetStorage": "대상 스토리지",
+      "storage": "스토리지",
+      "template": "템플릿",
+      "iso": "설치 미디어",
+      "ostype": "게스트 OS",
+      "rootPassword": "root 비밀번호",
+      "sshKeys": "SSH 공개 키",
+      "unprivileged": "비특권 컨테이너",
+      "diskGiB": "디스크(GiB)",
+      "cores": "코어",
+      "sockets": "소켓",
+      "memoryMiB": "메모리(MiB)",
+      "swapMiB": "스왑(MiB)",
+      "bridge": "네트워크 브리지",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "고정",
+      "cidr": "주소/접두사",
+      "gateway": "게이트웨이",
+      "startAfter": "생성 후 시작",
+      "pick": "선택하세요"
+    },
+    "tabs": {
+      "summary": "요약",
+      "hardware": "하드웨어",
+      "options": "옵션",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "편집",
+    "add": "추가",
+    "remove": "제거",
+    "removed": "{{key}} 제거됨",
+    "pending": "보류 중",
+    "pendingHint": "보류 중으로 표시된 변경 사항은 게스트가 Proxmox에서 다시 시작될 때 적용됩니다. 게스트 내부에서의 재부팅으로는 충분하지 않습니다.",
+    "processors": "프로세서",
+    "processorsValue": "{{sockets}}소켓 × {{cores}}코어, {{cpu}}",
+    "allCores": "전체",
+    "swap": "스왑",
+    "balloonShort": "최소",
+    "cpuMemory": {
+      "heading": "프로세서 및 메모리",
+      "title": "프로세서 및 메모리"
+    },
+    "cpuType": "CPU 유형",
+    "cpulimit": "CPU 제한",
+    "cpulimitHint": "0이면 제한 없음. 1.5는 1.5코어만큼의 시간입니다.",
+    "balloon": "최소 메모리(MiB)",
+    "balloonHint": "벌룬 드라이버로 게스트가 이 값까지 메모리를 반환합니다. 메모리와 같으면 꺼지고, 0이면 드라이버가 제거됩니다.",
+    "disks": "디스크",
+    "volumes": "루트 디스크 및 마운트 지점",
+    "bus": "버스",
+    "slot": "{{key}}(으)로 지정됨",
+    "iothread": "IO 스레드",
+    "discard": "Discard",
+    "discardHint": "게스트가 씬 스토리지의 사용하지 않는 블록을 해제할 수 있게 합니다.",
+    "ssd": "SSD 에뮬레이션",
+    "mountPath": "컨테이너 내 마운트 경로",
+    "backup": "백업에 포함",
+    "addDisk": {
+      "button": "디스크 추가",
+      "title": "디스크 추가",
+      "label": "{{key}} 추가"
+    },
+    "addMount": {
+      "button": "마운트 지점 추가",
+      "title": "마운트 지점 추가"
+    },
+    "resize": {
+      "menu": "크기 조정",
+      "title": "{{key}} 확장",
+      "grow": "추가(GiB)",
+      "result": "{{from}} GiB에서 {{to}} GiB로",
+      "noShrink": "디스크는 확장만 가능합니다. 부팅 시 자동으로 하지 않는 한, 이후 게스트 내부에서 파티션과 파일 시스템을 확장해야 합니다.",
+      "submit": "확장",
+      "label": "{{key}}을(를) {{size}} GiB 확장"
+    },
+    "move": {
+      "menu": "스토리지로 이동",
+      "title": "{{key}} 이동",
+      "submit": "이동",
+      "deleteSource": "원본 삭제",
+      "deleteSourceHint": "끄면 사용하지 않는 디스크로 유지합니다.",
+      "label": "{{key}}을(를) {{storage}}(으)로 이동"
+    },
+    "detach": {
+      "menu": "분리",
+      "title": "{{key}}을(를) 분리하시겠습니까?",
+      "description": "디스크는 사용하지 않는 디스크로 스토리지에 남아 있으며 삭제하거나 다시 연결할 수 있습니다."
+    },
+    "unused": {
+      "delete": "삭제",
+      "title": "{{volume}}을(를) 삭제하시겠습니까?",
+      "description": "디스크와 그 안의 모든 내용을 삭제합니다. 되돌릴 수 없습니다."
+    },
+    "cd": {
+      "heading": "CD/DVD 드라이브",
+      "title": "{{key}}의 미디어",
+      "empty": "미디어 없음"
+    },
+    "nic": {
+      "heading": "네트워크 어댑터",
+      "add": "어댑터 추가",
+      "addTitle": "{{key}} 추가",
+      "editTitle": "{{key}} 편집",
+      "none": "네트워크 어댑터가 없습니다.",
+      "model": "모델",
+      "name": "컨테이너 내 이름",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "고정",
+        "none": "없음",
+        "auto": "SLAAC"
+      },
+      "tag": "VLAN 태그",
+      "tagHint": "태그 없음은 비워 두세요.",
+      "rate": "속도 제한(MB/s)",
+      "rateHint": "제한 없음은 비워 두세요.",
+      "firewall": "방화벽",
+      "firewallShort": "방화벽",
+      "removeTitle": "{{key}}을(를) 제거하시겠습니까?",
+      "removeDescription": "게스트가 이 어댑터와 해당 주소를 잃습니다."
+    },
+    "problem": {
+      "cpu": "소켓과 코어를 하나 이상 입력하세요.",
+      "cpulimit": "CPU 제한은 0부터 8192까지입니다.",
+      "memory": "메모리를 16 MiB 이상 입력하세요.",
+      "balloon": "최소 메모리는 메모리보다 클 수 없습니다.",
+      "swap": "스왑을 MiB 단위로 입력하세요. 없으면 0입니다.",
+      "noSlot": "이 종류의 슬롯이 모두 사용 중입니다.",
+      "storage": "스토리지를 선택하세요.",
+      "size": "크기를 정수 GiB로 입력하세요.",
+      "path": "/data처럼 절대 경로를 입력하세요. / 자체는 안 됩니다.",
+      "bridge": "브리지를 선택하세요.",
+      "tag": "VLAN 태그는 1부터 4094까지입니다.",
+      "rate": "0보다 큰 속도를 입력하거나 비워 두세요.",
+      "name": "eth0 같은 이름을 입력하세요.",
+      "ip4": "192.168.0.60/24처럼 주소를 입력하고 유효한 게이트웨이를 입력하세요.",
+      "ip6": "fd00::10/64처럼 주소를 입력하세요."
+    },
+    "detached": "{{key}} 분리됨, 사용하지 않는 디스크로 남습니다",
+    "coresHint": "비워 두면 노드의 모든 코어를 사용합니다."
+  },
+  "options": {
+    "general": "일반",
+    "tags": "태그",
+    "tagsHint": "쉼표로 구분합니다.",
+    "onboot": "노드 부팅 시 시작",
+    "protection": "보호",
+    "protectionHint": "끌 때까지 게스트와 디스크 삭제를 차단합니다.",
+    "agent": "QEMU 게스트 에이전트",
+    "agentHint": "게스트에서 에이전트가 실행되면 켜세요. 주소 확인과 정상 종료에 사용됩니다.",
+    "startup": "시작 및 종료 순서",
+    "startupOrder": "순서",
+    "startupUp": "시작 후 지연(초)",
+    "startupDown": "종료 시간 제한(초)",
+    "dns": "DNS",
+    "nameserver": "DNS 서버",
+    "searchdomain": "검색 도메인",
+    "useHost": "비워 두면 노드의 값을 사용합니다.",
+    "notes": "메모",
+    "saved": "옵션이 저장되었습니다",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "기타"
+    },
+    "problem": {
+      "name": "이름을 입력하세요.",
+      "startup": "순서와 지연은 정수입니다.",
+      "tags": "태그에는 영문자, 숫자, 하이픈, 점, 밑줄을 사용합니다.",
+      "nameserver": "공백으로 구분된 IP 주소를 입력하세요."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "이 VM에는 cloud-init 드라이브가 없습니다. 하나를 추가한 다음 여기에서 사용자, 키, 네트워크를 설정하세요. 게스트 이미지가 cloud-init을 지원해야 합니다.",
+    "addDrive": "cloud-init 드라이브 추가",
+    "driveAdded": "cloud-init 드라이브가 추가되었습니다",
+    "user": "사용자",
+    "username": "사용자 이름",
+    "usernameHint": "비워 두면 이미지의 기본 사용자를 사용합니다.",
+    "password": "비밀번호",
+    "passwordHint": "비워 두면 현재 비밀번호를 유지합니다. Proxmox가 해시로 저장합니다.",
+    "network": "네트워크",
+    "saved": "cloud-init 설정이 저장되었습니다",
+    "regenerate": "이미지 다시 생성",
+    "regenerated": "cloud-init 이미지가 다시 생성되었습니다",
+    "regenerateHint": "설정을 {{drive}}에 씁니다. 게스트는 다음 부팅 시 이를 읽습니다."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "요약",
+      "iso": "ISO 이미지",
+      "vztmpl": "CT 템플릿",
+      "backup": "백업",
+      "images": "디스크 이미지"
+    },
+    "content": "콘텐츠",
+    "contentTypes": {
+      "images": "VM 디스크",
+      "rootdir": "컨테이너 디스크",
+      "iso": "ISO 이미지",
+      "vztmpl": "CT 템플릿",
+      "backup": "백업",
+      "snippets": "스니펫",
+      "import": "가져오기"
+    },
+    "shared": "공유됨",
+    "empty": "아직 아무것도 없습니다.",
+    "owner": "게스트 {{vmid}}",
+    "protected": "보호됨",
+    "download": {
+      "button": "URL에서 다운로드",
+      "title": {
+        "iso": "{{storage}}에 ISO 이미지 다운로드",
+        "vztmpl": "{{storage}}에 CT 템플릿 다운로드"
+      },
+      "url": "URL",
+      "filename": "파일 이름",
+      "algorithm": "체크섬 유형",
+      "noChecksum": "없음",
+      "checksum": "체크섬",
+      "verify": "서버 인증서 확인",
+      "submit": "다운로드",
+      "label": "{{name}} 다운로드",
+      "problem": {
+        "url": "http 또는 https URL을 입력하세요.",
+        "filename": "파일 이름에는 영문자, 숫자, 점, 하이픈, 밑줄을 사용합니다.",
+        "extension": "ISO 이미지는 .iso 또는 .img로, 템플릿은 .tar.gz, .tar.xz 또는 .tar.zst로 끝납니다.",
+        "checksum": "체크섬 유형을 선택하고 16진수로 체크섬을 입력하거나, 둘 다 비워 두세요."
+      }
+    },
+    "catalog": {
+      "button": "템플릿",
+      "title": "{{storage}}용 컨테이너 템플릿",
+      "search": "템플릿 검색...",
+      "have": "다운로드됨",
+      "label": "{{name}} 다운로드"
+    },
+    "delete": {
+      "title": "{{name}}을(를) 삭제하시겠습니까?",
+      "description": "스토리지에서 파일을 삭제합니다. 되돌릴 수 없습니다.",
+      "submit": "삭제",
+      "done": "{{name}} 삭제됨"
+    },
+    "upload": {
+      "button": "업로드",
+      "cancel": "업로드 취소",
+      "done": "{{name}} 업로드됨",
+      "failed": "{{name}} 업로드 실패: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "요약",
+      "network": "네트워크",
+      "system": "시스템",
+      "services": "서비스",
+      "updates": "업데이트",
+      "disks": "디스크",
+      "tasks": "작업",
+      "log": "로그"
+    },
+    "services": {
+      "start": "시작",
+      "stop": "정지",
+      "restart": "다시 시작",
+      "reload": "다시 로드",
+      "label": "{{name}} {{action}}",
+      "confirm": {
+        "stop": "{{name}}을(를) 정지하시겠습니까?",
+        "restart": "{{name}}을(를) 다시 시작하시겠습니까?",
+        "description": "Proxmox 자체 서비스가 노드와 API를 실행합니다. 하나를 정지하면 다시 시작될 때까지 이 도구의 연결이 끊길 수 있습니다."
+      }
+    },
+    "updates": {
+      "refresh": "패키지 목록 새로 고침",
+      "refreshLabel": "{{node}}의 패키지 목록 새로 고침",
+      "count_other": "{{count}}개 패키지를 업그레이드할 수 있습니다",
+      "none": "모두 최신 상태입니다",
+      "installHint": "노드의 터미널에서 apt full-upgrade로 업그레이드를 설치하세요. Proxmox는 API를 통해 업그레이드하지 않습니다.",
+      "views": {
+        "packages": "패키지",
+        "repositories": "저장소"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "{{disk}}의 SMART",
+      "health": "상태",
+      "usedBy": "{{used}}에서 사용 중",
+      "unused": "사용 안 함",
+      "wearout": "수명 {{value}}% 남음",
+      "views": {
+        "disks": "디스크",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "디렉터리",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_other": "논리 볼륨 {{count}}개",
+        "metadata": "메타데이터 {{used}} / {{size}}",
+        "frag": "{{value}}% 조각화됨",
+        "dedup": "중복 제거 {{value}}x",
+        "none": {
+          "lvm": "LVM 볼륨 그룹이 없습니다.",
+          "lvmthin": "LVM-Thin 풀이 없습니다.",
+          "directory": "전용 디스크의 디렉터리 스토리지가 없습니다.",
+          "zfs": "ZFS 풀이 없습니다."
+        },
+        "create": {
+          "lvm": "LVM 볼륨 그룹 생성",
+          "lvmthin": "LVM-Thin 풀 생성",
+          "directory": "디렉터리 생성",
+          "zfs": "ZFS 풀 생성"
+        },
+        "createSubmit": "생성",
+        "createLabel": "{{node}}에 {{name}} 생성",
+        "wipeWarning": "선택한 디스크는 파티션이 나뉘고 포맷됩니다. 비어 있는 디스크만 표시됩니다.",
+        "name": "이름",
+        "device": "디스크",
+        "devices": "디스크",
+        "pickDisk": "디스크 선택",
+        "noUnused": "사용하지 않는 디스크가 없습니다. 내용을 지워도 된다면 먼저 디스크에서 하나를 초기화하세요.",
+        "filesystem": "파일 시스템",
+        "raidlevel": "RAID 레벨",
+        "raid": {
+          "single": "단일 디스크",
+          "mirror": "미러",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "압축",
+        "addStorage": "스토리지로 추가",
+        "addStorageHint": "디스크, 컨테이너 또는 백업용으로 같은 이름의 Proxmox 스토리지를 만듭니다.",
+        "problem": {
+          "name": "이름은 영문자로 시작하며 영문자, 숫자, -, _ 또는 .를 사용합니다.",
+          "device": "디스크를 선택하세요.",
+          "oneDevice": "디스크를 하나 선택하세요.",
+          "tooFew": "이 RAID 레벨에는 디스크가 {{count}}개 이상 필요합니다.",
+          "even": "RAID10에는 짝수 개의 디스크가 필요합니다.",
+          "ashift": "ashift는 9에서 16 사이입니다."
+        },
+        "remove": "제거",
+        "removeTitle": "{{name}}을(를) 제거하시겠습니까?",
+        "removeWarning": "여기에 디스크가 있는 게스트는 디스크를 잃습니다. 제거 전에 아무것도 옮기지 않습니다.",
+        "removeLabel": "{{node}}의 {{name}} 제거",
+        "cleanupConfig": "스토리지 항목도 제거",
+        "cleanupDisks": "디스크 초기화",
+        "cleanupDisksHint": "디스크를 지워 다시 사용할 수 있게 합니다.",
+        "inUse": {
+          "lvm": "아직 논리 볼륨이 있습니다. 먼저 제거하세요. 이 그룹에 노드 자체 시스템이 있을 수 있습니다.",
+          "lvmthin": "아직 데이터가 있습니다. 먼저 그 위의 게스트 디스크를 이동하거나 제거하세요."
+        }
+      },
+      "gpt": "GPT로 초기화",
+      "gptTitle": "{{disk}}을(를) GPT로 초기화하시겠습니까?",
+      "gptDescription": "디스크에 빈 GPT 파티션 테이블을 씁니다.",
+      "gptLabel": "{{node}}의 {{disk}} 초기화",
+      "wipe": "완전 삭제",
+      "wipeTitle": "{{disk}}을(를) 완전 삭제하시겠습니까?",
+      "wipeWarning": "디스크의 파티션 테이블과 모든 파일 시스템, LVM, ZFS 서명을 지웁니다(현재: {{used}}). 내용은 영구히 사라집니다.",
+      "wipeLabel": "{{node}}의 {{disk}} 완전 삭제",
+      "typePath": "확인하려면 {{disk}}을(를) 입력하세요"
+    },
+    "log": {
+      "search": "로그 필터...",
+      "empty": "일치하는 줄이 없습니다."
+    },
+    "power": {
+      "menu": "노드 전원",
+      "termixWarning": "Termix가 이 노드에서 실행 중이면 노드가 복구될 때까지 Termix도 중단됩니다.",
+      "typeName": "확인하려면 {{node}}을(를) 입력하세요",
+      "reboot": {
+        "menu": "노드 재부팅",
+        "title": "{{node}}을(를) 재부팅하시겠습니까?",
+        "submit": "재부팅",
+        "label": "{{node}} 재부팅",
+        "warning_other": "실행 중인 게스트 {{count}}개가 시작 설정에 따라 먼저 정지되거나 종료됩니다."
+      },
+      "shutdown": {
+        "menu": "노드 종료",
+        "title": "{{node}}을(를) 종료하시겠습니까?",
+        "submit": "종료",
+        "label": "{{node}} 종료",
+        "warning_other": "실행 중인 게스트 {{count}}개도 함께 중단되며, 누군가 노드 전원을 켤 때까지 다시 시작되지 않습니다."
+      }
+    },
+    "shell": "셸",
+    "shellHint": "Termix에서 이 호스트의 SSH 터미널을 엽니다.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "검색 도메인",
+        "server": "DNS 서버 {{n}}",
+        "editTitle": "{{node}}의 DNS",
+        "saved": "DNS가 저장되었습니다",
+        "problem": {
+          "search": "example.com 같은 검색 도메인을 입력하세요.",
+          "server": "DNS 서버는 IPv4 또는 IPv6 주소입니다.",
+          "noServer": "DNS 서버를 하나 이상 입력하세요."
+        }
+      },
+      "time": {
+        "title": "시간",
+        "zone": "시간대",
+        "local": "로컬 시간",
+        "editTitle": "{{node}}의 시간대",
+        "hint": "시계 자체는 노드의 NTP(chrony)가 유지합니다.",
+        "saved": "시간대가 {{zone}}(으)로 설정되었습니다"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "{{node}}의 /etc/hosts",
+        "warning": "노드 자체 이름은 계속 해당 주소로 확인되어야 합니다. 그렇지 않으면 클러스터와 웹 인터페이스가 작동을 멈춥니다.",
+        "saved": "/etc/hosts가 저장되었습니다"
+      },
+      "certs": {
+        "title": "인증서",
+        "issuer": "발급자: {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "{{date}}까지 유효",
+          "expiring": "{{date}}에 만료",
+          "expired": "{{date}}에 만료됨",
+          "notYet": "아직 유효하지 않음"
+        },
+        "upload": "사용자 지정 업로드",
+        "uploadTitle": "{{node}}의 사용자 지정 인증서",
+        "uploaded": "인증서가 업로드되었습니다",
+        "chain": "인증서 체인",
+        "chainHint": "PEM: 노드 인증서를 먼저, 그 다음 중간 인증서.",
+        "key": "개인 키",
+        "keyHint": "PEM, 암호화되지 않음. 노드에 있는 기존 키를 유지하려면 비워 두세요.",
+        "fromFile": "파일에서 읽기",
+        "badCert": "PEM 인증서가 아닙니다.",
+        "badKey": "PEM 개인 키가 아닙니다.",
+        "restart": "적용하려면 웹 인터페이스 다시 시작",
+        "restartHint": "pveproxy가 다시 시작되며, Termix는 몇 초 동안 API에 접근할 수 없습니다.",
+        "remove": "사용자 지정 제거",
+        "removeTitle": "사용자 지정 인증서를 제거하시겠습니까?",
+        "removeDescription": "노드가 자체 서명 인증서로 돌아가고 웹 인터페이스가 다시 시작됩니다.",
+        "removed": "사용자 지정 인증서가 제거되었습니다"
+      }
+    },
+    "repos": {
+      "on": "활성화됨",
+      "off": "비활성화됨",
+      "enable": "활성화",
+      "disable": "비활성화",
+      "enableTitle": "이 저장소를 활성화하시겠습니까?",
+      "enabled": "저장소가 활성화되었습니다",
+      "disabled": "저장소가 비활성화되었습니다",
+      "add": "추가:",
+      "added": "{{name}} 저장소가 추가되었습니다",
+      "hint": "변경 후 패키지에서 패키지 목록 새로 고침을 실행하세요. Enterprise 저장소에는 구독이 필요합니다."
+    },
+    "taskHistory": {
+      "type": "유형(예: vzdump)",
+      "vmid": "VM/CT ID",
+      "user": "사용자",
+      "errorsOnly": "실패한 작업만",
+      "none": "일치하는 작업이 없습니다.",
+      "more": "더 불러오기",
+      "state": {
+        "running": "실행 중",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "인증서 발급",
+      "renew": "갱신",
+      "orderLabel": "{{node}}의 ACME 인증서 발급",
+      "renewLabel": "{{node}}의 ACME 인증서 갱신",
+      "usesAccount": "계정: {{account}}",
+      "none": "없음",
+      "noDomains": "아직 도메인이 없습니다. 편집하여 이 노드가 응답하는 이름을 추가하세요.",
+      "viaHttp": "HTTP 챌린지",
+      "viaDns": "{{plugin}}을(를) 통한 DNS 챌린지",
+      "accounts": "계정",
+      "plugins": "DNS 챌린지 플러그인",
+      "remove": "제거",
+      "domainsTitle": "{{node}}의 ACME 도메인",
+      "domainsSaved": "ACME 도메인이 저장되었습니다",
+      "domain": "도메인",
+      "challenge": "챌린지",
+      "alias": "별칭",
+      "addDomain": "도메인 추가",
+      "httpHint": "HTTP 챌린지는 해당 도메인으로 인터넷에서 이 노드의 포트 80에 접근할 수 있어야 합니다. DNS는 그렇지 않아도 작동하며 와일드카드에도 사용할 수 있습니다.",
+      "hint": "계정과 플러그인은 클러스터 전체에서 공유되며, 도메인은 노드별입니다.",
+      "problem": {
+        "noDomain": "도메인을 하나 이상 추가하세요.",
+        "tooMany": "노드에는 ACME 도메인을 최대 6개까지 둘 수 있습니다.",
+        "domain": "도메인은 pve.example.com 같은 전체 이름입니다.",
+        "wildcard": "와일드카드 도메인에는 DNS 챌린지 플러그인이 필요합니다."
+      },
+      "account": {
+        "title": "계정",
+        "pick": "계정 선택",
+        "add": "계정 등록",
+        "addTitle": "ACME 계정 등록",
+        "register": "등록",
+        "registerLabel": "ACME 계정 {{name}} 등록",
+        "name": "이름",
+        "email": "이메일",
+        "directory": "ACME 디렉터리",
+        "customDirectory": "사용자 지정 URL",
+        "directoryUrl": "디렉터리 URL",
+        "acceptTos": "서비스 약관에 동의",
+        "eabKid": "EAB 키 ID",
+        "eabHmac": "EAB HMAC 키",
+        "eabHint": "External Account Binding을 요구하는 CA에만 해당합니다.",
+        "none": "아직 ACME 계정이 없습니다.",
+        "needOne": "먼저 ACME 계정을 등록하세요.",
+        "removeTitle": "계정 {{name}}을(를) 비활성화하시겠습니까?",
+        "removeDescription": "계정이 CA에서 비활성화되고 여기에서 제거됩니다. 이미 발급된 인증서는 계속 작동합니다.",
+        "removeLabel": "ACME 계정 {{name}} 비활성화",
+        "problem": {
+          "name": "이름에는 영문자, 숫자, -, _ 또는 .를 사용합니다.",
+          "email": "이메일 주소를 입력하세요.",
+          "directory": "디렉터리는 http 또는 https URL입니다.",
+          "tos": "등록하려면 서비스 약관에 동의하세요.",
+          "eab": "EAB에는 키 ID와 HMAC 키가 모두 필요합니다."
+        }
+      },
+      "plugin": {
+        "add": "플러그인 추가",
+        "addTitle": "DNS 챌린지 플러그인 추가",
+        "id": "플러그인 ID",
+        "api": "DNS API",
+        "pickApi": "DNS 공급자 선택",
+        "delay": "검증 지연(초)",
+        "delayHint": "TXT 레코드가 전파될 때까지 기다리는 시간입니다.",
+        "noFields": "Proxmox가 이 공급자의 필드를 제공하지 않습니다. 읽는 변수는 acme.sh 문서를 참조하세요.",
+        "none": "DNS 플러그인이 없습니다. HTTP는 플러그인 없이 작동합니다.",
+        "disabled": "비활성화됨",
+        "removeTitle": "플러그인 {{name}}을(를) 제거하시겠습니까?",
+        "removeDescription": "이를 사용하는 도메인은 더 이상 검증할 수 없습니다."
+      }
+    }
+  },
+  "console": {
+    "open": "콘솔",
+    "openHint": "게스트의 Termix 호스트를 열거나, 먼저 Termix에 추가하도록 안내합니다.",
+    "tabTitle": "Proxmox 콘솔",
+    "tabLabel": "{{name}} — 콘솔",
+    "pick": "Proxmox 도구에서 실행 중인 VM이나 컨테이너의 콘솔을 여세요.",
+    "connect": "연결",
+    "reconnect": "다시 연결",
+    "disconnect": "연결 끊기",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "전체 화면",
+    "notRunning": "콘솔을 열려면 게스트를 시작하세요.",
+    "lost": "콘솔 연결이 끊어졌습니다.",
+    "ended": "콘솔이 닫혔습니다.",
+    "status": {
+      "idle": "연결되지 않음",
+      "connecting": "연결 중...",
+      "connected": "연결됨",
+      "closed": "연결 끊김",
+      "error": "연결할 수 없습니다"
+    },
+    "proxmox": "Proxmox 콘솔",
+    "proxmoxHint": "노드를 통한 Proxmox 자체 콘솔: VM의 화면, 컨테이너의 셸. 아직 네트워크가 없는 게스트용입니다."
+  },
+  "pool": {
+    "members": "멤버",
+    "empty": "이 풀에는 아무것도 없습니다."
+  },
+  "sdn": {
+    "hint": "SDN 영역, VNet, 서브넷은 이후 릴리스에서 클러스터 관리와 함께 제공됩니다."
+  },
+  "network": {
+    "add": "생성",
+    "apply": "적용",
+    "revert": "되돌리기",
+    "pending": "아직 적용되지 않음",
+    "hint": "변경 사항은 /etc/network/interfaces.new에 저장되며 적용 시 반영되고, 이때 노드의 네트워크가 다시 로드됩니다.",
+    "type": "유형",
+    "name": "이름",
+    "cidr": "IPv4/CIDR",
+    "gateway": "게이트웨이(IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "게이트웨이(IPv6)",
+    "ports": "브리지 포트",
+    "slaves": "슬레이브",
+    "portsHint": "공백으로 구분된 인터페이스 이름입니다.",
+    "bondMode": "모드",
+    "vlanDevice": "VLAN 원시 장치",
+    "mtu": "MTU",
+    "comments": "설명",
+    "autostart": "자동 시작",
+    "vlanAware": "VLAN 인식",
+    "vlanAwareHint": "이 브리지의 게스트가 VLAN 태그를 사용할 수 있게 합니다.",
+    "inactive": "비활성",
+    "create": "생성",
+    "createTitle": "인터페이스 생성",
+    "editTitle": "{{iface}} 편집",
+    "types": {
+      "bridge": "브리지",
+      "bond": "본드",
+      "vlan": "VLAN",
+      "eth": "포트",
+      "OVSBridge": "OVS 브리지",
+      "alias": "별칭"
+    },
+    "nameHint": {
+      "bridge": "vmbr 뒤에 숫자(예: vmbr1).",
+      "bond": "bond 뒤에 숫자(예: bond0).",
+      "vlan": "vmbr0.10 같은 device.tag, 또는 원시 장치와 함께 vlan10."
+    },
+    "addressWarning": "이 인터페이스에는 Termix가 노드에 접속하는 주소가 있습니다. 실수하면 누군가 콘솔에서 노드를 고칠 때까지 Termix의 연결이 끊길 수 있습니다.",
+    "removeTitle": "{{iface}}을(를) 제거하시겠습니까?",
+    "removeDescription": "변경 사항이 적용되면 인터페이스가 제거됩니다.",
+    "applyTitle": "{{node}}에 네트워크 변경 사항을 적용하시겠습니까?",
+    "applyDescription": "노드가 네트워크를 다시 로드합니다. 새 설정이 잘못되면 노드와 Termix의 연결이 오프라인이 될 수 있습니다.",
+    "applyLabel": "{{node}}에 네트워크 적용",
+    "reverted": "네트워크 변경 사항을 되돌렸습니다",
+    "problem": {
+      "cidr": "10.10.0.1/24처럼 주소를 입력하세요.",
+      "gateway": "게이트웨이에는 IPv4 주소와 유효한 게이트웨이 IP가 필요합니다.",
+      "cidr6": "fd00::1/64처럼 주소를 입력하세요.",
+      "ports": "공백으로 구분된 인터페이스 이름을 입력하세요.",
+      "slaves": "본드에는 슬레이브가 하나 이상 필요합니다.",
+      "vlanDevice": "vlanN 인터페이스의 원시 장치를 지정하세요.",
+      "mtu": "MTU는 1280부터 65520까지입니다.",
+      "name": {
+        "bridge": "브리지 이름은 vmbr와 숫자입니다.",
+        "bond": "본드 이름은 bond와 숫자입니다.",
+        "vlan": "VLAN 이름은 device.tag 또는 vlan과 숫자입니다."
+      }
+    }
+  },
+  "import": {
+    "open": "Termix로 가져오기",
+    "title": "게스트를 Termix 호스트로 가져오기",
+    "hint": "선택한 각 VM 또는 컨테이너는 proxmox 태그가 지정된 Termix 호스트가 됩니다. 가져오기는 이전에 가져온 게스트의 이름, 주소, 태그도 새로 고치고, Proxmox에서 사라진 게스트에 proxmox-missing 태그를 지정합니다.",
+    "loading": "게스트와 주소를 찾는 중…",
+    "counts": "게스트 {{total}}개, {{imported}}개 가져옴",
+    "selectAll": "모두 선택",
+    "selectNone": "선택 해제",
+    "none": "이 클러스터에는 VM이나 컨테이너가 없습니다.",
+    "imported": "가져옴",
+    "noAddress": "주소 없음",
+    "folder": "폴더",
+    "folderDefault": "{{node}} 이름의 폴더",
+    "folderSearch": "검색 또는 생성, 하위 폴더는 /",
+    "folderCreate": "\"{{folder}}\" 생성",
+    "folderNone": "아직 폴더가 없습니다",
+    "connection": "연결 방식",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "컨테이너 런타임",
+    "runtimeOff": "Docker 없음",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "알 수 없는 OS"
+    },
+    "sshLogin": "SSH 로그인",
+    "desktopLogin": "RDP 및 VNC 로그인",
+    "desktopHint": "연결하려면 Remote Desktop 플러그인이 필요합니다.",
+    "login": {
+      "nodeCredential": "노드의 자격 증명",
+      "nodeUser": "노드의 사용자 이름",
+      "username": "사용자 이름만",
+      "none": "로그인 없음"
+    },
+    "username": "사용자 이름",
+    "submit_other": "게스트 {{count}}개 가져오기",
+    "refresh": "가져온 항목 새로 고침",
+    "done": "생성 {{created}}, 업데이트 {{updated}}, 누락 표시 {{markedMissing}}",
+    "lastSync": "마지막 동기화 {{when}}.",
+    "lastSyncFailed": "{{when}} 마지막 동기화 실패: {{error}}",
+    "syncHint": "일정에 따라 새로 고치려면 호스트의 Proxmox 설정에서 가져온 게스트 동기화 유지를 켜세요.",
+    "addTitle": "{{name}}을(를) Termix에 추가",
+    "addHint": "이 게스트는 아직 Termix 호스트가 아닙니다. 추가하면 터미널을 열 수 있고, 이후 콘솔에서 바로 열립니다.",
+    "addSubmit": "추가 및 연결",
+    "gone": "Proxmox에 더 이상 이 게스트가 없습니다."
+  }
+}

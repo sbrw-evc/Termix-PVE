@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { findRule, hostLevelFor, RULES } from "../../src/backend/pve/policy.js";
+import {
+  findRule,
+  hostLevelFor,
+  paramsAllowed,
+  RULES,
+} from "../../src/backend/pve/policy.js";
 import { parseCallBody } from "../../src/backend/routes.js";
 
 const split = (path: string) => path.split("/");
@@ -38,7 +43,6 @@ describe("findRule", () => {
   it("refuses paths and methods no rule lists", () => {
     // Reading access lists, writing node files, the node's own config.
     expect(findRule("GET", split("access/users"))).toBeNull();
-    expect(findRule("PUT", split("nodes/pve1/config"))).toBeNull();
     expect(findRule("POST", split("nodes/pve1/execute"))).toBeNull();
     expect(
       findRule("POST", split("nodes/pve1/qemu/100/status/hibernate")),
@@ -144,5 +148,84 @@ describe("parseCallBody", () => {
     expect(parseCallBody({ path: ["a"], params: { x: { y: 1 } } })).toMatch(
       /params/,
     );
+  });
+});
+
+describe("node system rules", () => {
+  it("reads node settings with view and changes them with administer", () => {
+    for (const path of [
+      "nodes/pve1/dns",
+      "nodes/pve1/hosts",
+      "nodes/pve1/time",
+      "nodes/pve1/certificates/info",
+      "nodes/pve1/apt/repositories",
+      "nodes/pve1/disks/lvm",
+      "nodes/pve1/disks/lvmthin",
+      "nodes/pve1/disks/directory",
+      "nodes/pve1/disks/zfs",
+      "nodes/pve1/tasks",
+    ]) {
+      expect(findRule("GET", split(path))?.permission).toBe("view");
+    }
+    expect(findRule("PUT", split("nodes/pve1/dns"))?.permission).toBe(
+      "administer",
+    );
+    expect(findRule("POST", split("nodes/pve1/hosts"))?.permission).toBe(
+      "administer",
+    );
+    expect(findRule("PUT", split("nodes/pve1/time"))?.permission).toBe(
+      "administer",
+    );
+    expect(
+      findRule("POST", split("nodes/pve1/apt/repositories"))?.permission,
+    ).toBe("administer");
+    expect(
+      findRule("PUT", split("nodes/pve1/apt/repositories"))?.permission,
+    ).toBe("administer");
+  });
+
+  it("creates and removes disk storage and certificates with administer", () => {
+    for (const [method, path] of [
+      ["POST", "nodes/pve1/disks/lvm"],
+      ["POST", "nodes/pve1/disks/zfs"],
+      ["DELETE", "nodes/pve1/disks/lvmthin/data"],
+      ["POST", "nodes/pve1/disks/initgpt"],
+      ["PUT", "nodes/pve1/disks/wipedisk"],
+      ["POST", "nodes/pve1/certificates/custom"],
+      ["DELETE", "nodes/pve1/certificates/custom"],
+      ["POST", "nodes/pve1/certificates/acme/certificate"],
+      ["PUT", "nodes/pve1/certificates/acme/certificate"],
+      ["GET", "cluster/acme/account"],
+      ["POST", "cluster/acme/account"],
+      ["GET", "cluster/acme/plugins"],
+      ["DELETE", "cluster/acme/plugins/cf"],
+      ["PUT", "nodes/pve1/config"],
+    ] as const) {
+      expect(findRule(method, split(path))?.permission).toBe("administer");
+    }
+    expect(findRule("GET", split("cluster/acme/directories"))?.permission).toBe(
+      "view",
+    );
+    expect(findRule("POST", split("nodes/pve1/disks/other"))).toBeNull();
+  });
+
+  it("lets the node config change only its ACME settings", () => {
+    const rule = findRule("PUT", split("nodes/pve1/config"))!;
+    expect(
+      paramsAllowed(rule, {
+        acme: "account=le",
+        acmedomain0: "domain=a.example.com",
+        delete: "acmedomain1,acmedomain2",
+        digest: "x",
+      }),
+    ).toBe(true);
+    expect(paramsAllowed(rule, { description: "hi" })).toBe(false);
+    expect(paramsAllowed(rule, { wakeonlan: "aa:bb" })).toBe(false);
+    expect(paramsAllowed(rule, { delete: "description" })).toBe(false);
+    expect(paramsAllowed(rule, { delete: "acme;location" })).toBe(false);
+    // Rules without a list take any parameters.
+    expect(
+      paramsAllowed(findRule("PUT", split("nodes/pve1/dns"))!, { x: 1 }),
+    ).toBe(true);
   });
 });

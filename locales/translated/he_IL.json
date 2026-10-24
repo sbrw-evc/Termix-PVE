@@ -1,0 +1,1030 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "ניהול Proxmox VE מתוך Termix: מכונות וירטואליות, מכולות, אחסון, רשת, גיבויים, חומת אש, הרשאות והאשכול."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "פתיחה ב-Proxmox"
+  },
+  "permissions": {
+    "view": {
+      "title": "צפייה ב-Proxmox",
+      "description": "הצגת צמתים, אורחים, אחסון, תרשימים ומשימות במארחי Proxmox שאפשר להתחבר אליהם."
+    },
+    "operate": {
+      "title": "הפעלת אורחי Proxmox",
+      "description": "הפעלה, עצירה, כיבוי, אתחול, השהיה וחידוש של מכונות וירטואליות ומכולות. נדרשת הרשאת עריכה למארח."
+    },
+    "console": {
+      "title": "פתיחת מסופי Proxmox",
+      "description": "פתיחת המסך של VM ומעטפת root במכולה. נדרשת הרשאת עריכה למארח."
+    },
+    "configure": {
+      "title": "הגדרת Proxmox",
+      "description": "יצירה, שכפול, העברה, המרה ומחיקה של מכונות וירטואליות ומכולות. נדרשת הרשאת עריכה למארח."
+    },
+    "administer": {
+      "title": "ניהול Proxmox",
+      "description": "ניהול משתמשים, קבוצות, תפקידים, מאגרים, אימות דו-שלבי, אסימונים, תחומים והאשכול. נדרשת הרשאת עריכה למארח."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "צומת Proxmox",
+      "description": "סימון המארח הזה כצומת Proxmox VE. לאחר מכן הוא יופיע בכלי Proxmox תחת כלים."
+    },
+    "transport": {
+      "label": "חיבור דרך",
+      "description": "מצב אוטומטי משתמש ב-API דרך מנהרת SSH לאחר שמירת אסימון, וב-pvesh דרך SSH עד אז.",
+      "auto": "אוטומטי",
+      "tunnel": "API דרך מנהרת SSH",
+      "direct": "API ישירות",
+      "pvesh": "pvesh דרך SSH"
+    },
+    "tokenId": {
+      "label": "מזהה אסימון API",
+      "description": "נוצר ב-Proxmox תחת מרכז נתונים, הרשאות, אסימוני API. נראה כך: user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "סוד אסימון API",
+      "description": "מוצג פעם אחת כשהאסימון נוצר. נשמר מוצפן."
+    },
+    "apiHost": {
+      "label": "כתובת API",
+      "description": "רק ל-API ישירות. השאירו ריק כדי להשתמש בכתובת של המארח הזה."
+    },
+    "apiPort": {
+      "label": "פורט API",
+      "description": "8006 אלא אם שיניתם אותו."
+    },
+    "caCert": {
+      "label": "תעודת CA",
+      "description": "רק ל-API ישירות. ה-CA של הצומת בפורמט PEM, מתוך /etc/pve/pve-root-ca.pem. השאירו ריק אם ל-API יש תעודה מהימנה ציבורית.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "אורחים מיובאים",
+    "importSync": {
+      "label": "שמירה על סנכרון האורחים המיובאים",
+      "description": "מעדכן שמות, כתובות ותגיות של האורחים שיובאו מהצומת הזה, ומתייג את אלה שהוסרו מ-Proxmox בתגית proxmox-missing."
+    },
+    "importInterval": {
+      "label": "סנכרון כל (דקות)",
+      "description": "לפחות 5 דקות."
+    },
+    "importAddNew": {
+      "label": "הוספת אורחים חדשים בסנכרון",
+      "description": "מייבא אורחים שנוצרו ב-Proxmox אחרי הייבוא הראשון, עם ברירות המחדל האחרונות שנבחרו בחלון הייבוא."
+    },
+    "importDefaults": {
+      "label": "ברירות מחדל לייבוא"
+    },
+    "importState": {
+      "label": "סנכרון האורחים האחרון"
+    },
+    "source": {
+      "label": "אורח Proxmox"
+    }
+  },
+  "app": {
+    "loading": "טוען...",
+    "loadFailed": "לא ניתן לטעון את האשכול",
+    "refreshFailed": "הרענון נכשל: {{message}}",
+    "retry": "ניסיון חוזר",
+    "refresh": "רענון",
+    "search": "חיפוש אורחים, צמתים ואחסון...",
+    "status": "{{nodes}} צמתים, {{running}} מתוך {{total}} אורחים פועלים",
+    "pickHost": "מארח Proxmox",
+    "pickResource": "בחרו צומת, אורח או אחסון מימין",
+    "noHosts": "אין עדיין מארחי Proxmox",
+    "noHostsHint": "פתחו את הגדרות המארח, הפעילו את צומת Proxmox תחת SSH ובחרו אופן חיבור. הצומת יופיע כאן לאחר מכן.",
+    "cancel": "ביטול",
+    "working": "מעבד...",
+    "save": "שמירה",
+    "reset": "איפוס",
+    "close": "סגירה",
+    "yes": "כן",
+    "no": "לא",
+    "edit": "עריכה"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix אינו סומך על התעודה של הצומת. בהגדרות Proxmox של המארח, הדביקו את ה-CA של הצומת מתוך /etc/pve/pve-root-ca.pem בשדה תעודת CA, או בחרו API דרך מנהרת SSH.",
+    "tlsHostname": "התעודה של הצומת מיועדת לשם אחר. הגדירו את כתובת API לשם או לכתובת שמופיעים בתעודה.",
+    "tlsExpired": "התעודה של הצומת פגה או שעדיין אינה בתוקף. חדשו אותה ב-Proxmox תחת הצומת, מערכת, תעודות.",
+    "notEnabled": "המארח הזה לא מסומן כצומת Proxmox. הפעילו את צומת Proxmox בהגדרות המארח.",
+    "hostAccess": "נדרשת הרשאת עריכה למארח הזה כדי לשנות אותו."
+  },
+  "tree": {
+    "nothingFound": "אין תוצאות לחיפוש.",
+    "expand": "הרחבה",
+    "collapse": "כיווץ",
+    "datacenter": "מרכז נתונים",
+    "folders": {
+      "lxc": "מכולת LXC",
+      "qemu": "מכונה וירטואלית",
+      "node": "צמתים",
+      "pool": "מאגרים",
+      "sdn": "רשת",
+      "storage": "אחסון"
+    },
+    "views": {
+      "folder": "תצוגת תיקיות",
+      "server": "תצוגת שרתים"
+    }
+  },
+  "types": {
+    "node": "צומת",
+    "qemu": "VM",
+    "lxc": "מכולה",
+    "storage": "אחסון",
+    "pool": "מאגר",
+    "sdn": "אזור SDN"
+  },
+  "states": {
+    "running": "פועל",
+    "stopped": "עצור",
+    "paused": "מושהה",
+    "suspended": "מושעה",
+    "online": "מקוון",
+    "offline": "לא מקוון",
+    "available": "זמין",
+    "unknown": "לא ידוע"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "זיכרון",
+    "disk": "דיסק",
+    "rootDisk": "דיסק שורש",
+    "usage": "שימוש",
+    "cores_one": "ליבה אחת ({{count}})",
+    "cores_two": "{{count}} ליבות",
+    "cores_other": "{{count}} ליבות",
+    "swap": "Swap"
+  },
+  "summary": {
+    "title": "סיכום",
+    "node": "צומת",
+    "vmid": "מזהה",
+    "uptime": "זמן פעולה",
+    "pool": "מאגר",
+    "ha": "HA",
+    "tags": "תגיות",
+    "guests": "אורחים",
+    "guestsRunning": "{{running}} מתוך {{total}} פועלים",
+    "cpuModel": "CPU",
+    "sockets": "שקעים",
+    "load": "עומס ממוצע",
+    "pveVersion": "Proxmox VE",
+    "kernel": "ליבת מערכת",
+    "ips": "כתובות"
+  },
+  "charts": {
+    "title": "תרשימים",
+    "cpu": "CPU",
+    "load": "עומס ממוצע",
+    "memory": "זיכרון",
+    "network": "רשת",
+    "diskIo": "קלט/פלט דיסק",
+    "cpuUsage": "שימוש ב-CPU",
+    "ioDelay": "השהיית IO",
+    "used": "בשימוש",
+    "total": "סה\"כ",
+    "in": "נכנס",
+    "out": "יוצא",
+    "read": "קריאה",
+    "write": "כתיבה",
+    "timeframe": {
+      "hour": "שעה",
+      "day": "יום",
+      "week": "שבוע",
+      "month": "חודש",
+      "year": "שנה"
+    },
+    "noData": "אין נתונים לתקופה זו",
+    "serverLoad": "עומס השרת",
+    "loadAverage": "עומס ממוצע",
+    "swap": "Swap",
+    "pressureCpu": "עיכוב בלחץ CPU",
+    "pressureMemory": "עיכוב בלחץ זיכרון",
+    "pressureIo": "עיכוב בלחץ IO",
+    "some": "חלקי",
+    "full": "מלא",
+    "average": "ממוצע",
+    "maximum": "מקסימום"
+  },
+  "tasks": {
+    "title": "משימות",
+    "started": "התחלה",
+    "node": "צומת",
+    "user": "משתמש",
+    "task": "משימה",
+    "status": "מצב",
+    "running": "פועלת",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} ב-{{node}}",
+    "done": "{{label}}: הושלם",
+    "failed": "{{label}} נכשל: {{reason}}"
+  },
+  "guests": {
+    "more": "פעולות נוספות",
+    "isTemplate": "תבנית",
+    "locked": "נעול: {{lock}}",
+    "power": {
+      "start": "הפעלה",
+      "shutdown": "כיבוי",
+      "stop": "עצירה",
+      "reboot": "אתחול",
+      "suspend": "השעיה",
+      "resume": "חידוש",
+      "reset": "איפוס",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "לעצור את {{name}} עכשיו?",
+        "reset": "לאפס את {{name}} עכשיו?",
+        "description": "פעולה זו מנתקת את החשמל כמו שליפת התקע. עבודה שלא נשמרה באורח תאבד."
+      }
+    },
+    "clone": {
+      "menu": "שכפול",
+      "title": "שכפול {{name}}",
+      "submit": "שכפול",
+      "label": "שכפול {{source}} אל {{id}}",
+      "full": "שכפול מלא",
+      "fullHint": "מעתיק כל דיסק, כך שהשכפול אינו תלוי במקור.",
+      "linkedHint": "כשכבוי, נוצר שכפול מקושר שחולק את הדיסקים של התבנית ונוצר בתוך שניות.",
+      "sameStorage": "אותו אחסון כמו המקור"
+    },
+    "migrate": {
+      "menu": "העברה",
+      "title": "העברת {{name}}",
+      "submit": "העברה",
+      "label": "העברת {{name}} אל {{target}}",
+      "noOtherNodes": "אין צומת מקוון אחר באשכול הזה שאפשר להעביר אליו.",
+      "onlineHint": "ה-VM פועלת ועוברת בזמן אמת, בלי לעצור.",
+      "restartHint": "המכולה פועלת. היא תיעצר, תועבר ותופעל מחדש ביעד."
+    },
+    "template": {
+      "menu": "המרה לתבנית",
+      "confirm": "להמיר את {{name}} לתבנית?",
+      "description": "אי אפשר להפעיל תבנית, רק לשכפל אותה. לא ניתן לבטל פעולה זו.",
+      "submit": "המרה",
+      "label": "המרת {{name}} לתבנית"
+    },
+    "delete": {
+      "menu": "מחיקה",
+      "title": "מחיקת {{name}}",
+      "submit": "מחיקה",
+      "label": "מחיקת {{name}}",
+      "warning": "פעולה זו מוחקת את האורח {{vmid}} ואת הדיסקים שלו. לא ניתן לבטל אותה.",
+      "stopFirst": "עצרו את האורח לפני מחיקתו.",
+      "typeId": "הקלידו {{vmid}} לאישור",
+      "purge": "הסרה ממשימות גיבוי, שכפול ו-HA",
+      "purgeHint": "לא נשארות משימות שמצביעות על אורח שכבר אינו קיים.",
+      "unreferenced": "מחיקת דיסקים ללא הפניה גם כן",
+      "unreferencedHint": "דיסקים באחסונים מופעלים עם המזהה הזה שאינם מופיעים בתצורה."
+    },
+    "create": {
+      "vmButton": "יצירת VM",
+      "ctButton": "יצירת CT",
+      "vmTitle": "יצירת מכונה וירטואלית",
+      "ctTitle": "יצירת מכולה",
+      "submit": "יצירה",
+      "vmLabel": "יצירת VM {{id}} ({{name}})",
+      "ctLabel": "יצירת CT {{id}} ({{name}})",
+      "noTemplates": "אין תבניות מכולה בצומת הזה. הורידו אחת ב-Proxmox תחת אחסון, תבניות CT.",
+      "noIso": "אין מדיית התקנה",
+      "unprivilegedHint": "בטוח יותר: root במכולה אינו root בצומת.",
+      "loginHint": "הגדירו סיסמת root, מפתחות SSH או את שניהם.",
+      "problem": {
+        "vmid": "בחרו מזהה של 100 ומעלה.",
+        "hostname": "הזינו שם מארח: אותיות, ספרות ומקפים.",
+        "name": "הזינו שם: אותיות, ספרות ומקפים.",
+        "template": "בחרו תבנית.",
+        "storage": "בחרו אחסון.",
+        "disk": "הזינו גודל דיסק.",
+        "cores": "הזינו מספר ליבות.",
+        "sockets": "הזינו מספר שקעים.",
+        "memory": "הזינו לפחות 16 MiB זיכרון.",
+        "swap": "הזינו Swap ב-MiB, 0 לביטול.",
+        "network": "בחרו גשר, ולכתובת סטטית הזינו אותה כך: 192.168.0.60/24.",
+        "login": "הגדירו סיסמת root או מפתחות SSH כדי שתוכלו להתחבר.",
+        "password": "הסיסמה צריכה להכיל לפחות 5 תווים."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "אחר"
+    },
+    "fields": {
+      "vmid": "מזהה",
+      "name": "שם",
+      "hostname": "שם מארח",
+      "node": "צומת",
+      "targetNode": "צומת יעד",
+      "targetStorage": "אחסון יעד",
+      "storage": "אחסון",
+      "template": "תבנית",
+      "iso": "מדיית התקנה",
+      "ostype": "מערכת הפעלה של האורח",
+      "rootPassword": "סיסמת root",
+      "sshKeys": "מפתחות SSH ציבוריים",
+      "unprivileged": "מכולה לא מורשית",
+      "diskGiB": "דיסק (GiB)",
+      "cores": "ליבות",
+      "sockets": "שקעים",
+      "memoryMiB": "זיכרון (MiB)",
+      "swapMiB": "Swap (MiB)",
+      "bridge": "גשר רשת",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "סטטי",
+      "cidr": "כתובת/קידומת",
+      "gateway": "שער",
+      "startAfter": "הפעלה לאחר היצירה",
+      "pick": "בחרו אחד"
+    },
+    "tabs": {
+      "summary": "סיכום",
+      "hardware": "חומרה",
+      "options": "אפשרויות",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "עריכה",
+    "add": "הוספה",
+    "remove": "הסרה",
+    "removed": "{{key}} הוסר",
+    "pending": "ממתין",
+    "pendingHint": "שינויים שמסומנים כממתינים חלים כשהאורח מופעל מחדש מ-Proxmox: אתחול מתוך האורח אינו מספיק.",
+    "processors": "מעבדים",
+    "processorsValue": "{{sockets}} שקע × {{cores}} ליבות, {{cpu}}",
+    "allCores": "הכול",
+    "swap": "Swap",
+    "balloonShort": "מינ'",
+    "cpuMemory": {
+      "heading": "מעבד וזיכרון",
+      "title": "מעבד וזיכרון"
+    },
+    "cpuType": "סוג CPU",
+    "cpulimit": "מגבלת CPU",
+    "cpulimitHint": "0 ללא מגבלה. 1.5 הוא זמן של ליבה וחצי.",
+    "balloon": "זיכרון מינימלי (MiB)",
+    "balloonHint": "עם מנהל ההתקן balloon האורח מחזיר זיכרון עד לערך זה. ערך שווה לזיכרון מבטל אותו, 0 מסיר את מנהל ההתקן.",
+    "disks": "דיסקים",
+    "volumes": "דיסק שורש ונקודות עגינה",
+    "bus": "אפיק",
+    "slot": "יהיה {{key}}",
+    "iothread": "תהליכון IO",
+    "discard": "Discard",
+    "discardHint": "מאפשר לאורח לשחרר בלוקים שאינם בשימוש באחסון דליל.",
+    "ssd": "הדמיית SSD",
+    "mountPath": "נתיב עגינה במכולה",
+    "backup": "הכללה בגיבויים",
+    "addDisk": {
+      "button": "הוספת דיסק",
+      "title": "הוספת דיסק",
+      "label": "הוספת {{key}}"
+    },
+    "addMount": {
+      "button": "הוספת נקודת עגינה",
+      "title": "הוספת נקודת עגינה"
+    },
+    "resize": {
+      "menu": "שינוי גודל",
+      "title": "הגדלת {{key}}",
+      "grow": "הוספה (GiB)",
+      "result": "{{from}} GiB יהפוך ל-{{to}} GiB",
+      "noShrink": "אפשר רק להגדיל דיסקים. לאחר מכן יש להגדיל את המחיצה ואת מערכת הקבצים בתוך האורח, אלא אם הוא עושה זאת באתחול.",
+      "submit": "הגדלה",
+      "label": "הגדלת {{key}} ב-{{size}} GiB"
+    },
+    "move": {
+      "menu": "העברה לאחסון",
+      "title": "העברת {{key}}",
+      "submit": "העברה",
+      "deleteSource": "מחיקת המקור",
+      "deleteSourceHint": "כשכבוי, המקור נשמר כדיסק שאינו בשימוש.",
+      "label": "העברת {{key}} אל {{storage}}"
+    },
+    "detach": {
+      "menu": "ניתוק",
+      "title": "לנתק את {{key}}?",
+      "description": "הדיסק נשאר באחסון שלו כדיסק שאינו בשימוש, ואפשר למחוק אותו או לחבר אותו שוב."
+    },
+    "unused": {
+      "delete": "מחיקה",
+      "title": "למחוק את {{volume}}?",
+      "description": "פעולה זו מוחקת את הדיסק ואת כל מה שעליו. לא ניתן לבטל אותה."
+    },
+    "cd": {
+      "heading": "כונני CD/DVD",
+      "title": "מדיה ב-{{key}}",
+      "empty": "אין מדיה"
+    },
+    "nic": {
+      "heading": "מתאמי רשת",
+      "add": "הוספת מתאם",
+      "addTitle": "הוספת {{key}}",
+      "editTitle": "עריכת {{key}}",
+      "none": "אין מתאמי רשת.",
+      "model": "דגם",
+      "name": "שם במכולה",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "סטטי",
+        "none": "ללא",
+        "auto": "SLAAC"
+      },
+      "tag": "תגית VLAN",
+      "tagHint": "ריק ללא תגית.",
+      "rate": "מגבלת קצב (MB/s)",
+      "rateHint": "ריק ללא מגבלה.",
+      "firewall": "חומת אש",
+      "firewallShort": "חומת אש",
+      "removeTitle": "להסיר את {{key}}?",
+      "removeDescription": "האורח יאבד את המתאם הזה ואת הכתובת שלו."
+    },
+    "problem": {
+      "cpu": "הזינו לפחות שקע אחד וליבה אחת.",
+      "cpulimit": "מגבלת CPU היא בין 0 ל-8192.",
+      "memory": "הזינו לפחות 16 MiB זיכרון.",
+      "balloon": "הזיכרון המינימלי לא יכול להיות גדול מהזיכרון.",
+      "swap": "הזינו Swap ב-MiB, 0 לביטול.",
+      "noSlot": "כל החריצים מסוג זה תפוסים.",
+      "storage": "בחרו אחסון.",
+      "size": "הזינו גודל ב-GiB שלמים.",
+      "path": "הזינו נתיב מוחלט כמו /data, לא / עצמו.",
+      "bridge": "בחרו גשר.",
+      "tag": "תגית VLAN היא בין 1 ל-4094.",
+      "rate": "הזינו קצב גדול מ-0, או השאירו ריק.",
+      "name": "הזינו שם כמו eth0.",
+      "ip4": "הזינו את הכתובת כך: 192.168.0.60/24 ושער תקין.",
+      "ip6": "הזינו את הכתובת כך: fd00::10/64."
+    },
+    "detached": "{{key}} נותק; הוא נשאר כדיסק שאינו בשימוש",
+    "coresHint": "ריק משתמש בכל הליבות של הצומת."
+  },
+  "options": {
+    "general": "כללי",
+    "tags": "תגיות",
+    "tagsHint": "מופרדות בפסיקים.",
+    "onboot": "הפעלה עם אתחול הצומת",
+    "protection": "הגנה",
+    "protectionHint": "חוסם מחיקה של האורח ושל הדיסקים שלו עד לכיבוי ההגנה.",
+    "agent": "סוכן אורח QEMU",
+    "agentHint": "הפעילו לאחר שהסוכן רץ באורח, לקבלת הכתובות שלו וכיבוי נקי.",
+    "startup": "סדר הפעלה וכיבוי",
+    "startupOrder": "סדר",
+    "startupUp": "השהיה לאחר הפעלה (שנ')",
+    "startupDown": "זמן קצוב לכיבוי (שנ')",
+    "dns": "DNS",
+    "nameserver": "שרתי DNS",
+    "searchdomain": "דומיין חיפוש",
+    "useHost": "ריק משתמש בהגדרות הצומת.",
+    "notes": "הערות",
+    "saved": "האפשרויות נשמרו",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "אחר"
+    },
+    "problem": {
+      "name": "הזינו שם.",
+      "startup": "הסדר וההשהיות הם מספרים שלמים.",
+      "tags": "תגיות כוללות אותיות, ספרות, מקפים, נקודות וקווים תחתונים.",
+      "nameserver": "הזינו כתובות IP מופרדות ברווחים."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "ל-VM הזו אין כונן cloud-init. הוסיפו אחד, ואז הגדירו כאן את המשתמש, המפתחות והרשת; תמונת האורח חייבת לתמוך ב-cloud-init.",
+    "addDrive": "הוספת כונן cloud-init",
+    "driveAdded": "כונן cloud-init נוסף",
+    "user": "משתמש",
+    "username": "שם משתמש",
+    "usernameHint": "ריק משתמש במשתמש ברירת המחדל של התמונה.",
+    "password": "סיסמה",
+    "passwordHint": "ריק שומר את הנוכחית. Proxmox שומר אותה כגיבוב.",
+    "network": "רשת",
+    "saved": "הגדרות cloud-init נשמרו",
+    "regenerate": "יצירת התמונה מחדש",
+    "regenerated": "תמונת cloud-init נוצרה מחדש",
+    "regenerateHint": "כותב את ההגדרות אל {{drive}}. האורח קורא אותן באתחול הבא."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "סיכום",
+      "iso": "תמונות ISO",
+      "vztmpl": "תבניות CT",
+      "backup": "גיבויים",
+      "images": "תמונות דיסק"
+    },
+    "content": "מכיל",
+    "contentTypes": {
+      "images": "דיסקים של VM",
+      "rootdir": "דיסקים של מכולות",
+      "iso": "תמונות ISO",
+      "vztmpl": "תבניות CT",
+      "backup": "גיבויים",
+      "snippets": "קטעי קוד",
+      "import": "ייבוא"
+    },
+    "shared": "משותף",
+    "empty": "אין כאן עדיין כלום.",
+    "owner": "אורח {{vmid}}",
+    "protected": "מוגן",
+    "download": {
+      "button": "הורדה מ-URL",
+      "title": {
+        "iso": "הורדת תמונת ISO אל {{storage}}",
+        "vztmpl": "הורדת תבנית CT אל {{storage}}"
+      },
+      "url": "URL",
+      "filename": "שם קובץ",
+      "algorithm": "סוג סכום ביקורת",
+      "noChecksum": "ללא",
+      "checksum": "סכום ביקורת",
+      "verify": "בדיקת תעודת השרת",
+      "submit": "הורדה",
+      "label": "הורדת {{name}}",
+      "problem": {
+        "url": "הזינו URL מסוג http או https.",
+        "filename": "שם הקובץ כולל אותיות, ספרות, נקודות, מקפים וקווים תחתונים.",
+        "extension": "תמונות ISO מסתיימות ב-.iso או ב-.img; תבניות ב-.tar.gz, .tar.xz או .tar.zst.",
+        "checksum": "בחרו סוג סכום ביקורת והזינו את הסכום בהקסדצימלי, או השאירו את שניהם ריקים."
+      }
+    },
+    "catalog": {
+      "button": "תבניות",
+      "title": "תבניות מכולה עבור {{storage}}",
+      "search": "חיפוש תבניות...",
+      "have": "הורד",
+      "label": "הורדת {{name}}"
+    },
+    "delete": {
+      "title": "למחוק את {{name}}?",
+      "description": "פעולה זו מוחקת את הקובץ מהאחסון. לא ניתן לבטל אותה.",
+      "submit": "מחיקה",
+      "done": "{{name}} נמחק"
+    },
+    "upload": {
+      "button": "העלאה",
+      "cancel": "ביטול ההעלאה",
+      "done": "{{name}} הועלה",
+      "failed": "העלאת {{name}} נכשלה: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "סיכום",
+      "network": "רשת",
+      "system": "מערכת",
+      "services": "שירותים",
+      "updates": "עדכונים",
+      "disks": "דיסקים",
+      "tasks": "משימות",
+      "log": "יומן"
+    },
+    "services": {
+      "start": "הפעלה",
+      "stop": "עצירה",
+      "restart": "הפעלה מחדש",
+      "reload": "טעינה מחדש",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "לעצור את {{name}}?",
+        "restart": "להפעיל מחדש את {{name}}?",
+        "description": "השירותים של Proxmox עצמו שומרים על הצומת ועל ה-API שלו פועלים; עצירת אחד מהם עלולה לנתק את הכלי הזה עד שיופעל שוב."
+      }
+    },
+    "updates": {
+      "refresh": "רענון רשימות החבילות",
+      "refreshLabel": "רענון רשימות החבילות ב-{{node}}",
+      "count_one": "חבילה אחת ({{count}}) ניתנת לשדרוג",
+      "count_two": "{{count}} חבילות ניתנות לשדרוג",
+      "count_other": "{{count}} חבילות ניתנות לשדרוג",
+      "none": "הכול מעודכן",
+      "installHint": "התקינו שדרוגים מהמסוף של הצומת עם apt full-upgrade; Proxmox אינו משדרג דרך ה-API שלו.",
+      "views": {
+        "packages": "חבילות",
+        "repositories": "מאגרי חבילות"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART עבור {{disk}}",
+      "health": "תקינות",
+      "usedBy": "בשימוש על ידי {{used}}",
+      "unused": "לא בשימוש",
+      "wearout": "נותרו {{value}}% מאורך החיים",
+      "views": {
+        "disks": "דיסקים",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "ספרייה",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "אמצעי אחסון לוגי אחד ({{count}})",
+        "lvCount_two": "{{count}} אמצעי אחסון לוגיים",
+        "lvCount_other": "{{count}} אמצעי אחסון לוגיים",
+        "metadata": "מטא-נתונים {{used}} / {{size}}",
+        "frag": "{{value}}% מקוטע",
+        "dedup": "ביטול כפילויות {{value}}x",
+        "none": {
+          "lvm": "אין קבוצות אמצעי אחסון LVM.",
+          "lvmthin": "אין מאגרי LVM-Thin.",
+          "directory": "אין אחסון ספרייה על דיסק נפרד.",
+          "zfs": "אין מאגרי ZFS."
+        },
+        "create": {
+          "lvm": "יצירת קבוצת אמצעי אחסון LVM",
+          "lvmthin": "יצירת מאגר LVM-Thin",
+          "directory": "יצירת ספרייה",
+          "zfs": "יצירת מאגר ZFS"
+        },
+        "createSubmit": "יצירה",
+        "createLabel": "יצירת {{name}} ב-{{node}}",
+        "wipeWarning": "הדיסקים שנבחרו יחולקו למחיצות ויפורמטו. מוצעים רק דיסקים ריקים.",
+        "name": "שם",
+        "device": "דיסק",
+        "devices": "דיסקים",
+        "pickDisk": "בחרו דיסק",
+        "noUnused": "אין דיסק פנוי. מחקו אחד תחת דיסקים קודם, אם אפשר לוותר על מה שעליו.",
+        "filesystem": "מערכת קבצים",
+        "raidlevel": "רמת RAID",
+        "raid": {
+          "single": "דיסק יחיד",
+          "mirror": "שיקוף",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "דחיסה",
+        "addStorage": "הוספה כאחסון",
+        "addStorageHint": "הופך אותו לאחסון Proxmox באותו שם, עבור דיסקים, מכולות או גיבויים.",
+        "problem": {
+          "name": "שם מתחיל באות וכולל אותיות, ספרות, -, _ או .",
+          "device": "בחרו דיסק.",
+          "oneDevice": "בחרו דיסק אחד.",
+          "tooFew": "רמת RAID זו דורשת לפחות {{count}} דיסקים.",
+          "even": "RAID10 דורש מספר זוגי של דיסקים.",
+          "ashift": "ערך ashift הוא בין 9 ל-16."
+        },
+        "remove": "הסרה",
+        "removeTitle": "להסיר את {{name}}?",
+        "removeWarning": "אורחים שיש להם דיסקים עליו יאבדו אותם. ההסרה אינה מעבירה ממנו דבר קודם.",
+        "removeLabel": "הסרת {{name}} ב-{{node}}",
+        "cleanupConfig": "הסרת רשומת האחסון גם כן",
+        "cleanupDisks": "מחיקת הדיסקים שלו",
+        "cleanupDisksHint": "מוחק את הדיסקים כדי שאפשר יהיה להשתמש בהם שוב.",
+        "inUse": {
+          "lvm": "עדיין יש בה כרכים לוגיים. הסר אותם קודם; ייתכן שקבוצה זו מכילה את מערכת הצומת עצמו.",
+          "lvmthin": "עדיין יש בה נתונים. העבר או הסר קודם את דיסקי האורחים שעליה."
+        }
+      },
+      "gpt": "אתחול GPT",
+      "gptTitle": "לאתחל את {{disk}} עם GPT?",
+      "gptDescription": "כותב טבלת מחיצות GPT ריקה לדיסק.",
+      "gptLabel": "אתחול {{disk}} ב-{{node}}",
+      "wipe": "מחיקה",
+      "wipeTitle": "למחוק את {{disk}}?",
+      "wipeWarning": "מוחק את טבלת המחיצות ואת כל חתימות מערכות הקבצים, LVM ו-ZFS בדיסק (כעת: {{used}}). מה שעליו יאבד לצמיתות.",
+      "wipeLabel": "מחיקת {{disk}} ב-{{node}}",
+      "typePath": "הקלידו {{disk}} לאישור"
+    },
+    "log": {
+      "search": "סינון היומן...",
+      "empty": "אין שורות תואמות."
+    },
+    "power": {
+      "menu": "חשמל הצומת",
+      "termixWarning": "אם Termix רץ על הצומת הזה, גם הוא יושבת עד שהצומת יחזור.",
+      "typeName": "הקלידו {{node}} לאישור",
+      "reboot": {
+        "menu": "אתחול הצומת",
+        "title": "לאתחל את {{node}}?",
+        "submit": "אתחול",
+        "label": "אתחול {{node}}",
+        "warning_one": "אורח פועל אחד ({{count}}) ייעצר או יכובה קודם, לפי הגדרות ההפעלה שלו.",
+        "warning_two": "{{count}} אורחים פועלים ייעצרו או יכובו קודם, לפי הגדרות ההפעלה שלהם.",
+        "warning_other": "{{count}} אורחים פועלים ייעצרו או יכובו קודם, לפי הגדרות ההפעלה שלהם."
+      },
+      "shutdown": {
+        "menu": "כיבוי הצומת",
+        "title": "לכבות את {{node}}?",
+        "submit": "כיבוי",
+        "label": "כיבוי {{node}}",
+        "warning_one": "אורח פועל אחד ({{count}}) יכובה יחד איתו, ושום דבר לא יפעיל אותו שוב עד שמישהו ידליק את הצומת.",
+        "warning_two": "{{count}} אורחים פועלים יכובו יחד איתו, ושום דבר לא יפעיל אותם שוב עד שמישהו ידליק את הצומת.",
+        "warning_other": "{{count}} אורחים פועלים יכובו יחד איתו, ושום דבר לא יפעיל אותם שוב עד שמישהו ידליק את הצומת."
+      }
+    },
+    "shell": "מעטפת",
+    "shellHint": "פותח את מסוף ה-SSH של המארח הזה ב-Termix.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "דומיין חיפוש",
+        "server": "שרת DNS {{n}}",
+        "editTitle": "DNS של {{node}}",
+        "saved": "DNS נשמר",
+        "problem": {
+          "search": "הזינו דומיין חיפוש, כמו example.com.",
+          "server": "שרת DNS הוא כתובת IPv4 או IPv6.",
+          "noServer": "הזינו לפחות שרת DNS אחד."
+        }
+      },
+      "time": {
+        "title": "זמן",
+        "zone": "אזור זמן",
+        "local": "זמן מקומי",
+        "editTitle": "אזור הזמן של {{node}}",
+        "hint": "השעון עצמו מסונכרן על ידי NTP (chrony) בצומת.",
+        "saved": "אזור הזמן הוגדר ל-{{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "/etc/hosts של {{node}}",
+        "warning": "השם של הצומת עצמו חייב להמשיך להצביע על הכתובת שלו, אחרת האשכול וממשק האינטרנט יפסיקו לעבוד.",
+        "saved": "/etc/hosts נשמר"
+      },
+      "certs": {
+        "title": "תעודות",
+        "issuer": "הונפקה על ידי {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "בתוקף עד {{date}}",
+          "expiring": "פגה ב-{{date}}",
+          "expired": "פגה ב-{{date}}",
+          "notYet": "עדיין לא בתוקף"
+        },
+        "upload": "העלאת תעודה מותאמת",
+        "uploadTitle": "תעודה מותאמת עבור {{node}}",
+        "uploaded": "התעודה הועלתה",
+        "chain": "שרשרת תעודות",
+        "chainHint": "PEM: תחילה התעודה של הצומת, אחר כך תעודות הביניים.",
+        "key": "מפתח פרטי",
+        "keyHint": "PEM, לא מוצפן. השאירו ריק כדי לשמור את המפתח שכבר קיים בצומת.",
+        "fromFile": "קריאה מקובץ",
+        "badCert": "זו אינה תעודת PEM.",
+        "badKey": "זה אינו מפתח פרטי בפורמט PEM.",
+        "restart": "הפעלה מחדש של ממשק האינטרנט כדי להשתמש בה",
+        "restartHint": "pveproxy מופעל מחדש; Termix מאבד את ה-API לכמה שניות.",
+        "remove": "הסרת המותאמת",
+        "removeTitle": "להסיר את התעודה המותאמת?",
+        "removeDescription": "הצומת חוזר לתעודה בחתימה עצמית שלו, וממשק האינטרנט מופעל מחדש.",
+        "removed": "התעודה המותאמת הוסרה"
+      }
+    },
+    "repos": {
+      "on": "מופעל",
+      "off": "מושבת",
+      "enable": "הפעלה",
+      "disable": "השבתה",
+      "enableTitle": "להפעיל את המאגר הזה?",
+      "enabled": "המאגר הופעל",
+      "disabled": "המאגר הושבת",
+      "add": "הוספה:",
+      "added": "המאגר {{name}} נוסף",
+      "hint": "הריצו רענון רשימות החבילות תחת חבילות לאחר שינוי. מאגרי Enterprise דורשים מנוי."
+    },
+    "taskHistory": {
+      "type": "סוג, למשל vzdump",
+      "vmid": "מזהה VM/CT",
+      "user": "משתמש",
+      "errorsOnly": "רק משימות שנכשלו",
+      "none": "אין משימות תואמות.",
+      "more": "טעינת עוד",
+      "state": {
+        "running": "פועלת",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "הזמנת תעודה",
+      "renew": "חידוש",
+      "orderLabel": "הזמנת תעודת ACME עבור {{node}}",
+      "renewLabel": "חידוש תעודת ACME עבור {{node}}",
+      "usesAccount": "חשבון: {{account}}",
+      "none": "ללא",
+      "noDomains": "אין עדיין דומיינים. ערכו כדי להוסיף את השמות שהצומת הזה עונה להם.",
+      "viaHttp": "אתגר HTTP",
+      "viaDns": "אתגר DNS דרך {{plugin}}",
+      "accounts": "חשבונות",
+      "plugins": "תוספי אתגר DNS",
+      "remove": "הסרה",
+      "domainsTitle": "דומייני ACME של {{node}}",
+      "domainsSaved": "דומייני ACME נשמרו",
+      "domain": "דומיין",
+      "challenge": "אתגר",
+      "alias": "כינוי",
+      "addDomain": "הוספת דומיין",
+      "httpHint": "אתגר HTTP דורש שפורט 80 של הצומת הזה יהיה נגיש מהאינטרנט תחת הדומיין. DNS עובד גם בלי זה, וגם עבור תווים כלליים.",
+      "hint": "חשבונות ותוספים משותפים לכל האשכול; דומיינים מוגדרים לכל צומת.",
+      "problem": {
+        "noDomain": "הוסיפו לפחות דומיין אחד.",
+        "tooMany": "לצומת יש עד שישה דומייני ACME.",
+        "domain": "דומיין הוא שם מלא כמו pve.example.com.",
+        "wildcard": "דומיין עם תו כללי דורש תוסף אתגר DNS."
+      },
+      "account": {
+        "title": "חשבון",
+        "pick": "בחרו חשבון",
+        "add": "רישום חשבון",
+        "addTitle": "רישום חשבון ACME",
+        "register": "רישום",
+        "registerLabel": "רישום חשבון ACME {{name}}",
+        "name": "שם",
+        "email": "דוא\"ל",
+        "directory": "ספריית ACME",
+        "customDirectory": "URL מותאם",
+        "directoryUrl": "URL של הספרייה",
+        "acceptTos": "אישור תנאי השירות",
+        "eabKid": "מזהה מפתח EAB",
+        "eabHmac": "מפתח EAB HMAC",
+        "eabHint": "רק עבור רשויות CA שדורשות External Account Binding.",
+        "none": "אין עדיין חשבון ACME.",
+        "needOne": "רשמו חשבון ACME קודם.",
+        "removeTitle": "להשבית את החשבון {{name}}?",
+        "removeDescription": "החשבון מושבת אצל ה-CA ומוסר כאן. תעודות שכבר הונפקו ממשיכות לעבוד.",
+        "removeLabel": "השבתת חשבון ACME {{name}}",
+        "problem": {
+          "name": "שם כולל אותיות, ספרות, -, _ או .",
+          "email": "הזינו כתובת דוא\"ל.",
+          "directory": "הספרייה היא URL מסוג http או https.",
+          "tos": "אשרו את תנאי השירות כדי להירשם.",
+          "eab": "EAB דורש גם את מזהה המפתח וגם את מפתח ה-HMAC."
+        }
+      },
+      "plugin": {
+        "add": "הוספת תוסף",
+        "addTitle": "הוספת תוסף אתגר DNS",
+        "id": "מזהה תוסף",
+        "api": "DNS API",
+        "pickApi": "בחרו ספק DNS",
+        "delay": "השהיית אימות (שנ')",
+        "delayHint": "כמה זמן להמתין להפצת רשומת ה-TXT.",
+        "noFields": "Proxmox אינו מציג שדות עבור ספק זה; עיינו בתיעוד של acme.sh לגבי המשתנים שהוא קורא.",
+        "none": "אין תוספי DNS. HTTP עובד גם בלעדיהם.",
+        "disabled": "מושבת",
+        "removeTitle": "להסיר את התוסף {{name}}?",
+        "removeDescription": "לא ניתן יהיה עוד לאמת דומיינים שמשתמשים בו."
+      }
+    }
+  },
+  "console": {
+    "open": "מסוף",
+    "openHint": "פותח את מארח ה-Termix של האורח, או מציע להוסיף אותו ל-Termix קודם.",
+    "tabTitle": "מסוף Proxmox",
+    "tabLabel": "{{name}} — מסוף",
+    "pick": "פתחו מסוף מ-VM או ממכולה פועלת בכלי Proxmox.",
+    "connect": "התחברות",
+    "reconnect": "התחברות מחדש",
+    "disconnect": "ניתוק",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "מסך מלא",
+    "notRunning": "הפעילו את האורח כדי לפתוח את המסוף שלו.",
+    "lost": "החיבור למסוף אבד.",
+    "ended": "המסוף נסגר.",
+    "status": {
+      "idle": "לא מחובר",
+      "connecting": "מתחבר...",
+      "connected": "מחובר",
+      "closed": "מנותק",
+      "error": "לא ניתן להתחבר"
+    },
+    "proxmox": "מסוף Proxmox",
+    "proxmoxHint": "המסוף של Proxmox עצמו דרך הצומת: המסך של VM, מעטפת במכולה. לאורח שעדיין אין לו רשת."
+  },
+  "pool": {
+    "members": "חברים",
+    "empty": "אין דבר במאגר הזה."
+  },
+  "sdn": {
+    "hint": "אזורי SDN, רשתות VNet ותת-רשתות יגיעו עם ניהול האשכול בגרסה עתידית."
+  },
+  "network": {
+    "add": "יצירה",
+    "apply": "החלה",
+    "revert": "ביטול שינויים",
+    "pending": "טרם הוחל",
+    "hint": "השינויים נשמרים ב-/etc/network/interfaces.new ונכנסים לתוקף בהחלה, שטוענת מחדש את הרשת של הצומת.",
+    "type": "סוג",
+    "name": "שם",
+    "cidr": "IPv4/CIDR",
+    "gateway": "שער (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "שער (IPv6)",
+    "ports": "יציאות הגשר",
+    "slaves": "ממשקים משניים",
+    "portsHint": "שמות ממשקים, מופרדים ברווחים.",
+    "bondMode": "מצב",
+    "vlanDevice": "התקן גולמי של VLAN",
+    "mtu": "MTU",
+    "comments": "הערה",
+    "autostart": "הפעלה אוטומטית",
+    "vlanAware": "מודע ל-VLAN",
+    "vlanAwareHint": "מאפשר לאורחים בגשר הזה להשתמש בתגיות VLAN.",
+    "inactive": "לא פעיל",
+    "create": "יצירה",
+    "createTitle": "יצירת ממשק",
+    "editTitle": "עריכת {{iface}}",
+    "types": {
+      "bridge": "גשר",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "יציאה",
+      "OVSBridge": "גשר OVS",
+      "alias": "כינוי"
+    },
+    "nameHint": {
+      "bridge": "vmbr ואחריו מספר, למשל vmbr1.",
+      "bond": "bond ואחריו מספר, למשל bond0.",
+      "vlan": "device.tag כמו vmbr0.10, או vlan10 עם התקן גולמי."
+    },
+    "addressWarning": "הממשק הזה נושא את הכתובת שדרכה Termix מגיע לצומת. טעות עלולה לנתק את Termix עד שמישהו יתקן את הצומת דרך המסוף שלו.",
+    "removeTitle": "להסיר את {{iface}}?",
+    "removeDescription": "הממשק יוסר כשהשינוי יוחל.",
+    "applyTitle": "להחיל את שינויי הרשת ב-{{node}}?",
+    "applyDescription": "הצומת טוען מחדש את הרשת שלו. אם ההגדרות החדשות שגויות, הצומת והחיבור של Termix אליו עלולים להתנתק.",
+    "applyLabel": "החלת הרשת ב-{{node}}",
+    "reverted": "שינויי הרשת בוטלו",
+    "problem": {
+      "cidr": "הזינו את הכתובת כך: 10.10.0.1/24.",
+      "gateway": "שער דורש כתובת IPv4 וכתובת IP תקינה לשער.",
+      "cidr6": "הזינו את הכתובת כך: fd00::1/64.",
+      "ports": "הזינו שמות ממשקים מופרדים ברווחים.",
+      "slaves": "Bond דורש לפחות ממשק משני אחד.",
+      "vlanDevice": "ציינו את ההתקן הגולמי לממשק vlanN.",
+      "mtu": "MTU הוא בין 1280 ל-65520.",
+      "name": {
+        "bridge": "שם של גשר הוא vmbr ומספר.",
+        "bond": "שם של Bond הוא bond ומספר.",
+        "vlan": "שם של VLAN הוא device.tag או vlan ומספר."
+      }
+    }
+  },
+  "import": {
+    "open": "ייבוא ל-Termix",
+    "title": "ייבוא אורחים כמארחי Termix",
+    "hint": "כל VM או מכולה שנבחרו הופכים למארח Termix עם התגית proxmox. הייבוא גם מרענן את השמות, הכתובות והתגיות של אורחים שיובאו בעבר, ומתייג את אלה שכבר אינם ב-Proxmox בתגית proxmox-missing.",
+    "loading": "מחפש אורחים ואת הכתובות שלהם…",
+    "counts": "{{total}} אורחים, {{imported}} כבר יובאו",
+    "selectAll": "בחירת הכול",
+    "selectNone": "ביטול הבחירה",
+    "none": "באשכול הזה אין מכונות וירטואליות או מכולות.",
+    "imported": "יובא",
+    "noAddress": "אין כתובת",
+    "folder": "תיקייה",
+    "folderDefault": "תיקייה בשם {{node}}",
+    "folderSearch": "חיפוש או יצירה, / לתת-תיקייה",
+    "folderCreate": "יצירת \"{{folder}}\"",
+    "folderNone": "אין עדיין תיקיות",
+    "connection": "חיבור באמצעות",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "סביבת ריצה למכולות",
+    "runtimeOff": "ללא Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "מערכת הפעלה לא ידועה"
+    },
+    "sshLogin": "התחברות SSH",
+    "desktopLogin": "התחברות RDP ו-VNC",
+    "desktopHint": "נדרש התוסף Remote Desktop כדי להתחבר.",
+    "login": {
+      "nodeCredential": "פרטי ההתחברות של הצומת",
+      "nodeUser": "שם המשתמש של הצומת",
+      "username": "שם משתמש בלבד",
+      "none": "ללא התחברות"
+    },
+    "username": "שם משתמש",
+    "submit_one": "ייבוא אורח אחד ({{count}})",
+    "submit_two": "ייבוא {{count}} אורחים",
+    "submit_other": "ייבוא {{count}} אורחים",
+    "refresh": "רענון המיובאים",
+    "done": "נוצרו {{created}}, עודכנו {{updated}}, סומנו כחסרים {{markedMissing}}",
+    "lastSync": "סנכרון אחרון {{when}}.",
+    "lastSyncFailed": "הסנכרון האחרון {{when}} נכשל: {{error}}",
+    "syncHint": "הפעילו את שמירה על סנכרון האורחים המיובאים בהגדרות Proxmox של המארח כדי לרענן אותם לפי לוח זמנים.",
+    "addTitle": "הוספת {{name}} ל-Termix",
+    "addHint": "האורח הזה עדיין אינו מארח Termix. הוסיפו אותו כדי לפתוח את המסוף שלו, ואז מסוף יפתח אותו מיד.",
+    "addSubmit": "הוספה והתחברות",
+    "gone": "Proxmox כבר לא מציג את האורח הזה."
+  }
+}

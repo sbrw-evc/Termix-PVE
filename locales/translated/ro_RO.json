@@ -1,0 +1,1030 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Gestionați Proxmox VE din Termix: mașini virtuale, containere, stocare, rețea, copii de rezervă, firewall, acces și clusterul."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Deschideți în Proxmox"
+  },
+  "permissions": {
+    "view": {
+      "title": "Vizualizare Proxmox",
+      "description": "Vedeți noduri, oaspeți, stocare, grafice și sarcini pe gazdele Proxmox la care vă puteți conecta."
+    },
+    "operate": {
+      "title": "Operare oaspeți Proxmox",
+      "description": "Porniți, opriți, închideți, reporniți, suspendați și reluați VM-uri și containere. Necesită acces de editare la gazdă."
+    },
+    "console": {
+      "title": "Deschidere console Proxmox",
+      "description": "Deschideți ecranul unei VM și un shell root într-un container. Necesită acces de editare la gazdă."
+    },
+    "configure": {
+      "title": "Configurare Proxmox",
+      "description": "Creați, clonați, migrați, convertiți și ștergeți VM-uri și containere. Necesită acces de editare la gazdă."
+    },
+    "administer": {
+      "title": "Administrare Proxmox",
+      "description": "Gestionați utilizatori, grupuri, roluri, pool-uri, 2FA, tokenuri, domenii de autentificare și clusterul. Necesită acces de editare la gazdă."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Nod Proxmox",
+      "description": "Marcați această gazdă ca nod Proxmox VE. Apoi apare în instrumentul Proxmox, la Instrumente."
+    },
+    "transport": {
+      "label": "Conectare prin",
+      "description": "Automat folosește API-ul printr-un tunel SSH după ce un token este salvat, iar până atunci pvesh prin SSH.",
+      "auto": "Automat",
+      "tunnel": "API prin tunel SSH",
+      "direct": "API direct",
+      "pvesh": "pvesh prin SSH"
+    },
+    "tokenId": {
+      "label": "ID token API",
+      "description": "Se creează în Proxmox la Datacenter, Permisiuni, Tokenuri API. Arată ca user@realm!nume.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "Secret token API",
+      "description": "Afișat o singură dată la crearea tokenului. Stocat criptat."
+    },
+    "apiHost": {
+      "label": "Adresă API",
+      "description": "Doar pentru API direct. Lăsați gol pentru a folosi adresa acestei gazde."
+    },
+    "apiPort": {
+      "label": "Port API",
+      "description": "8006, dacă nu l-ați schimbat."
+    },
+    "caCert": {
+      "label": "Certificat CA",
+      "description": "Doar pentru API direct. CA-ul nodului în format PEM, din /etc/pve/pve-root-ca.pem. Lăsați gol dacă API-ul are un certificat de încredere publică.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Oaspeți importați",
+    "importSync": {
+      "label": "Mențineți sincronizați oaspeții importați",
+      "description": "Actualizează numele, adresele și etichetele oaspeților importați de pe acest nod și îi etichetează cu proxmox-missing pe cei eliminați din Proxmox."
+    },
+    "importInterval": {
+      "label": "Sincronizare la fiecare (minute)",
+      "description": "Cel puțin 5 minute."
+    },
+    "importAddNew": {
+      "label": "Adăugați oaspeți noi la sincronizare",
+      "description": "Importă oaspeții creați în Proxmox după primul import, cu valorile folosite ultima dată în dialogul de import."
+    },
+    "importDefaults": {
+      "label": "Valori implicite de import"
+    },
+    "importState": {
+      "label": "Ultima sincronizare a oaspeților"
+    },
+    "source": {
+      "label": "Oaspete Proxmox"
+    }
+  },
+  "app": {
+    "loading": "Se încarcă...",
+    "loadFailed": "Clusterul nu a putut fi încărcat",
+    "refreshFailed": "Reîmprospătarea a eșuat: {{message}}",
+    "retry": "Reîncercați",
+    "refresh": "Reîmprospătați",
+    "search": "Căutați oaspeți, noduri și stocare...",
+    "status": "{{nodes}} noduri, {{running}} din {{total}} oaspeți rulează",
+    "pickHost": "Gazdă Proxmox",
+    "pickResource": "Alegeți un nod, un oaspete sau o stocare din stânga",
+    "noHosts": "Încă nu există gazde Proxmox",
+    "noHostsHint": "Deschideți setările unei gazde, activați Nod Proxmox la SSH și alegeți modul de conectare. Nodul apare apoi aici.",
+    "cancel": "Anulați",
+    "working": "Se lucrează...",
+    "save": "Salvați",
+    "reset": "Resetați",
+    "close": "Închideți",
+    "yes": "Da",
+    "no": "Nu",
+    "edit": "Editați"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix nu are încredere în certificatul nodului. În setările Proxmox ale gazdei, lipiți CA-ul nodului din /etc/pve/pve-root-ca.pem în Certificat CA sau alegeți API prin tunel SSH.",
+    "tlsHostname": "Certificatul nodului este pentru alt nume. Setați Adresă API la un nume sau o adresă din certificat.",
+    "tlsExpired": "Certificatul nodului a expirat sau nu este încă valid. Reînnoiți-l în Proxmox la nod, Sistem, Certificate.",
+    "notEnabled": "Această gazdă nu este marcată ca nod Proxmox. Activați Nod Proxmox în setările gazdei.",
+    "hostAccess": "Aveți nevoie de acces de editare la această gazdă pentru a o modifica."
+  },
+  "tree": {
+    "nothingFound": "Nimic nu corespunde căutării.",
+    "expand": "Extindeți",
+    "collapse": "Restrângeți",
+    "datacenter": "Datacenter",
+    "folders": {
+      "lxc": "Container LXC",
+      "qemu": "Mașină virtuală",
+      "node": "Noduri",
+      "pool": "Pool-uri",
+      "sdn": "Rețea",
+      "storage": "Stocare"
+    },
+    "views": {
+      "folder": "Vizualizare pe foldere",
+      "server": "Vizualizare pe servere"
+    }
+  },
+  "types": {
+    "node": "Nod",
+    "qemu": "VM",
+    "lxc": "Container",
+    "storage": "Stocare",
+    "pool": "Pool",
+    "sdn": "Zonă SDN"
+  },
+  "states": {
+    "running": "Rulează",
+    "stopped": "Oprit",
+    "paused": "Întrerupt",
+    "suspended": "Suspendat",
+    "online": "Online",
+    "offline": "Offline",
+    "available": "Disponibil",
+    "unknown": "Necunoscut"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Memorie",
+    "disk": "Disc",
+    "rootDisk": "Disc root",
+    "usage": "Utilizare",
+    "cores_one": "{{count}} nucleu",
+    "cores_few": "{{count}} nuclee",
+    "cores_other": "{{count}} de nuclee",
+    "swap": "Swap"
+  },
+  "summary": {
+    "title": "Rezumat",
+    "node": "Nod",
+    "vmid": "ID",
+    "uptime": "Timp de funcționare",
+    "pool": "Pool",
+    "ha": "HA",
+    "tags": "Etichete",
+    "guests": "Oaspeți",
+    "guestsRunning": "{{running}} din {{total}} rulează",
+    "cpuModel": "CPU",
+    "sockets": "socluri",
+    "load": "Încărcare medie",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Kernel",
+    "ips": "Adrese"
+  },
+  "charts": {
+    "title": "Grafice",
+    "cpu": "CPU",
+    "load": "Încărcare medie",
+    "memory": "Memorie",
+    "network": "Rețea",
+    "diskIo": "I/O disc",
+    "cpuUsage": "Utilizare CPU",
+    "ioDelay": "Întârziere IO",
+    "used": "Utilizat",
+    "total": "Total",
+    "in": "Intrare",
+    "out": "Ieșire",
+    "read": "Citire",
+    "write": "Scriere",
+    "timeframe": {
+      "hour": "Oră",
+      "day": "Zi",
+      "week": "Săptămână",
+      "month": "Lună",
+      "year": "An"
+    },
+    "noData": "Nu există date pentru această perioadă",
+    "serverLoad": "Încărcarea serverului",
+    "loadAverage": "Încărcare medie",
+    "swap": "Swap",
+    "pressureCpu": "Blocaj din presiune CPU",
+    "pressureMemory": "Blocaj din presiune de memorie",
+    "pressureIo": "Blocaj din presiune IO",
+    "some": "Parțial",
+    "full": "Complet",
+    "average": "Medie",
+    "maximum": "Maxim"
+  },
+  "tasks": {
+    "title": "Sarcini",
+    "started": "Pornită",
+    "node": "Nod",
+    "user": "Utilizator",
+    "task": "Sarcină",
+    "status": "Stare",
+    "running": "Rulează",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} pe {{node}}",
+    "done": "{{label}}: finalizat",
+    "failed": "{{label}} a eșuat: {{reason}}"
+  },
+  "guests": {
+    "more": "Mai multe acțiuni",
+    "isTemplate": "Șablon",
+    "locked": "Blocat: {{lock}}",
+    "power": {
+      "start": "Porniți",
+      "shutdown": "Închideți",
+      "stop": "Opriți",
+      "reboot": "Reporniți",
+      "suspend": "Suspendați",
+      "resume": "Reluați",
+      "reset": "Resetați",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Opriți {{name}} acum?",
+        "reset": "Resetați {{name}} acum?",
+        "description": "Aceasta întrerupe alimentarea, ca la scoaterea din priză. Munca nesalvată din oaspete se pierde."
+      }
+    },
+    "clone": {
+      "menu": "Clonați",
+      "title": "Clonați {{name}}",
+      "submit": "Clonați",
+      "label": "Clonați {{source}} în {{id}}",
+      "full": "Clonă completă",
+      "fullHint": "Copiază fiecare disc, astfel încât clona nu depinde de original.",
+      "linkedHint": "Dezactivat creează o clonă legată care partajează discurile șablonului și se face în câteva secunde.",
+      "sameStorage": "Aceeași stocare ca originalul"
+    },
+    "migrate": {
+      "menu": "Migrați",
+      "title": "Migrați {{name}}",
+      "submit": "Migrați",
+      "label": "Migrați {{name}} pe {{target}}",
+      "noOtherNodes": "Nu există alt nod online în acest cluster pe care să fie mutat.",
+      "onlineHint": "VM-ul rulează și se mută live, fără oprire.",
+      "restartHint": "Containerul rulează. Se oprește, se mută și pornește din nou pe destinație."
+    },
+    "template": {
+      "menu": "Convertiți în șablon",
+      "confirm": "Convertiți {{name}} într-un șablon?",
+      "description": "Un șablon nu poate fi pornit, doar clonat. Acțiunea nu poate fi anulată.",
+      "submit": "Convertiți",
+      "label": "Convertiți {{name}} într-un șablon"
+    },
+    "delete": {
+      "menu": "Ștergeți",
+      "title": "Ștergeți {{name}}",
+      "submit": "Ștergeți",
+      "label": "Ștergeți {{name}}",
+      "warning": "Aceasta șterge oaspetele {{vmid}} și discurile sale. Acțiunea nu poate fi anulată.",
+      "stopFirst": "Opriți oaspetele înainte de a-l șterge.",
+      "typeId": "Tastați {{vmid}} pentru confirmare",
+      "purge": "Eliminați din joburile de backup, replicare și HA",
+      "purgeHint": "Nu lasă joburi care indică spre un oaspete care nu mai există.",
+      "unreferenced": "Ștergeți și discurile nereferențiate",
+      "unreferencedHint": "Discuri pe stocări activate, cu acest ID, pe care configurația nu le listează."
+    },
+    "create": {
+      "vmButton": "Creați VM",
+      "ctButton": "Creați CT",
+      "vmTitle": "Creați o mașină virtuală",
+      "ctTitle": "Creați un container",
+      "submit": "Creați",
+      "vmLabel": "Creați VM {{id}} ({{name}})",
+      "ctLabel": "Creați CT {{id}} ({{name}})",
+      "noTemplates": "Nu există șabloane de container pe acest nod. Descărcați unul în Proxmox, la o stocare, Șabloane CT.",
+      "noIso": "Niciun mediu de instalare",
+      "unprivilegedHint": "Mai sigur: root în container nu este root pe nod.",
+      "loginHint": "Setați o parolă root, chei SSH sau ambele.",
+      "problem": {
+        "vmid": "Alegeți un ID de 100 sau mai mare.",
+        "hostname": "Introduceți un hostname: litere, cifre și cratime.",
+        "name": "Introduceți un nume: litere, cifre și cratime.",
+        "template": "Alegeți un șablon.",
+        "storage": "Alegeți o stocare.",
+        "disk": "Introduceți dimensiunea discului.",
+        "cores": "Introduceți numărul de nuclee.",
+        "sockets": "Introduceți numărul de socluri.",
+        "memory": "Introduceți cel puțin 16 MiB de memorie.",
+        "swap": "Introduceți swap-ul în MiB, 0 pentru niciunul.",
+        "network": "Alegeți un bridge și, pentru o adresă statică, introduceți-o ca 192.168.0.60/24.",
+        "login": "Setați o parolă root sau chei SSH ca să vă puteți autentifica.",
+        "password": "Parola trebuie să aibă cel puțin 5 caractere."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Altul"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Nume",
+      "hostname": "Hostname",
+      "node": "Nod",
+      "targetNode": "Nod destinație",
+      "targetStorage": "Stocare destinație",
+      "storage": "Stocare",
+      "template": "Șablon",
+      "iso": "Mediu de instalare",
+      "ostype": "SO oaspete",
+      "rootPassword": "Parolă root",
+      "sshKeys": "Chei publice SSH",
+      "unprivileged": "Container neprivilegiat",
+      "diskGiB": "Disc (GiB)",
+      "cores": "Nuclee",
+      "sockets": "Socluri",
+      "memoryMiB": "Memorie (MiB)",
+      "swapMiB": "Swap (MiB)",
+      "bridge": "Bridge de rețea",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Static",
+      "cidr": "Adresă/prefix",
+      "gateway": "Gateway",
+      "startAfter": "Porniți după creare",
+      "pick": "Alegeți unul"
+    },
+    "tabs": {
+      "summary": "Rezumat",
+      "hardware": "Hardware",
+      "options": "Opțiuni",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Editați",
+    "add": "Adăugați",
+    "remove": "Eliminați",
+    "removed": "{{key}} eliminat",
+    "pending": "În așteptare",
+    "pendingHint": "Modificările marcate În așteptare se aplică atunci când oaspetele este repornit din Proxmox: o repornire din interiorul oaspetelui nu este suficientă.",
+    "processors": "Procesoare",
+    "processorsValue": "{{sockets}} soclu × {{cores}} nuclee, {{cpu}}",
+    "allCores": "Toate",
+    "swap": "Swap",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "Procesor și memorie",
+      "title": "Procesor și memorie"
+    },
+    "cpuType": "Tip CPU",
+    "cpulimit": "Limită CPU",
+    "cpulimitHint": "0 pentru fără limită. 1,5 înseamnă timpul unui nucleu și jumătate.",
+    "balloon": "Memorie minimă (MiB)",
+    "balloonHint": "Cu driverul balloon, oaspetele cedează memorie până la această valoare. Egală cu memoria îl dezactivează, 0 elimină driverul.",
+    "disks": "Discuri",
+    "volumes": "Disc root și puncte de montare",
+    "bus": "Magistrală",
+    "slot": "Va fi {{key}}",
+    "iothread": "Fir IO",
+    "discard": "Discard",
+    "discardHint": "Permite oaspetelui să elibereze blocurile neutilizate pe stocarea thin.",
+    "ssd": "Emulare SSD",
+    "mountPath": "Cale de montare în container",
+    "backup": "Includeți în backupuri",
+    "addDisk": {
+      "button": "Adăugați disc",
+      "title": "Adăugați disc",
+      "label": "Adăugați {{key}}"
+    },
+    "addMount": {
+      "button": "Adăugați punct de montare",
+      "title": "Adăugați punct de montare"
+    },
+    "resize": {
+      "menu": "Redimensionați",
+      "title": "Măriți {{key}}",
+      "grow": "Adăugați (GiB)",
+      "result": "{{from}} GiB devine {{to}} GiB",
+      "noShrink": "Discurile pot doar crește. Partiția și sistemul de fișiere ale oaspetelui trebuie mărite apoi în interiorul oaspetelui, dacă acesta nu face asta la pornire.",
+      "submit": "Măriți",
+      "label": "Măriți {{key}} cu {{size}} GiB"
+    },
+    "move": {
+      "menu": "Mutați pe stocare",
+      "title": "Mutați {{key}}",
+      "submit": "Mutați",
+      "deleteSource": "Ștergeți originalul",
+      "deleteSourceHint": "Dezactivat îl păstrează ca disc neutilizat.",
+      "label": "Mutați {{key}} pe {{storage}}"
+    },
+    "detach": {
+      "menu": "Detașați",
+      "title": "Detașați {{key}}?",
+      "description": "Discul rămâne pe stocarea sa ca disc neutilizat și poate fi șters sau atașat din nou."
+    },
+    "unused": {
+      "delete": "Ștergeți",
+      "title": "Ștergeți {{volume}}?",
+      "description": "Aceasta șterge discul și tot ce conține. Acțiunea nu poate fi anulată."
+    },
+    "cd": {
+      "heading": "Unități CD/DVD",
+      "title": "Mediu în {{key}}",
+      "empty": "Niciun mediu"
+    },
+    "nic": {
+      "heading": "Adaptoare de rețea",
+      "add": "Adăugați adaptor",
+      "addTitle": "Adăugați {{key}}",
+      "editTitle": "Editați {{key}}",
+      "none": "Niciun adaptor de rețea.",
+      "model": "Model",
+      "name": "Nume în container",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Static",
+        "none": "Niciuna",
+        "auto": "SLAAC"
+      },
+      "tag": "Etichetă VLAN",
+      "tagHint": "Gol pentru fără etichetă.",
+      "rate": "Limită de viteză (MB/s)",
+      "rateHint": "Gol pentru fără limită.",
+      "firewall": "Firewall",
+      "firewallShort": "firewall",
+      "removeTitle": "Eliminați {{key}}?",
+      "removeDescription": "Oaspetele pierde acest adaptor și adresa sa."
+    },
+    "problem": {
+      "cpu": "Introduceți cel puțin un soclu și un nucleu.",
+      "cpulimit": "Limita CPU este între 0 și 8192.",
+      "memory": "Introduceți cel puțin 16 MiB de memorie.",
+      "balloon": "Memoria minimă nu poate depăși memoria.",
+      "swap": "Introduceți swap-ul în MiB, 0 pentru niciunul.",
+      "noSlot": "Toate sloturile de acest tip sunt ocupate.",
+      "storage": "Alegeți o stocare.",
+      "size": "Introduceți o dimensiune în GiB întregi.",
+      "path": "Introduceți o cale absolută, cum ar fi /data, nu / însuși.",
+      "bridge": "Alegeți un bridge.",
+      "tag": "O etichetă VLAN este între 1 și 4094.",
+      "rate": "Introduceți o viteză peste 0 sau lăsați gol.",
+      "name": "Introduceți un nume, cum ar fi eth0.",
+      "ip4": "Introduceți adresa ca 192.168.0.60/24 și un gateway valid.",
+      "ip6": "Introduceți adresa ca fd00::10/64."
+    },
+    "detached": "{{key}} detașat; rămâne ca disc neutilizat",
+    "coresHint": "Gol folosește toate nucleele nodului."
+  },
+  "options": {
+    "general": "General",
+    "tags": "Etichete",
+    "tagsHint": "Separate prin virgule.",
+    "onboot": "Pornire la pornirea nodului",
+    "protection": "Protecție",
+    "protectionHint": "Blochează ștergerea oaspetelui și a discurilor sale până la dezactivare.",
+    "agent": "Agent oaspete QEMU",
+    "agentHint": "Activați după ce agentul rulează în oaspete, pentru adresele sale și închideri curate.",
+    "startup": "Ordine de pornire și oprire",
+    "startupOrder": "Ordine",
+    "startupUp": "Întârziere după pornire (s)",
+    "startupDown": "Timp limită de oprire (s)",
+    "dns": "DNS",
+    "nameserver": "Servere DNS",
+    "searchdomain": "Domeniu de căutare",
+    "useHost": "Gol folosește valorile nodului.",
+    "notes": "Note",
+    "saved": "Opțiuni salvate",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Altul"
+    },
+    "problem": {
+      "name": "Introduceți un nume.",
+      "startup": "Ordinea și întârzierile sunt numere întregi.",
+      "tags": "Etichetele folosesc litere, cifre, cratime, puncte și liniuțe de subliniere.",
+      "nameserver": "Introduceți adrese IP separate prin spații."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "Această VM nu are unitate cloud-init. Adăugați una, apoi setați aici utilizatorul, cheile și rețeaua; imaginea oaspetelui trebuie să suporte cloud-init.",
+    "addDrive": "Adăugați unitate cloud-init",
+    "driveAdded": "Unitate cloud-init adăugată",
+    "user": "Utilizator",
+    "username": "Nume utilizator",
+    "usernameHint": "Gol folosește utilizatorul implicit al imaginii.",
+    "password": "Parolă",
+    "passwordHint": "Gol o păstrează pe cea curentă. Stocată ca hash de Proxmox.",
+    "network": "Rețea",
+    "saved": "Setări cloud-init salvate",
+    "regenerate": "Regenerați imaginea",
+    "regenerated": "Imagine cloud-init regenerată",
+    "regenerateHint": "Scrie setările pe {{drive}}. Oaspetele le citește la următoarea pornire."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Rezumat",
+      "iso": "Imagini ISO",
+      "vztmpl": "Șabloane CT",
+      "backup": "Backupuri",
+      "images": "Imagini de disc"
+    },
+    "content": "Conține",
+    "contentTypes": {
+      "images": "Discuri VM",
+      "rootdir": "Discuri container",
+      "iso": "Imagini ISO",
+      "vztmpl": "Șabloane CT",
+      "backup": "Backupuri",
+      "snippets": "Fragmente",
+      "import": "Import"
+    },
+    "shared": "Partajat",
+    "empty": "Încă nu există nimic aici.",
+    "owner": "oaspete {{vmid}}",
+    "protected": "Protejat",
+    "download": {
+      "button": "Descărcați de la URL",
+      "title": {
+        "iso": "Descărcați o imagine ISO pe {{storage}}",
+        "vztmpl": "Descărcați un șablon CT pe {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Nume fișier",
+      "algorithm": "Tip sumă de control",
+      "noChecksum": "Niciuna",
+      "checksum": "Sumă de control",
+      "verify": "Verificați certificatul serverului",
+      "submit": "Descărcați",
+      "label": "Descărcați {{name}}",
+      "problem": {
+        "url": "Introduceți un URL http sau https.",
+        "filename": "Numele fișierului folosește litere, cifre, puncte, cratime și liniuțe de subliniere.",
+        "extension": "Imaginile ISO se termină în .iso sau .img; șabloanele în .tar.gz, .tar.xz sau .tar.zst.",
+        "checksum": "Alegeți un tip de sumă de control și introduceți suma în hex, sau lăsați ambele goale."
+      }
+    },
+    "catalog": {
+      "button": "Șabloane",
+      "title": "Șabloane de container pentru {{storage}}",
+      "search": "Căutați șabloane...",
+      "have": "Descărcat",
+      "label": "Descărcați {{name}}"
+    },
+    "delete": {
+      "title": "Ștergeți {{name}}?",
+      "description": "Aceasta șterge fișierul de pe stocare. Acțiunea nu poate fi anulată.",
+      "submit": "Ștergeți",
+      "done": "{{name}} șters"
+    },
+    "upload": {
+      "button": "Încărcați",
+      "cancel": "Anulați încărcarea",
+      "done": "{{name}} încărcat",
+      "failed": "{{name}} nu a putut fi încărcat: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Rezumat",
+      "network": "Rețea",
+      "system": "Sistem",
+      "services": "Servicii",
+      "updates": "Actualizări",
+      "disks": "Discuri",
+      "tasks": "Sarcini",
+      "log": "Jurnal"
+    },
+    "services": {
+      "start": "Porniți",
+      "stop": "Opriți",
+      "restart": "Reporniți",
+      "reload": "Reîncărcați",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Opriți {{name}}?",
+        "restart": "Reporniți {{name}}?",
+        "description": "Serviciile proprii Proxmox mențin nodul și API-ul său în funcțiune; oprirea unuia poate deconecta acest instrument până când pornește din nou."
+      }
+    },
+    "updates": {
+      "refresh": "Reîmprospătați listele de pachete",
+      "refreshLabel": "Reîmprospătați listele de pachete pe {{node}}",
+      "count_one": "{{count}} pachet poate fi actualizat",
+      "count_few": "{{count}} pachete pot fi actualizate",
+      "count_other": "{{count}} de pachete pot fi actualizate",
+      "none": "Totul este la zi",
+      "installHint": "Instalați actualizările din terminalul nodului cu apt full-upgrade; Proxmox nu face actualizări prin API-ul său.",
+      "views": {
+        "packages": "Pachete",
+        "repositories": "Depozite"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART pentru {{disk}}",
+      "health": "Sănătate",
+      "usedBy": "folosit de {{used}}",
+      "unused": "neutilizat",
+      "wearout": "{{value}}% viață rămasă",
+      "views": {
+        "disks": "Discuri",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Director",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "{{count}} volum logic",
+        "lvCount_few": "{{count}} volume logice",
+        "lvCount_other": "{{count}} de volume logice",
+        "metadata": "metadate {{used}} / {{size}}",
+        "frag": "{{value}}% fragmentat",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "Niciun grup de volume LVM.",
+          "lvmthin": "Niciun pool LVM-Thin.",
+          "directory": "Nicio stocare de tip director pe un disc propriu.",
+          "zfs": "Niciun pool ZFS."
+        },
+        "create": {
+          "lvm": "Creați grup de volume LVM",
+          "lvmthin": "Creați pool LVM-Thin",
+          "directory": "Creați director",
+          "zfs": "Creați pool ZFS"
+        },
+        "createSubmit": "Creați",
+        "createLabel": "Creați {{name}} pe {{node}}",
+        "wipeWarning": "Discurile alese sunt partiționate și formatate. Sunt oferite doar discuri care nu conțin nimic.",
+        "name": "Nume",
+        "device": "Disc",
+        "devices": "Discuri",
+        "pickDisk": "Alegeți un disc",
+        "noUnused": "Nu există niciun disc neutilizat. Ștergeți mai întâi unul la Discuri, dacă ce conține se poate pierde.",
+        "filesystem": "Sistem de fișiere",
+        "raidlevel": "Nivel RAID",
+        "raid": {
+          "single": "Un singur disc",
+          "mirror": "Oglindă",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Compresie",
+        "addStorage": "Adăugați ca stocare",
+        "addStorageHint": "O transformă într-o stocare Proxmox cu același nume, pentru discuri, containere sau backupuri.",
+        "problem": {
+          "name": "Un nume începe cu o literă și conține litere, cifre, -, _ sau .",
+          "device": "Alegeți un disc.",
+          "oneDevice": "Alegeți un singur disc.",
+          "tooFew": "Acest nivel RAID necesită cel puțin {{count}} discuri.",
+          "even": "RAID10 necesită un număr par de discuri.",
+          "ashift": "ashift este între 9 și 16."
+        },
+        "remove": "Eliminați",
+        "removeTitle": "Eliminați {{name}}?",
+        "removeWarning": "Oaspeții cu discuri pe ea le pierd. Eliminarea nu mută nimic de pe ea înainte.",
+        "removeLabel": "Eliminați {{name}} pe {{node}}",
+        "cleanupConfig": "Eliminați și intrarea de stocare",
+        "cleanupDisks": "Ștergeți discurile sale",
+        "cleanupDisksHint": "Șterge discurile ca să poată fi folosite din nou.",
+        "inUse": {
+          "lvm": "Încă are volume logice. Eliminați-le mai întâi; acest grup poate conține sistemul nodului însuși.",
+          "lvmthin": "Încă conține date. Mutați sau eliminați mai întâi discurile oaspeților de pe el."
+        }
+      },
+      "gpt": "Inițializați cu GPT",
+      "gptTitle": "Inițializați {{disk}} cu GPT?",
+      "gptDescription": "Scrie pe disc o tabelă de partiții GPT goală.",
+      "gptLabel": "Inițializați {{disk}} pe {{node}}",
+      "wipe": "Ștergeți",
+      "wipeTitle": "Ștergeți {{disk}}?",
+      "wipeWarning": "Șterge tabela de partiții și toate semnăturile de sistem de fișiere, LVM și ZFS de pe disc (acum: {{used}}). Ce conține se pierde definitiv.",
+      "wipeLabel": "Ștergeți {{disk}} pe {{node}}",
+      "typePath": "Tastați {{disk}} pentru confirmare"
+    },
+    "log": {
+      "search": "Filtrați jurnalul...",
+      "empty": "Nicio linie nu corespunde."
+    },
+    "power": {
+      "menu": "Alimentare nod",
+      "termixWarning": "Dacă Termix rulează pe acest nod, se oprește și el până revine nodul.",
+      "typeName": "Tastați {{node}} pentru confirmare",
+      "reboot": {
+        "menu": "Reporniți nodul",
+        "title": "Reporniți {{node}}?",
+        "submit": "Reporniți",
+        "label": "Reporniți {{node}}",
+        "warning_one": "{{count}} oaspete care rulează este oprit sau închis mai întâi, conform setărilor sale de pornire.",
+        "warning_few": "{{count}} oaspeți care rulează sunt opriți sau închiși mai întâi, conform setărilor lor de pornire.",
+        "warning_other": "{{count}} de oaspeți care rulează sunt opriți sau închiși mai întâi, conform setărilor lor de pornire."
+      },
+      "shutdown": {
+        "menu": "Închideți nodul",
+        "title": "Închideți {{node}}?",
+        "submit": "Închideți",
+        "label": "Închideți {{node}}",
+        "warning_one": "{{count}} oaspete care rulează se oprește odată cu el și nimic nu îl pornește din nou până când cineva pornește nodul.",
+        "warning_few": "{{count}} oaspeți care rulează se opresc odată cu el și nimic nu îi pornește din nou până când cineva pornește nodul.",
+        "warning_other": "{{count}} de oaspeți care rulează se opresc odată cu el și nimic nu îi pornește din nou până când cineva pornește nodul."
+      }
+    },
+    "shell": "Shell",
+    "shellHint": "Deschide terminalul SSH al acestei gazde în Termix.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Domeniu de căutare",
+        "server": "Server DNS {{n}}",
+        "editTitle": "DNS pentru {{node}}",
+        "saved": "DNS salvat",
+        "problem": {
+          "search": "Introduceți un domeniu de căutare, cum ar fi example.com.",
+          "server": "Un server DNS este o adresă IPv4 sau IPv6.",
+          "noServer": "Introduceți cel puțin un server DNS."
+        }
+      },
+      "time": {
+        "title": "Oră",
+        "zone": "Fus orar",
+        "local": "Ora locală",
+        "editTitle": "Fusul orar pentru {{node}}",
+        "hint": "Ceasul în sine este menținut de NTP (chrony) pe nod.",
+        "saved": "Fus orar setat la {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "/etc/hosts pentru {{node}}",
+        "warning": "Numele propriu al nodului trebuie să se rezolve în continuare la adresa sa, altfel clusterul și interfața sa web nu mai funcționează.",
+        "saved": "/etc/hosts salvat"
+      },
+      "certs": {
+        "title": "Certificate",
+        "issuer": "emis de {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Valid până la {{date}}",
+          "expiring": "Expiră la {{date}}",
+          "expired": "A expirat la {{date}}",
+          "notYet": "Încă nu este valid"
+        },
+        "upload": "Încărcați personalizat",
+        "uploadTitle": "Certificat personalizat pentru {{node}}",
+        "uploaded": "Certificat încărcat",
+        "chain": "Lanț de certificate",
+        "chainHint": "PEM: mai întâi certificatul nodului, apoi cele intermediare.",
+        "key": "Cheie privată",
+        "keyHint": "PEM, necriptată. Lăsați gol pentru a păstra cheia existentă pe nod.",
+        "fromFile": "Citiți din fișier",
+        "badCert": "Acesta nu este un certificat PEM.",
+        "badKey": "Aceasta nu este o cheie privată PEM.",
+        "restart": "Reporniți interfața web pentru a-l folosi",
+        "restartHint": "pveproxy repornește; Termix pierde API-ul câteva secunde.",
+        "remove": "Eliminați personalizat",
+        "removeTitle": "Eliminați certificatul personalizat?",
+        "removeDescription": "Nodul revine la certificatul său autosemnat, iar interfața web repornește.",
+        "removed": "Certificat personalizat eliminat"
+      }
+    },
+    "repos": {
+      "on": "Activat",
+      "off": "Dezactivat",
+      "enable": "Activați",
+      "disable": "Dezactivați",
+      "enableTitle": "Activați acest depozit?",
+      "enabled": "Depozit activat",
+      "disabled": "Depozit dezactivat",
+      "add": "Adăugați:",
+      "added": "Depozitul {{name}} a fost adăugat",
+      "hint": "Rulați Reîmprospătați listele de pachete la Pachete după o modificare. Depozitele Enterprise necesită un abonament."
+    },
+    "taskHistory": {
+      "type": "Tip, cum ar fi vzdump",
+      "vmid": "ID VM/CT",
+      "user": "Utilizator",
+      "errorsOnly": "Doar sarcinile eșuate",
+      "none": "Nicio sarcină nu corespunde.",
+      "more": "Încărcați mai multe",
+      "state": {
+        "running": "Rulează",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Comandați certificat",
+      "renew": "Reînnoiți",
+      "orderLabel": "Comandați certificat ACME pentru {{node}}",
+      "renewLabel": "Reînnoiți certificatul ACME pentru {{node}}",
+      "usesAccount": "Cont: {{account}}",
+      "none": "niciunul",
+      "noDomains": "Încă nu există domenii. Editați pentru a adăuga numele la care răspunde acest nod.",
+      "viaHttp": "Provocare HTTP",
+      "viaDns": "Provocare DNS prin {{plugin}}",
+      "accounts": "Conturi",
+      "plugins": "Pluginuri de provocare DNS",
+      "remove": "Eliminați",
+      "domainsTitle": "Domenii ACME pentru {{node}}",
+      "domainsSaved": "Domenii ACME salvate",
+      "domain": "Domeniu",
+      "challenge": "Provocare",
+      "alias": "Alias",
+      "addDomain": "Adăugați domeniu",
+      "httpHint": "Provocarea HTTP necesită ca portul 80 al acestui nod să fie accesibil de pe internet sub domeniul respectiv. DNS funcționează fără asta și pentru wildcarduri.",
+      "hint": "Conturile și pluginurile sunt partajate de întregul cluster; domeniile sunt per nod.",
+      "problem": {
+        "noDomain": "Adăugați cel puțin un domeniu.",
+        "tooMany": "Un nod are cel mult șase domenii ACME.",
+        "domain": "Un domeniu este un nume complet, cum ar fi pve.example.com.",
+        "wildcard": "Un domeniu wildcard necesită un plugin de provocare DNS."
+      },
+      "account": {
+        "title": "Cont",
+        "pick": "Alegeți un cont",
+        "add": "Înregistrați cont",
+        "addTitle": "Înregistrați un cont ACME",
+        "register": "Înregistrați",
+        "registerLabel": "Înregistrați contul ACME {{name}}",
+        "name": "Nume",
+        "email": "E-mail",
+        "directory": "Director ACME",
+        "customDirectory": "URL personalizat",
+        "directoryUrl": "URL director",
+        "acceptTos": "Accept termenii serviciului",
+        "eabKid": "ID cheie EAB",
+        "eabHmac": "Cheie HMAC EAB",
+        "eabHint": "Doar pentru CA-urile care solicită External Account Binding.",
+        "none": "Încă nu există niciun cont ACME.",
+        "needOne": "Înregistrați mai întâi un cont ACME.",
+        "removeTitle": "Dezactivați contul {{name}}?",
+        "removeDescription": "Contul este dezactivat la CA și eliminat de aici. Certificatele deja emise continuă să funcționeze.",
+        "removeLabel": "Dezactivați contul ACME {{name}}",
+        "problem": {
+          "name": "Un nume conține litere, cifre, -, _ sau .",
+          "email": "Introduceți o adresă de e-mail.",
+          "directory": "Directorul este un URL http sau https.",
+          "tos": "Acceptați termenii serviciului pentru a vă înregistra.",
+          "eab": "EAB necesită atât ID-ul cheii, cât și cheia HMAC."
+        }
+      },
+      "plugin": {
+        "add": "Adăugați plugin",
+        "addTitle": "Adăugați un plugin de provocare DNS",
+        "id": "ID plugin",
+        "api": "API DNS",
+        "pickApi": "Alegeți un furnizor DNS",
+        "delay": "Întârziere de validare (s)",
+        "delayHint": "Cât să se aștepte propagarea înregistrării TXT.",
+        "noFields": "Proxmox nu listează câmpuri pentru acest furnizor; consultați documentația acme.sh pentru variabilele pe care le citește.",
+        "none": "Niciun plugin DNS. HTTP funcționează fără.",
+        "disabled": "Dezactivat",
+        "removeTitle": "Eliminați pluginul {{name}}?",
+        "removeDescription": "Domeniile care îl folosesc nu mai pot fi validate."
+      }
+    }
+  },
+  "console": {
+    "open": "Consolă",
+    "openHint": "Deschide gazda Termix a oaspetelui sau oferă adăugarea ei mai întâi în Termix.",
+    "tabTitle": "Consolă Proxmox",
+    "tabLabel": "{{name}} — Consolă",
+    "pick": "Deschideți o consolă de la o VM sau un container care rulează, din instrumentul Proxmox.",
+    "connect": "Conectați",
+    "reconnect": "Reconectați",
+    "disconnect": "Deconectați",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Ecran complet",
+    "notRunning": "Porniți oaspetele pentru a-i deschide consola.",
+    "lost": "Conexiunea consolei s-a pierdut.",
+    "ended": "Consolă închisă.",
+    "status": {
+      "idle": "Neconectat",
+      "connecting": "Se conectează...",
+      "connected": "Conectat",
+      "closed": "Deconectat",
+      "error": "Conectarea a eșuat"
+    },
+    "proxmox": "Consolă Proxmox",
+    "proxmoxHint": "Consola proprie Proxmox prin nod: ecranul unei VM, un shell într-un container. Pentru un oaspete fără rețea încă."
+  },
+  "pool": {
+    "members": "Membri",
+    "empty": "Nu există nimic în acest pool."
+  },
+  "sdn": {
+    "hint": "Zonele SDN, VNet-urile și subrețelele vor veni odată cu gestionarea clusterului într-o versiune ulterioară."
+  },
+  "network": {
+    "add": "Creați",
+    "apply": "Aplicați",
+    "revert": "Anulați modificările",
+    "pending": "Încă neaplicat",
+    "hint": "Modificările sunt salvate în /etc/network/interfaces.new și intră în vigoare la Aplicați, care reîncarcă rețeaua nodului.",
+    "type": "Tip",
+    "name": "Nume",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Gateway (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Gateway (IPv6)",
+    "ports": "Porturi bridge",
+    "slaves": "Slave-uri",
+    "portsHint": "Nume de interfețe, separate prin spații.",
+    "bondMode": "Mod",
+    "vlanDevice": "Dispozitiv brut VLAN",
+    "mtu": "MTU",
+    "comments": "Comentariu",
+    "autostart": "Pornire automată",
+    "vlanAware": "Compatibil VLAN",
+    "vlanAwareHint": "Permite oaspeților de pe acest bridge să folosească etichete VLAN.",
+    "inactive": "Inactiv",
+    "create": "Creați",
+    "createTitle": "Creați interfață",
+    "editTitle": "Editați {{iface}}",
+    "types": {
+      "bridge": "Bridge",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Port",
+      "OVSBridge": "Bridge OVS",
+      "alias": "Alias"
+    },
+    "nameHint": {
+      "bridge": "vmbr urmat de un număr, cum ar fi vmbr1.",
+      "bond": "bond urmat de un număr, cum ar fi bond0.",
+      "vlan": "dispozitiv.etichetă, cum ar fi vmbr0.10, sau vlan10 cu un dispozitiv brut."
+    },
+    "addressWarning": "Această interfață poartă adresa prin care Termix ajunge la nod. O greșeală poate deconecta Termix până când cineva repară nodul din consola sa.",
+    "removeTitle": "Eliminați {{iface}}?",
+    "removeDescription": "Interfața este eliminată când se aplică modificarea.",
+    "applyTitle": "Aplicați modificările de rețea pe {{node}}?",
+    "applyDescription": "Nodul își reîncarcă rețeaua. Dacă setările noi sunt greșite, nodul și conexiunea Termix la el pot deveni offline.",
+    "applyLabel": "Aplicați rețeaua pe {{node}}",
+    "reverted": "Modificările de rețea au fost anulate",
+    "problem": {
+      "cidr": "Introduceți adresa ca 10.10.0.1/24.",
+      "gateway": "Un gateway necesită o adresă IPv4 și un IP de gateway valid.",
+      "cidr6": "Introduceți adresa ca fd00::1/64.",
+      "ports": "Introduceți nume de interfețe separate prin spații.",
+      "slaves": "Un bond necesită cel puțin un slave.",
+      "vlanDevice": "Indicați dispozitivul brut pentru o interfață vlanN.",
+      "mtu": "MTU este între 1280 și 65520.",
+      "name": {
+        "bridge": "Un bridge se numește vmbr și un număr.",
+        "bond": "Un bond se numește bond și un număr.",
+        "vlan": "Un VLAN se numește dispozitiv.etichetă sau vlan și un număr."
+      }
+    }
+  },
+  "import": {
+    "open": "Importați în Termix",
+    "title": "Importați oaspeți ca gazde Termix",
+    "hint": "Fiecare VM sau container ales devine o gazdă Termix, etichetată proxmox. Importul reîmprospătează și numele, adresele și etichetele oaspeților importați anterior și îi etichetează cu proxmox-missing pe cei dispăruți din Proxmox.",
+    "loading": "Se caută oaspeții și adresele lor…",
+    "counts": "{{total}} oaspeți, {{imported}} deja importați",
+    "selectAll": "Selectați tot",
+    "selectNone": "Deselectați tot",
+    "none": "Acest cluster nu are VM-uri sau containere.",
+    "imported": "Importat",
+    "noAddress": "fără adresă",
+    "folder": "Folder",
+    "folderDefault": "Folder numit {{node}}",
+    "folderSearch": "Căutați sau creați, / pentru un subfolder",
+    "folderCreate": "Creați „{{folder}}”",
+    "folderNone": "Încă nu există foldere",
+    "connection": "Conectare cu",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Runtime de containere",
+    "runtimeOff": "Fără Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "SO necunoscut"
+    },
+    "sshLogin": "Autentificare SSH",
+    "desktopLogin": "Autentificare RDP și VNC",
+    "desktopHint": "Necesită pluginul Remote Desktop pentru conectare.",
+    "login": {
+      "nodeCredential": "Datele de autentificare ale nodului",
+      "nodeUser": "Numele de utilizator al nodului",
+      "username": "Doar numele de utilizator",
+      "none": "Fără autentificare"
+    },
+    "username": "Nume utilizator",
+    "submit_one": "Importați {{count}} oaspete",
+    "submit_few": "Importați {{count}} oaspeți",
+    "submit_other": "Importați {{count}} de oaspeți",
+    "refresh": "Reîmprospătați importurile",
+    "done": "Creați {{created}}, actualizați {{updated}}, marcați lipsă {{markedMissing}}",
+    "lastSync": "Ultima sincronizare {{when}}.",
+    "lastSyncFailed": "Ultima sincronizare {{when}} a eșuat: {{error}}",
+    "syncHint": "Activați Mențineți sincronizați oaspeții importați în setările Proxmox ale gazdei pentru a-i reîmprospăta periodic.",
+    "addTitle": "Adăugați {{name}} în Termix",
+    "addHint": "Acest oaspete nu este încă o gazdă Termix. Adăugați-l pentru a-i deschide terminalul; apoi Consolă îl deschide direct.",
+    "addSubmit": "Adăugați și conectați",
+    "gone": "Proxmox nu mai listează acest oaspete."
+  }
+}

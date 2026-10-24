@@ -98,7 +98,7 @@ export function GuestView({
   guest: Guest;
   isVisible: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { track } = useTasks();
   const toast = useToast();
   const [status, setStatus] = useState<GuestStatus | null>(null);
@@ -377,7 +377,7 @@ export function GuestView({
               <Fact label={t("summary.ips")}>{ips.join(", ")}</Fact>
             )}
             <Fact label={t("summary.uptime")}>
-              {formatUptime(status?.uptime ?? guest.uptime)}
+              {formatUptime(status?.uptime ?? guest.uptime, language)}
             </Fact>
             {guest.pool && <Fact label={t("summary.pool")}>{guest.pool}</Fact>}
             {(status?.ha?.managed || guest.hastate) && (

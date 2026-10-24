@@ -1,0 +1,1018 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Kelola Proxmox VE dari Termix: mesin virtual, container, penyimpanan, jaringan, cadangan, firewall, akses, dan cluster."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Buka di Proxmox"
+  },
+  "permissions": {
+    "view": {
+      "title": "Lihat Proxmox",
+      "description": "Lihat node, guest, penyimpanan, grafik, dan tugas di host Proxmox yang dapat Anda hubungkan."
+    },
+    "operate": {
+      "title": "Operasikan guest Proxmox",
+      "description": "Mulai, hentikan, matikan, reboot, tangguhkan, dan lanjutkan VM dan container. Memerlukan akses edit ke host."
+    },
+    "console": {
+      "title": "Buka konsol Proxmox",
+      "description": "Buka layar VM dan shell root di container. Memerlukan akses edit ke host."
+    },
+    "configure": {
+      "title": "Konfigurasi Proxmox",
+      "description": "Buat, klon, migrasikan, konversi, dan hapus VM dan container. Memerlukan akses edit ke host."
+    },
+    "administer": {
+      "title": "Administrasi Proxmox",
+      "description": "Kelola pengguna, grup, peran, pool, 2FA, token, realm, dan cluster. Memerlukan akses edit ke host."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Node Proxmox",
+      "description": "Tandai host ini sebagai node Proxmox VE. Node akan muncul di alat Proxmox pada menu Alat."
+    },
+    "transport": {
+      "label": "Hubungkan melalui",
+      "description": "Otomatis menggunakan API melalui tunnel SSH setelah token disimpan, dan pvesh melalui SSH sebelum itu.",
+      "auto": "Otomatis",
+      "tunnel": "API melalui tunnel SSH",
+      "direct": "API langsung",
+      "pvesh": "pvesh melalui SSH"
+    },
+    "tokenId": {
+      "label": "ID token API",
+      "description": "Dibuat di Proxmox pada Datacenter, Permissions, API Tokens. Bentuknya seperti user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "Secret token API",
+      "description": "Ditampilkan sekali saat token dibuat. Disimpan terenkripsi."
+    },
+    "apiHost": {
+      "label": "Alamat API",
+      "description": "Hanya untuk API langsung. Kosongkan untuk menggunakan alamat host ini."
+    },
+    "apiPort": {
+      "label": "Port API",
+      "description": "8006 kecuali Anda mengubahnya."
+    },
+    "caCert": {
+      "label": "Sertifikat CA",
+      "description": "Hanya untuk API langsung. CA node dalam format PEM, dari /etc/pve/pve-root-ca.pem. Kosongkan jika API memiliki sertifikat yang tepercaya secara publik.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Guest yang diimpor",
+    "importSync": {
+      "label": "Sinkronkan guest yang diimpor",
+      "description": "Memperbarui nama, alamat, dan tag guest yang diimpor dari node ini, serta memberi tag proxmox-missing pada guest yang dihapus dari Proxmox."
+    },
+    "importInterval": {
+      "label": "Sinkronkan setiap (menit)",
+      "description": "Minimal 5 menit."
+    },
+    "importAddNew": {
+      "label": "Tambahkan guest baru saat sinkronisasi",
+      "description": "Mengimpor guest yang dibuat di Proxmox setelah impor pertama, dengan pengaturan default yang terakhir digunakan di dialog impor."
+    },
+    "importDefaults": {
+      "label": "Default impor"
+    },
+    "importState": {
+      "label": "Sinkronisasi guest terakhir"
+    },
+    "source": {
+      "label": "Guest Proxmox"
+    }
+  },
+  "app": {
+    "loading": "Memuat...",
+    "loadFailed": "Tidak dapat memuat cluster",
+    "refreshFailed": "Gagal menyegarkan: {{message}}",
+    "retry": "Coba lagi",
+    "refresh": "Segarkan",
+    "search": "Cari guest, node, dan penyimpanan...",
+    "status": "{{nodes}} node, {{running}} dari {{total}} guest berjalan",
+    "pickHost": "Host Proxmox",
+    "pickResource": "Pilih node, guest, atau penyimpanan di sebelah kiri",
+    "noHosts": "Belum ada host Proxmox",
+    "noHostsHint": "Buka pengaturan host, aktifkan Node Proxmox di bagian SSH, lalu pilih cara menghubungkan. Node kemudian akan muncul di sini.",
+    "cancel": "Batal",
+    "working": "Memproses...",
+    "save": "Simpan",
+    "reset": "Atur ulang",
+    "close": "Tutup",
+    "yes": "Ya",
+    "no": "Tidak",
+    "edit": "Edit"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix tidak memercayai sertifikat node. Di pengaturan Proxmox host, tempelkan CA node dari /etc/pve/pve-root-ca.pem ke Sertifikat CA, atau pilih API melalui tunnel SSH.",
+    "tlsHostname": "Sertifikat node dibuat untuk nama lain. Atur Alamat API ke nama atau alamat yang tercantum di sertifikat.",
+    "tlsExpired": "Sertifikat node telah kedaluwarsa atau belum berlaku. Perbarui di Proxmox pada node, System, Certificates.",
+    "notEnabled": "Host ini tidak ditandai sebagai node Proxmox. Aktifkan Node Proxmox di pengaturan host.",
+    "hostAccess": "Anda memerlukan akses edit ke host ini untuk mengubahnya."
+  },
+  "tree": {
+    "nothingFound": "Tidak ada yang cocok dengan pencarian.",
+    "expand": "Bentangkan",
+    "collapse": "Ciutkan",
+    "datacenter": "Datacenter",
+    "folders": {
+      "lxc": "LXC Container",
+      "qemu": "Mesin Virtual",
+      "node": "Node",
+      "pool": "Pool",
+      "sdn": "Jaringan",
+      "storage": "Penyimpanan"
+    },
+    "views": {
+      "folder": "Tampilan folder",
+      "server": "Tampilan server"
+    }
+  },
+  "types": {
+    "node": "Node",
+    "qemu": "VM",
+    "lxc": "Container",
+    "storage": "Penyimpanan",
+    "pool": "Pool",
+    "sdn": "Zona SDN"
+  },
+  "states": {
+    "running": "Berjalan",
+    "stopped": "Berhenti",
+    "paused": "Dijeda",
+    "suspended": "Ditangguhkan",
+    "online": "Online",
+    "offline": "Offline",
+    "available": "Tersedia",
+    "unknown": "Tidak diketahui"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Memori",
+    "disk": "Disk",
+    "rootDisk": "Disk root",
+    "usage": "Penggunaan",
+    "cores_other": "{{count}} core",
+    "swap": "Swap"
+  },
+  "summary": {
+    "title": "Ringkasan",
+    "node": "Node",
+    "vmid": "ID",
+    "uptime": "Waktu aktif",
+    "pool": "Pool",
+    "ha": "HA",
+    "tags": "Tag",
+    "guests": "Guest",
+    "guestsRunning": "{{running}} dari {{total}} berjalan",
+    "cpuModel": "CPU",
+    "sockets": "soket",
+    "load": "Beban rata-rata",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Kernel",
+    "ips": "Alamat"
+  },
+  "charts": {
+    "title": "Grafik",
+    "cpu": "CPU",
+    "load": "Beban rata-rata",
+    "memory": "Memori",
+    "network": "Jaringan",
+    "diskIo": "I/O disk",
+    "cpuUsage": "Penggunaan CPU",
+    "ioDelay": "Penundaan IO",
+    "used": "Terpakai",
+    "total": "Total",
+    "in": "Masuk",
+    "out": "Keluar",
+    "read": "Baca",
+    "write": "Tulis",
+    "timeframe": {
+      "hour": "Jam",
+      "day": "Hari",
+      "week": "Minggu",
+      "month": "Bulan",
+      "year": "Tahun"
+    },
+    "noData": "Tidak ada data untuk periode ini",
+    "serverLoad": "Beban server",
+    "loadAverage": "Beban rata-rata",
+    "swap": "Swap",
+    "pressureCpu": "Pressure stall CPU",
+    "pressureMemory": "Pressure stall memori",
+    "pressureIo": "Pressure stall IO",
+    "some": "Sebagian",
+    "full": "Penuh",
+    "average": "Rata-rata",
+    "maximum": "Maksimum"
+  },
+  "tasks": {
+    "title": "Tugas",
+    "started": "Dimulai",
+    "node": "Node",
+    "user": "Pengguna",
+    "task": "Tugas",
+    "status": "Status",
+    "running": "Berjalan",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} di {{node}}",
+    "done": "{{label}}: selesai",
+    "failed": "{{label}} gagal: {{reason}}"
+  },
+  "guests": {
+    "more": "Tindakan lainnya",
+    "isTemplate": "Template",
+    "locked": "Terkunci: {{lock}}",
+    "power": {
+      "start": "Mulai",
+      "shutdown": "Matikan",
+      "stop": "Hentikan",
+      "reboot": "Reboot",
+      "suspend": "Tangguhkan",
+      "resume": "Lanjutkan",
+      "reset": "Reset",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Hentikan {{name}} sekarang?",
+        "reset": "Reset {{name}} sekarang?",
+        "description": "Ini memutus daya seperti mencabut steker. Pekerjaan yang belum disimpan di guest akan hilang."
+      }
+    },
+    "clone": {
+      "menu": "Klon",
+      "title": "Klon {{name}}",
+      "submit": "Klon",
+      "label": "Klon {{source}} ke {{id}}",
+      "full": "Klon penuh",
+      "fullHint": "Menyalin setiap disk, sehingga klon tidak bergantung pada aslinya.",
+      "linkedHint": "Jika nonaktif, dibuat klon tertaut yang berbagi disk template dan selesai dalam hitungan detik.",
+      "sameStorage": "Penyimpanan yang sama dengan aslinya"
+    },
+    "migrate": {
+      "menu": "Migrasikan",
+      "title": "Migrasikan {{name}}",
+      "submit": "Migrasikan",
+      "label": "Migrasikan {{name}} ke {{target}}",
+      "noOtherNodes": "Tidak ada node online lain di cluster ini untuk tujuan pemindahan.",
+      "onlineHint": "VM sedang berjalan dan dipindahkan secara live, tanpa dihentikan.",
+      "restartHint": "Container sedang berjalan. Container akan berhenti, dipindahkan, lalu dimulai lagi di tujuan."
+    },
+    "template": {
+      "menu": "Konversi ke template",
+      "confirm": "Konversi {{name}} menjadi template?",
+      "description": "Template tidak dapat dijalankan, hanya dapat dikloning. Tindakan ini tidak dapat dibatalkan.",
+      "submit": "Konversi",
+      "label": "Konversi {{name}} menjadi template"
+    },
+    "delete": {
+      "menu": "Hapus",
+      "title": "Hapus {{name}}",
+      "submit": "Hapus",
+      "label": "Hapus {{name}}",
+      "warning": "Ini menghapus guest {{vmid}} beserta disknya. Tindakan ini tidak dapat dibatalkan.",
+      "stopFirst": "Hentikan guest sebelum menghapusnya.",
+      "typeId": "Ketik {{vmid}} untuk mengonfirmasi",
+      "purge": "Hapus dari tugas backup, replikasi, dan HA",
+      "purgeHint": "Tidak menyisakan tugas yang mengarah ke guest yang sudah tidak ada.",
+      "unreferenced": "Hapus juga disk yang tidak direferensikan",
+      "unreferencedHint": "Disk di penyimpanan aktif dengan ID ini yang tidak tercantum di konfigurasi."
+    },
+    "create": {
+      "vmButton": "Buat VM",
+      "ctButton": "Buat CT",
+      "vmTitle": "Buat mesin virtual",
+      "ctTitle": "Buat container",
+      "submit": "Buat",
+      "vmLabel": "Buat VM {{id}} ({{name}})",
+      "ctLabel": "Buat CT {{id}} ({{name}})",
+      "noTemplates": "Tidak ada template container di node ini. Unduh satu di Proxmox pada sebuah penyimpanan, CT Templates.",
+      "noIso": "Tidak ada media instalasi",
+      "unprivilegedHint": "Lebih aman: root di container bukan root di node.",
+      "loginHint": "Atur kata sandi root, kunci SSH, atau keduanya.",
+      "problem": {
+        "vmid": "Pilih ID 100 atau lebih.",
+        "hostname": "Masukkan hostname: huruf, angka, dan tanda hubung.",
+        "name": "Masukkan nama: huruf, angka, dan tanda hubung.",
+        "template": "Pilih template.",
+        "storage": "Pilih penyimpanan.",
+        "disk": "Masukkan ukuran disk.",
+        "cores": "Masukkan jumlah core.",
+        "sockets": "Masukkan jumlah soket.",
+        "memory": "Masukkan memori minimal 16 MiB.",
+        "swap": "Masukkan swap dalam MiB, 0 untuk tanpa swap.",
+        "network": "Pilih bridge dan, untuk alamat statis, masukkan seperti 192.168.0.60/24.",
+        "login": "Atur kata sandi root atau kunci SSH agar Anda dapat login.",
+        "password": "Kata sandi minimal 5 karakter."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Lainnya"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Nama",
+      "hostname": "Hostname",
+      "node": "Node",
+      "targetNode": "Node tujuan",
+      "targetStorage": "Penyimpanan tujuan",
+      "storage": "Penyimpanan",
+      "template": "Template",
+      "iso": "Media instalasi",
+      "ostype": "OS guest",
+      "rootPassword": "Kata sandi root",
+      "sshKeys": "Kunci publik SSH",
+      "unprivileged": "Container tanpa hak istimewa",
+      "diskGiB": "Disk (GiB)",
+      "cores": "Core",
+      "sockets": "Soket",
+      "memoryMiB": "Memori (MiB)",
+      "swapMiB": "Swap (MiB)",
+      "bridge": "Bridge jaringan",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Statis",
+      "cidr": "Alamat/prefiks",
+      "gateway": "Gateway",
+      "startAfter": "Mulai setelah dibuat",
+      "pick": "Pilih salah satu"
+    },
+    "tabs": {
+      "summary": "Ringkasan",
+      "hardware": "Perangkat keras",
+      "options": "Opsi",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Edit",
+    "add": "Tambah",
+    "remove": "Hapus",
+    "removed": "{{key}} dihapus",
+    "pending": "Tertunda",
+    "pendingHint": "Perubahan bertanda Tertunda berlaku saat guest dimulai ulang dari Proxmox: reboot dari dalam guest tidak cukup.",
+    "processors": "Prosesor",
+    "processorsValue": "{{sockets}} soket × {{cores}} core, {{cpu}}",
+    "allCores": "Semua",
+    "swap": "Swap",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "Prosesor dan memori",
+      "title": "Prosesor dan memori"
+    },
+    "cpuType": "Tipe CPU",
+    "cpulimit": "Batas CPU",
+    "cpulimitHint": "0 untuk tanpa batas. 1.5 berarti waktu satu setengah core.",
+    "balloon": "Memori minimum (MiB)",
+    "balloonHint": "Dengan driver balloon, guest mengembalikan memori hingga nilai ini. Sama dengan memori berarti nonaktif, 0 menghapus driver.",
+    "disks": "Disk",
+    "volumes": "Disk root dan titik mount",
+    "bus": "Bus",
+    "slot": "Akan menjadi {{key}}",
+    "iothread": "IO thread",
+    "discard": "Discard",
+    "discardHint": "Memungkinkan guest membebaskan blok yang tidak terpakai di penyimpanan thin.",
+    "ssd": "Emulasi SSD",
+    "mountPath": "Path mount di container",
+    "backup": "Sertakan dalam backup",
+    "addDisk": {
+      "button": "Tambah disk",
+      "title": "Tambah disk",
+      "label": "Tambah {{key}}"
+    },
+    "addMount": {
+      "button": "Tambah titik mount",
+      "title": "Tambah titik mount"
+    },
+    "resize": {
+      "menu": "Ubah ukuran",
+      "title": "Perbesar {{key}}",
+      "grow": "Tambah (GiB)",
+      "result": "{{from}} GiB menjadi {{to}} GiB",
+      "noShrink": "Disk hanya dapat diperbesar. Partisi dan sistem file guest perlu diperbesar dari dalam guest setelahnya, kecuali guest melakukannya saat boot.",
+      "submit": "Perbesar",
+      "label": "Perbesar {{key}} sebanyak {{size}} GiB"
+    },
+    "move": {
+      "menu": "Pindahkan ke penyimpanan",
+      "title": "Pindahkan {{key}}",
+      "submit": "Pindahkan",
+      "deleteSource": "Hapus yang asli",
+      "deleteSourceHint": "Jika nonaktif, disk asli disimpan sebagai disk tidak terpakai.",
+      "label": "Pindahkan {{key}} ke {{storage}}"
+    },
+    "detach": {
+      "menu": "Lepaskan",
+      "title": "Lepaskan {{key}}?",
+      "description": "Disk tetap ada di penyimpanannya sebagai disk tidak terpakai dan dapat dihapus atau dipasang lagi."
+    },
+    "unused": {
+      "delete": "Hapus",
+      "title": "Hapus {{volume}}?",
+      "description": "Ini menghapus disk beserta seluruh isinya. Tindakan ini tidak dapat dibatalkan."
+    },
+    "cd": {
+      "heading": "Drive CD/DVD",
+      "title": "Media di {{key}}",
+      "empty": "Tanpa media"
+    },
+    "nic": {
+      "heading": "Adaptor jaringan",
+      "add": "Tambah adaptor",
+      "addTitle": "Tambah {{key}}",
+      "editTitle": "Edit {{key}}",
+      "none": "Tidak ada adaptor jaringan.",
+      "model": "Model",
+      "name": "Nama di container",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Statis",
+        "none": "Tidak ada",
+        "auto": "SLAAC"
+      },
+      "tag": "Tag VLAN",
+      "tagHint": "Kosongkan untuk tanpa tag.",
+      "rate": "Batas kecepatan (MB/s)",
+      "rateHint": "Kosongkan untuk tanpa batas.",
+      "firewall": "Firewall",
+      "firewallShort": "firewall",
+      "removeTitle": "Hapus {{key}}?",
+      "removeDescription": "Guest kehilangan adaptor ini beserta alamatnya."
+    },
+    "problem": {
+      "cpu": "Masukkan minimal satu soket dan satu core.",
+      "cpulimit": "Batas CPU berkisar dari 0 hingga 8192.",
+      "memory": "Masukkan memori minimal 16 MiB.",
+      "balloon": "Memori minimum tidak boleh lebih dari memori.",
+      "swap": "Masukkan swap dalam MiB, 0 untuk tanpa swap.",
+      "noSlot": "Semua slot jenis ini sudah terpakai.",
+      "storage": "Pilih penyimpanan.",
+      "size": "Masukkan ukuran dalam GiB bulat.",
+      "path": "Masukkan path absolut seperti /data, bukan / itu sendiri.",
+      "bridge": "Pilih bridge.",
+      "tag": "Tag VLAN berkisar dari 1 hingga 4094.",
+      "rate": "Masukkan kecepatan di atas 0, atau kosongkan.",
+      "name": "Masukkan nama seperti eth0.",
+      "ip4": "Masukkan alamat seperti 192.168.0.60/24 dan gateway yang valid.",
+      "ip6": "Masukkan alamat seperti fd00::10/64."
+    },
+    "detached": "{{key}} dilepaskan; tetap ada sebagai disk tidak terpakai",
+    "coresHint": "Kosongkan untuk menggunakan semua core node."
+  },
+  "options": {
+    "general": "Umum",
+    "tags": "Tag",
+    "tagsHint": "Dipisahkan dengan koma.",
+    "onboot": "Mulai saat node boot",
+    "protection": "Proteksi",
+    "protectionHint": "Mencegah penghapusan guest dan disknya hingga dinonaktifkan.",
+    "agent": "QEMU guest agent",
+    "agentHint": "Aktifkan setelah agent berjalan di guest, untuk alamatnya dan shutdown yang bersih.",
+    "startup": "Urutan mulai dan shutdown",
+    "startupOrder": "Urutan",
+    "startupUp": "Jeda setelah mulai (dtk)",
+    "startupDown": "Batas waktu shutdown (dtk)",
+    "dns": "DNS",
+    "nameserver": "Server DNS",
+    "searchdomain": "Domain pencarian",
+    "useHost": "Kosongkan untuk menggunakan milik node.",
+    "notes": "Catatan",
+    "saved": "Opsi disimpan",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Lainnya"
+    },
+    "problem": {
+      "name": "Masukkan nama.",
+      "startup": "Urutan dan jeda berupa bilangan bulat.",
+      "tags": "Tag menggunakan huruf, angka, tanda hubung, titik, dan garis bawah.",
+      "nameserver": "Masukkan alamat IP yang dipisahkan spasi."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "VM ini tidak memiliki drive cloud-init. Tambahkan satu, lalu atur pengguna, kunci, dan jaringan di sini; image guest harus mendukung cloud-init.",
+    "addDrive": "Tambah drive cloud-init",
+    "driveAdded": "Drive cloud-init ditambahkan",
+    "user": "Pengguna",
+    "username": "Nama pengguna",
+    "usernameHint": "Kosongkan untuk menggunakan pengguna default image.",
+    "password": "Kata sandi",
+    "passwordHint": "Kosongkan untuk mempertahankan yang sekarang. Disimpan dalam bentuk hash oleh Proxmox.",
+    "network": "Jaringan",
+    "saved": "Pengaturan cloud-init disimpan",
+    "regenerate": "Buat ulang image",
+    "regenerated": "Image cloud-init dibuat ulang",
+    "regenerateHint": "Menulis pengaturan ke {{drive}}. Guest membacanya pada boot berikutnya."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Ringkasan",
+      "iso": "Image ISO",
+      "vztmpl": "Template CT",
+      "backup": "Backup",
+      "images": "Image disk"
+    },
+    "content": "Berisi",
+    "contentTypes": {
+      "images": "Disk VM",
+      "rootdir": "Disk container",
+      "iso": "Image ISO",
+      "vztmpl": "Template CT",
+      "backup": "Backup",
+      "snippets": "Snippet",
+      "import": "Impor"
+    },
+    "shared": "Bersama",
+    "empty": "Belum ada apa pun di sini.",
+    "owner": "guest {{vmid}}",
+    "protected": "Terlindungi",
+    "download": {
+      "button": "Unduh dari URL",
+      "title": {
+        "iso": "Unduh image ISO ke {{storage}}",
+        "vztmpl": "Unduh template CT ke {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Nama file",
+      "algorithm": "Tipe checksum",
+      "noChecksum": "Tidak ada",
+      "checksum": "Checksum",
+      "verify": "Periksa sertifikat server",
+      "submit": "Unduh",
+      "label": "Unduh {{name}}",
+      "problem": {
+        "url": "Masukkan URL http atau https.",
+        "filename": "Nama file menggunakan huruf, angka, titik, tanda hubung, dan garis bawah.",
+        "extension": "Image ISO berakhiran .iso atau .img; template berakhiran .tar.gz, .tar.xz, atau .tar.zst.",
+        "checksum": "Pilih tipe checksum dan masukkan checksum dalam hex, atau kosongkan keduanya."
+      }
+    },
+    "catalog": {
+      "button": "Template",
+      "title": "Template container untuk {{storage}}",
+      "search": "Cari template...",
+      "have": "Sudah diunduh",
+      "label": "Unduh {{name}}"
+    },
+    "delete": {
+      "title": "Hapus {{name}}?",
+      "description": "Ini menghapus file dari penyimpanan. Tindakan ini tidak dapat dibatalkan.",
+      "submit": "Hapus",
+      "done": "{{name}} dihapus"
+    },
+    "upload": {
+      "button": "Unggah",
+      "cancel": "Batalkan unggahan",
+      "done": "{{name}} diunggah",
+      "failed": "{{name}} gagal diunggah: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Ringkasan",
+      "network": "Jaringan",
+      "system": "Sistem",
+      "services": "Layanan",
+      "updates": "Pembaruan",
+      "disks": "Disk",
+      "tasks": "Tugas",
+      "log": "Log"
+    },
+    "services": {
+      "start": "Mulai",
+      "stop": "Hentikan",
+      "restart": "Mulai ulang",
+      "reload": "Muat ulang",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Hentikan {{name}}?",
+        "restart": "Mulai ulang {{name}}?",
+        "description": "Layanan milik Proxmox menjaga node dan API-nya tetap berjalan; menghentikan salah satunya dapat memutus alat ini hingga layanan itu berjalan lagi."
+      }
+    },
+    "updates": {
+      "refresh": "Segarkan daftar paket",
+      "refreshLabel": "Segarkan daftar paket di {{node}}",
+      "count_other": "{{count}} paket dapat ditingkatkan",
+      "none": "Semuanya sudah terbaru",
+      "installHint": "Instal peningkatan dari terminal node dengan apt full-upgrade; Proxmox tidak melakukan peningkatan melalui API-nya.",
+      "views": {
+        "packages": "Paket",
+        "repositories": "Repositori"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART untuk {{disk}}",
+      "health": "Kesehatan",
+      "usedBy": "digunakan oleh {{used}}",
+      "unused": "tidak terpakai",
+      "wearout": "Sisa umur {{value}}%",
+      "views": {
+        "disks": "Disk",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Direktori",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_other": "{{count}} volume logis",
+        "metadata": "metadata {{used}} / {{size}}",
+        "frag": "{{value}}% terfragmentasi",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "Tidak ada volume group LVM.",
+          "lvmthin": "Tidak ada pool LVM-Thin.",
+          "directory": "Tidak ada penyimpanan direktori di disk tersendiri.",
+          "zfs": "Tidak ada pool ZFS."
+        },
+        "create": {
+          "lvm": "Buat volume group LVM",
+          "lvmthin": "Buat pool LVM-Thin",
+          "directory": "Buat direktori",
+          "zfs": "Buat pool ZFS"
+        },
+        "createSubmit": "Buat",
+        "createLabel": "Buat {{name}} di {{node}}",
+        "wipeWarning": "Disk yang dipilih akan dipartisi dan diformat. Hanya disk yang kosong yang ditawarkan.",
+        "name": "Nama",
+        "device": "Disk",
+        "devices": "Disk",
+        "pickDisk": "Pilih disk",
+        "noUnused": "Tidak ada disk yang tidak terpakai. Hapus isi salah satu disk di Disk terlebih dahulu, jika isinya boleh dihapus.",
+        "filesystem": "Sistem file",
+        "raidlevel": "Level RAID",
+        "raid": {
+          "single": "Disk tunggal",
+          "mirror": "Mirror",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Kompresi",
+        "addStorage": "Tambahkan sebagai penyimpanan",
+        "addStorageHint": "Menjadikannya penyimpanan Proxmox dengan nama yang sama, untuk disk, container, atau backup.",
+        "problem": {
+          "name": "Nama diawali huruf dan berisi huruf, angka, -, _ atau .",
+          "device": "Pilih disk.",
+          "oneDevice": "Pilih satu disk.",
+          "tooFew": "Level RAID ini memerlukan minimal {{count}} disk.",
+          "even": "RAID10 memerlukan jumlah disk genap.",
+          "ashift": "ashift bernilai antara 9 dan 16."
+        },
+        "remove": "Hapus",
+        "removeTitle": "Hapus {{name}}?",
+        "removeWarning": "Guest yang memiliki disk di sini akan kehilangan disk tersebut. Penghapusan tidak memindahkan apa pun terlebih dahulu.",
+        "removeLabel": "Hapus {{name}} di {{node}}",
+        "cleanupConfig": "Hapus juga entri penyimpanan",
+        "cleanupDisks": "Wipe disknya",
+        "cleanupDisksHint": "Menghapus isi disk agar dapat digunakan lagi.",
+        "inUse": {
+          "lvm": "Masih ada volume logis. Hapus dulu; grup ini mungkin berisi sistem node itu sendiri.",
+          "lvmthin": "Masih berisi data. Pindahkan atau hapus dulu disk guest di dalamnya."
+        }
+      },
+      "gpt": "Inisialisasi GPT",
+      "gptTitle": "Inisialisasi {{disk}} dengan GPT?",
+      "gptDescription": "Menulis tabel partisi GPT kosong ke disk.",
+      "gptLabel": "Inisialisasi {{disk}} di {{node}}",
+      "wipe": "Wipe",
+      "wipeTitle": "Wipe {{disk}}?",
+      "wipeWarning": "Menghapus tabel partisi dan setiap signature sistem file, LVM, dan ZFS di disk (saat ini: {{used}}). Isinya hilang selamanya.",
+      "wipeLabel": "Wipe {{disk}} di {{node}}",
+      "typePath": "Ketik {{disk}} untuk mengonfirmasi"
+    },
+    "log": {
+      "search": "Filter log...",
+      "empty": "Tidak ada baris yang cocok."
+    },
+    "power": {
+      "menu": "Daya node",
+      "termixWarning": "Jika Termix berjalan di node ini, Termix juga akan mati hingga node kembali menyala.",
+      "typeName": "Ketik {{node}} untuk mengonfirmasi",
+      "reboot": {
+        "menu": "Mulai ulang node",
+        "title": "Reboot {{node}}?",
+        "submit": "Reboot",
+        "label": "Reboot {{node}}",
+        "warning_other": "{{count}} guest yang berjalan akan dihentikan atau dimatikan terlebih dahulu, sesuai pengaturan startup-nya."
+      },
+      "shutdown": {
+        "menu": "Matikan node",
+        "title": "Matikan {{node}}?",
+        "submit": "Matikan",
+        "label": "Matikan {{node}}",
+        "warning_other": "{{count}} guest yang berjalan ikut mati, dan tidak ada yang menyalakannya lagi hingga seseorang menghidupkan node."
+      }
+    },
+    "shell": "Shell",
+    "shellHint": "Membuka terminal SSH host ini di Termix.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Domain pencarian",
+        "server": "Server DNS {{n}}",
+        "editTitle": "DNS {{node}}",
+        "saved": "DNS disimpan",
+        "problem": {
+          "search": "Masukkan domain pencarian, seperti example.com.",
+          "server": "Server DNS berupa alamat IPv4 atau IPv6.",
+          "noServer": "Masukkan minimal satu server DNS."
+        }
+      },
+      "time": {
+        "title": "Waktu",
+        "zone": "Zona waktu",
+        "local": "Waktu lokal",
+        "editTitle": "Zona waktu {{node}}",
+        "hint": "Jam itu sendiri dijaga oleh NTP (chrony) di node.",
+        "saved": "Zona waktu diatur ke {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "/etc/hosts {{node}}",
+        "warning": "Nama node itu sendiri harus tetap mengarah ke alamatnya, jika tidak cluster dan antarmuka web-nya berhenti berfungsi.",
+        "saved": "/etc/hosts disimpan"
+      },
+      "certs": {
+        "title": "Sertifikat",
+        "issuer": "diterbitkan oleh {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Berlaku hingga {{date}}",
+          "expiring": "Kedaluwarsa {{date}}",
+          "expired": "Kedaluwarsa sejak {{date}}",
+          "notYet": "Belum berlaku"
+        },
+        "upload": "Unggah kustom",
+        "uploadTitle": "Sertifikat kustom untuk {{node}}",
+        "uploaded": "Sertifikat diunggah",
+        "chain": "Rantai sertifikat",
+        "chainHint": "PEM: sertifikat node terlebih dahulu, lalu sertifikat perantara.",
+        "key": "Kunci privat",
+        "keyHint": "PEM, tidak terenkripsi. Kosongkan untuk mempertahankan kunci yang sudah ada di node.",
+        "fromFile": "Baca dari file",
+        "badCert": "Ini bukan sertifikat PEM.",
+        "badKey": "Ini bukan kunci privat PEM.",
+        "restart": "Mulai ulang antarmuka web untuk menggunakannya",
+        "restartHint": "pveproxy dimulai ulang; Termix kehilangan API selama beberapa detik.",
+        "remove": "Hapus kustom",
+        "removeTitle": "Hapus sertifikat kustom?",
+        "removeDescription": "Node kembali ke sertifikat self-signed miliknya, dan antarmuka web dimulai ulang.",
+        "removed": "Sertifikat kustom dihapus"
+      }
+    },
+    "repos": {
+      "on": "Aktif",
+      "off": "Nonaktif",
+      "enable": "Aktifkan",
+      "disable": "Nonaktifkan",
+      "enableTitle": "Aktifkan repositori ini?",
+      "enabled": "Repositori diaktifkan",
+      "disabled": "Repositori dinonaktifkan",
+      "add": "Tambah:",
+      "added": "Repositori {{name}} ditambahkan",
+      "hint": "Jalankan Segarkan daftar paket di Paket setelah ada perubahan. Repositori Enterprise memerlukan langganan."
+    },
+    "taskHistory": {
+      "type": "Tipe, misalnya vzdump",
+      "vmid": "ID VM/CT",
+      "user": "Pengguna",
+      "errorsOnly": "Hanya tugas yang gagal",
+      "none": "Tidak ada tugas yang cocok.",
+      "more": "Muat lebih banyak",
+      "state": {
+        "running": "Berjalan",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Pesan sertifikat",
+      "renew": "Perbarui",
+      "orderLabel": "Pesan sertifikat ACME untuk {{node}}",
+      "renewLabel": "Perbarui sertifikat ACME untuk {{node}}",
+      "usesAccount": "Akun: {{account}}",
+      "none": "tidak ada",
+      "noDomains": "Belum ada domain. Edit untuk menambahkan nama yang dijawab node ini.",
+      "viaHttp": "Challenge HTTP",
+      "viaDns": "Challenge DNS melalui {{plugin}}",
+      "accounts": "Akun",
+      "plugins": "Plugin challenge DNS",
+      "remove": "Hapus",
+      "domainsTitle": "Domain ACME {{node}}",
+      "domainsSaved": "Domain ACME disimpan",
+      "domain": "Domain",
+      "challenge": "Challenge",
+      "alias": "Alias",
+      "addDomain": "Tambah domain",
+      "httpHint": "Challenge HTTP memerlukan port 80 node ini dapat dijangkau dari internet melalui domain tersebut. DNS berfungsi tanpa itu, dan juga untuk wildcard.",
+      "hint": "Akun dan plugin dipakai bersama oleh seluruh cluster; domain diatur per node.",
+      "problem": {
+        "noDomain": "Tambahkan minimal satu domain.",
+        "tooMany": "Satu node memiliki maksimal enam domain ACME.",
+        "domain": "Domain adalah nama lengkap seperti pve.example.com.",
+        "wildcard": "Domain wildcard memerlukan plugin challenge DNS."
+      },
+      "account": {
+        "title": "Akun",
+        "pick": "Pilih akun",
+        "add": "Daftarkan akun",
+        "addTitle": "Daftarkan akun ACME",
+        "register": "Daftar",
+        "registerLabel": "Daftarkan akun ACME {{name}}",
+        "name": "Nama",
+        "email": "Email",
+        "directory": "Direktori ACME",
+        "customDirectory": "URL kustom",
+        "directoryUrl": "URL direktori",
+        "acceptTos": "Setujui ketentuan layanan",
+        "eabKid": "ID kunci EAB",
+        "eabHmac": "Kunci HMAC EAB",
+        "eabHint": "Hanya untuk CA yang meminta External Account Binding.",
+        "none": "Belum ada akun ACME.",
+        "needOne": "Daftarkan akun ACME terlebih dahulu.",
+        "removeTitle": "Nonaktifkan akun {{name}}?",
+        "removeDescription": "Akun dinonaktifkan di CA dan dihapus dari sini. Sertifikat yang sudah diterbitkan tetap berfungsi.",
+        "removeLabel": "Nonaktifkan akun ACME {{name}}",
+        "problem": {
+          "name": "Nama berisi huruf, angka, -, _ atau .",
+          "email": "Masukkan alamat email.",
+          "directory": "Direktori berupa URL http atau https.",
+          "tos": "Setujui ketentuan layanan untuk mendaftar.",
+          "eab": "EAB memerlukan ID kunci dan kunci HMAC."
+        }
+      },
+      "plugin": {
+        "add": "Tambah plugin",
+        "addTitle": "Tambah plugin challenge DNS",
+        "id": "ID plugin",
+        "api": "DNS API",
+        "pickApi": "Pilih penyedia DNS",
+        "delay": "Jeda validasi (dtk)",
+        "delayHint": "Berapa lama menunggu record TXT tersebar.",
+        "noFields": "Proxmox tidak mencantumkan kolom untuk penyedia ini; lihat dokumentasi acme.sh untuk variabel yang dibacanya.",
+        "none": "Tidak ada plugin DNS. HTTP berfungsi tanpa plugin.",
+        "disabled": "Nonaktif",
+        "removeTitle": "Hapus plugin {{name}}?",
+        "removeDescription": "Domain yang menggunakannya tidak dapat divalidasi lagi."
+      }
+    }
+  },
+  "console": {
+    "open": "Konsol",
+    "openHint": "Membuka host Termix milik guest, atau menawarkan untuk menambahkannya ke Termix terlebih dahulu.",
+    "tabTitle": "Konsol Proxmox",
+    "tabLabel": "{{name}} — Konsol",
+    "pick": "Buka konsol dari VM atau container yang berjalan di alat Proxmox.",
+    "connect": "Hubungkan",
+    "reconnect": "Hubungkan lagi",
+    "disconnect": "Putuskan",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Layar penuh",
+    "notRunning": "Mulai guest untuk membuka konsolnya.",
+    "lost": "Koneksi konsol terputus.",
+    "ended": "Konsol ditutup.",
+    "status": {
+      "idle": "Tidak terhubung",
+      "connecting": "Menghubungkan...",
+      "connected": "Terhubung",
+      "closed": "Terputus",
+      "error": "Tidak dapat terhubung"
+    },
+    "proxmox": "Konsol Proxmox",
+    "proxmoxHint": "Konsol bawaan Proxmox melalui node: layar VM, shell di container. Untuk guest yang belum memiliki jaringan."
+  },
+  "pool": {
+    "members": "Anggota",
+    "empty": "Tidak ada apa pun di pool ini."
+  },
+  "sdn": {
+    "hint": "Zona SDN, VNet, dan subnet akan hadir bersama manajemen cluster di rilis mendatang."
+  },
+  "network": {
+    "add": "Buat",
+    "apply": "Terapkan",
+    "revert": "Kembalikan",
+    "pending": "Belum diterapkan",
+    "hint": "Perubahan disimpan ke /etc/network/interfaces.new dan berlaku saat Terapkan, yang memuat ulang jaringan node.",
+    "type": "Tipe",
+    "name": "Nama",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Gateway (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Gateway (IPv6)",
+    "ports": "Port bridge",
+    "slaves": "Slave",
+    "portsHint": "Nama antarmuka, dipisahkan spasi.",
+    "bondMode": "Mode",
+    "vlanDevice": "Perangkat raw VLAN",
+    "mtu": "MTU",
+    "comments": "Komentar",
+    "autostart": "Mulai otomatis",
+    "vlanAware": "Sadar VLAN",
+    "vlanAwareHint": "Memungkinkan guest di bridge ini menggunakan tag VLAN.",
+    "inactive": "Tidak aktif",
+    "create": "Buat",
+    "createTitle": "Buat antarmuka",
+    "editTitle": "Edit {{iface}}",
+    "types": {
+      "bridge": "Bridge",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Port",
+      "OVSBridge": "OVS bridge",
+      "alias": "Alias"
+    },
+    "nameHint": {
+      "bridge": "vmbr diikuti angka, seperti vmbr1.",
+      "bond": "bond diikuti angka, seperti bond0.",
+      "vlan": "device.tag seperti vmbr0.10, atau vlan10 dengan perangkat raw."
+    },
+    "addressWarning": "Antarmuka ini membawa alamat yang digunakan Termix untuk menjangkau node. Kesalahan dapat memutus Termix hingga seseorang memperbaiki node melalui konsolnya.",
+    "removeTitle": "Hapus {{iface}}?",
+    "removeDescription": "Antarmuka dihapus saat perubahan diterapkan.",
+    "applyTitle": "Terapkan perubahan jaringan di {{node}}?",
+    "applyDescription": "Node memuat ulang jaringannya. Jika pengaturan baru salah, node dan koneksi Termix ke node tersebut dapat terputus.",
+    "applyLabel": "Terapkan jaringan di {{node}}",
+    "reverted": "Perubahan jaringan dikembalikan",
+    "problem": {
+      "cidr": "Masukkan alamat seperti 10.10.0.1/24.",
+      "gateway": "Gateway memerlukan alamat IPv4 dan IP gateway yang valid.",
+      "cidr6": "Masukkan alamat seperti fd00::1/64.",
+      "ports": "Masukkan nama antarmuka yang dipisahkan spasi.",
+      "slaves": "Bond memerlukan minimal satu slave.",
+      "vlanDevice": "Sebutkan perangkat raw untuk antarmuka vlanN.",
+      "mtu": "MTU berkisar dari 1280 hingga 65520.",
+      "name": {
+        "bridge": "Bridge dinamai vmbr dan sebuah angka.",
+        "bond": "Bond dinamai bond dan sebuah angka.",
+        "vlan": "VLAN dinamai device.tag atau vlan dan sebuah angka."
+      }
+    }
+  },
+  "import": {
+    "open": "Impor ke Termix",
+    "title": "Impor guest sebagai host Termix",
+    "hint": "Setiap VM atau container yang dipilih menjadi host Termix dengan tag proxmox. Impor juga menyegarkan nama, alamat, dan tag guest yang diimpor sebelumnya, serta memberi tag proxmox-missing pada guest yang sudah tidak ada di Proxmox.",
+    "loading": "Mencari guest dan alamatnya…",
+    "counts": "{{total}} guest, {{imported}} sudah diimpor",
+    "selectAll": "Pilih semua",
+    "selectNone": "Batalkan semua pilihan",
+    "none": "Cluster ini tidak memiliki VM atau container.",
+    "imported": "Diimpor",
+    "noAddress": "tanpa alamat",
+    "folder": "Folder",
+    "folderDefault": "Folder bernama {{node}}",
+    "folderSearch": "Cari atau buat, / untuk subfolder",
+    "folderCreate": "Buat \"{{folder}}\"",
+    "folderNone": "Belum ada folder",
+    "connection": "Hubungkan dengan",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Runtime container",
+    "runtimeOff": "Tanpa Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "OS tidak diketahui"
+    },
+    "sshLogin": "Login SSH",
+    "desktopLogin": "Login RDP dan VNC",
+    "desktopHint": "Memerlukan plugin Remote Desktop untuk terhubung.",
+    "login": {
+      "nodeCredential": "Kredensial node",
+      "nodeUser": "Nama pengguna node",
+      "username": "Hanya nama pengguna",
+      "none": "Tanpa login"
+    },
+    "username": "Nama pengguna",
+    "submit_other": "Impor {{count}} guest",
+    "refresh": "Segarkan yang diimpor",
+    "done": "Dibuat {{created}}, diperbarui {{updated}}, ditandai hilang {{markedMissing}}",
+    "lastSync": "Sinkronisasi terakhir {{when}}.",
+    "lastSyncFailed": "Sinkronisasi terakhir {{when}} gagal: {{error}}",
+    "syncHint": "Aktifkan Sinkronkan guest yang diimpor di pengaturan Proxmox host untuk menyegarkannya secara terjadwal.",
+    "addTitle": "Tambahkan {{name}} ke Termix",
+    "addHint": "Guest ini belum menjadi host Termix. Tambahkan untuk membuka terminalnya, lalu Konsol akan langsung membukanya.",
+    "addSubmit": "Tambahkan dan hubungkan",
+    "gone": "Proxmox tidak lagi mencantumkan guest ini."
+  }
+}

@@ -1,0 +1,1036 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Valdykite Proxmox VE iš Termix: virtualias mašinas, konteinerius, saugyklas, tinklą, atsargines kopijas, užkardą, prieigą ir klasterį."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Atidaryti Proxmox"
+  },
+  "permissions": {
+    "view": {
+      "title": "Peržiūrėti Proxmox",
+      "description": "Matyti mazgus, svečius, saugyklas, diagramas ir užduotis Proxmox serveriuose, prie kurių galite prisijungti."
+    },
+    "operate": {
+      "title": "Valdyti Proxmox svečius",
+      "description": "Paleisti, sustabdyti, išjungti, perkrauti, pristabdyti ir pratęsti VM ir konteinerius. Reikia serverio redagavimo prieigos."
+    },
+    "console": {
+      "title": "Atidaryti Proxmox konsoles",
+      "description": "Atidaryti VM ekraną ir root apvalkalą konteineryje. Reikia serverio redagavimo prieigos."
+    },
+    "configure": {
+      "title": "Konfigūruoti Proxmox",
+      "description": "Kurti, klonuoti, perkelti, konvertuoti ir šalinti VM ir konteinerius. Reikia serverio redagavimo prieigos."
+    },
+    "administer": {
+      "title": "Administruoti Proxmox",
+      "description": "Valdyti naudotojus, grupes, roles, telkinius, 2FA, žetonus, sritis ir klasterį. Reikia serverio redagavimo prieigos."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Proxmox mazgas",
+      "description": "Pažymėti šį serverį kaip Proxmox VE mazgą. Tada jis rodomas Proxmox įrankyje, skiltyje Įrankiai."
+    },
+    "transport": {
+      "label": "Jungtis per",
+      "description": "Automatinis režimas naudoja API per SSH tunelį, kai įrašomas žetonas, o iki tol – pvesh per SSH.",
+      "auto": "Automatiškai",
+      "tunnel": "API per SSH tunelį",
+      "direct": "API tiesiogiai",
+      "pvesh": "pvesh per SSH"
+    },
+    "tokenId": {
+      "label": "API žetono ID",
+      "description": "Sukuriamas Proxmox skiltyje Duomenų centras, Leidimai, API žetonai. Atrodo taip: naudotojas@sritis!pavadinimas.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "API žetono paslaptis",
+      "description": "Rodoma tik vieną kartą, kai žetonas sukuriamas. Saugoma užšifruota."
+    },
+    "apiHost": {
+      "label": "API adresas",
+      "description": "Tik API tiesiogiai. Palikite tuščią, kad būtų naudojamas šio serverio adresas."
+    },
+    "apiPort": {
+      "label": "API prievadas",
+      "description": "8006, nebent jį pakeitėte."
+    },
+    "caCert": {
+      "label": "CA sertifikatas",
+      "description": "Tik API tiesiogiai. Mazgo CA PEM formatu iš /etc/pve/pve-root-ca.pem. Palikite tuščią, jei API turi viešai patikimą sertifikatą.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Importuoti svečiai",
+    "importSync": {
+      "label": "Sinchronizuoti importuotus svečius",
+      "description": "Atnaujina iš šio mazgo importuotų svečių pavadinimus, adresus ir žymas, o iš Proxmox pašalintus pažymi žyma proxmox-missing."
+    },
+    "importInterval": {
+      "label": "Sinchronizuoti kas (minutės)",
+      "description": "Mažiausiai 5 minutės."
+    },
+    "importAddNew": {
+      "label": "Sinchronizuojant pridėti naujus svečius",
+      "description": "Importuoja svečius, sukurtus Proxmox po pirmojo importavimo, su paskutinį kartą importavimo lange naudotomis numatytosiomis reikšmėmis."
+    },
+    "importDefaults": {
+      "label": "Importavimo numatytosios reikšmės"
+    },
+    "importState": {
+      "label": "Paskutinis svečių sinchronizavimas"
+    },
+    "source": {
+      "label": "Proxmox svečias"
+    }
+  },
+  "app": {
+    "loading": "Įkeliama...",
+    "loadFailed": "Nepavyko įkelti klasterio",
+    "refreshFailed": "Nepavyko atnaujinti: {{message}}",
+    "retry": "Bandyti dar kartą",
+    "refresh": "Atnaujinti",
+    "search": "Ieškoti svečių, mazgų ir saugyklų...",
+    "status": "Mazgų: {{nodes}}, veikia svečių: {{running}} iš {{total}}",
+    "pickHost": "Proxmox serveris",
+    "pickResource": "Kairėje pasirinkite mazgą, svečią arba saugyklą",
+    "noHosts": "Proxmox serverių dar nėra",
+    "noHostsHint": "Atidarykite serverio nustatymus, skiltyje SSH įjunkite Proxmox mazgas ir pasirinkite, kaip jungtis. Tada mazgas bus rodomas čia.",
+    "cancel": "Atšaukti",
+    "working": "Vykdoma...",
+    "save": "Įrašyti",
+    "reset": "Atkurti",
+    "close": "Uždaryti",
+    "yes": "Taip",
+    "no": "Ne",
+    "edit": "Redaguoti"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix nepasitiki mazgo sertifikatu. Serverio Proxmox nustatymuose į CA sertifikatas įklijuokite mazgo CA iš /etc/pve/pve-root-ca.pem arba pasirinkite API per SSH tunelį.",
+    "tlsHostname": "Mazgo sertifikatas išduotas kitam pavadinimui. Nustatykite API adresas į sertifikate nurodytą pavadinimą arba adresą.",
+    "tlsExpired": "Mazgo sertifikatas nebegalioja arba dar negalioja. Atnaujinkite jį Proxmox mazgo skiltyje Sistema, Sertifikatai.",
+    "notEnabled": "Šis serveris nepažymėtas kaip Proxmox mazgas. Serverio nustatymuose įjunkite Proxmox mazgas.",
+    "hostAccess": "Norint keisti šį serverį, reikia jo redagavimo prieigos."
+  },
+  "tree": {
+    "nothingFound": "Paieškos atitikmenų nėra.",
+    "expand": "Išskleisti",
+    "collapse": "Suskleisti",
+    "datacenter": "Duomenų centras",
+    "folders": {
+      "lxc": "LXC konteineris",
+      "qemu": "Virtuali mašina",
+      "node": "Mazgai",
+      "pool": "Telkiniai",
+      "sdn": "Tinklas",
+      "storage": "Saugykla"
+    },
+    "views": {
+      "folder": "Aplankų rodinys",
+      "server": "Serverių rodinys"
+    }
+  },
+  "types": {
+    "node": "Mazgas",
+    "qemu": "VM",
+    "lxc": "Konteineris",
+    "storage": "Saugykla",
+    "pool": "Telkinys",
+    "sdn": "SDN zona"
+  },
+  "states": {
+    "running": "Veikia",
+    "stopped": "Sustabdyta",
+    "paused": "Pristabdyta",
+    "suspended": "Užmigdyta",
+    "online": "Prisijungęs",
+    "offline": "Atsijungęs",
+    "available": "Pasiekiama",
+    "unknown": "Nežinoma"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Atmintis",
+    "disk": "Diskas",
+    "rootDisk": "Šakninis diskas",
+    "usage": "Naudojimas",
+    "cores_one": "{{count}} branduolys",
+    "cores_few": "{{count}} branduoliai",
+    "cores_many": "{{count}} branduolio",
+    "cores_other": "{{count}} branduolių",
+    "swap": "Sukeitimų sritis"
+  },
+  "summary": {
+    "title": "Suvestinė",
+    "node": "Mazgas",
+    "vmid": "ID",
+    "uptime": "Veikimo laikas",
+    "pool": "Telkinys",
+    "ha": "HA",
+    "tags": "Žymos",
+    "guests": "Svečiai",
+    "guestsRunning": "Veikia {{running}} iš {{total}}",
+    "cpuModel": "CPU",
+    "sockets": "lizdai",
+    "load": "Vidutinė apkrova",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Branduolys",
+    "ips": "Adresai"
+  },
+  "charts": {
+    "title": "Diagramos",
+    "cpu": "CPU",
+    "load": "Vidutinė apkrova",
+    "memory": "Atmintis",
+    "network": "Tinklas",
+    "diskIo": "Disko I/O",
+    "cpuUsage": "CPU naudojimas",
+    "ioDelay": "IO delsa",
+    "used": "Naudojama",
+    "total": "Iš viso",
+    "in": "Gauta",
+    "out": "Išsiųsta",
+    "read": "Skaitymas",
+    "write": "Rašymas",
+    "timeframe": {
+      "hour": "Valanda",
+      "day": "Diena",
+      "week": "Savaitė",
+      "month": "Mėnuo",
+      "year": "Metai"
+    },
+    "noData": "Šiam laikotarpiui duomenų nėra",
+    "serverLoad": "Serverio apkrova",
+    "loadAverage": "Vidutinė apkrova",
+    "swap": "Sukeitimų sritis",
+    "pressureCpu": "CPU slėgio strigtis",
+    "pressureMemory": "Atminties slėgio strigtis",
+    "pressureIo": "IO slėgio strigtis",
+    "some": "Dalinė",
+    "full": "Visiška",
+    "average": "Vidurkis",
+    "maximum": "Maksimumas"
+  },
+  "tasks": {
+    "title": "Užduotys",
+    "started": "Pradėta",
+    "node": "Mazgas",
+    "user": "Naudotojas",
+    "task": "Užduotis",
+    "status": "Būsena",
+    "running": "Vykdoma",
+    "ok": "Gerai",
+    "logTitle": "{{type}} {{id}} mazge {{node}}",
+    "done": "{{label}}: atlikta",
+    "failed": "{{label}} nepavyko: {{reason}}"
+  },
+  "guests": {
+    "more": "Daugiau veiksmų",
+    "isTemplate": "Šablonas",
+    "locked": "Užrakinta: {{lock}}",
+    "power": {
+      "start": "Paleisti",
+      "shutdown": "Išjungti",
+      "stop": "Sustabdyti",
+      "reboot": "Perkrauti",
+      "suspend": "Pristabdyti",
+      "resume": "Pratęsti",
+      "reset": "Atstatyti",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Sustabdyti {{name}} dabar?",
+        "reset": "Atstatyti {{name}} dabar?",
+        "description": "Tai nutraukia maitinimą, lyg ištrauktumėte kištuką. Svečio neįrašyti darbai bus prarasti."
+      }
+    },
+    "clone": {
+      "menu": "Klonuoti",
+      "title": "Klonuoti {{name}}",
+      "submit": "Klonuoti",
+      "label": "Klonuoti {{source}} į {{id}}",
+      "full": "Pilnas klonas",
+      "fullHint": "Nukopijuoja kiekvieną diską, todėl klonas nepriklauso nuo originalo.",
+      "linkedHint": "Išjungus sukuriamas susietas klonas, kuris dalijasi šablono diskais ir sukuriamas per kelias sekundes.",
+      "sameStorage": "Ta pati saugykla kaip originalo"
+    },
+    "migrate": {
+      "menu": "Perkelti",
+      "title": "Perkelti {{name}}",
+      "submit": "Perkelti",
+      "label": "Perkelti {{name}} į {{target}}",
+      "noOtherNodes": "Šiame klasteryje nėra kito prisijungusio mazgo, į kurį galima perkelti.",
+      "onlineHint": "VM veikia ir perkeliama gyvai, nesustabdant.",
+      "restartHint": "Konteineris veikia. Jis sustabdomas, perkeliamas ir vėl paleidžiamas paskirties mazge."
+    },
+    "template": {
+      "menu": "Konvertuoti į šabloną",
+      "confirm": "Konvertuoti {{name}} į šabloną?",
+      "description": "Šablono negalima paleisti, tik klonuoti. To negalima atšaukti.",
+      "submit": "Konvertuoti",
+      "label": "Konvertuoti {{name}} į šabloną"
+    },
+    "delete": {
+      "menu": "Šalinti",
+      "title": "Šalinti {{name}}",
+      "submit": "Šalinti",
+      "label": "Šalinti {{name}}",
+      "warning": "Tai pašalina svečią {{vmid}} ir jo diskus. To negalima atšaukti.",
+      "stopFirst": "Prieš šalindami svečią, jį sustabdykite.",
+      "typeId": "Patvirtinkite įvesdami {{vmid}}",
+      "purge": "Pašalinti iš atsarginio kopijavimo, replikacijos ir HA užduočių",
+      "purgeHint": "Nepalieka užduočių, nukreiptų į nebeegzistuojantį svečią.",
+      "unreferenced": "Taip pat šalinti nenurodytus diskus",
+      "unreferencedHint": "Diskai su šiuo ID įjungtose saugyklose, kurių konfigūracija nenurodo."
+    },
+    "create": {
+      "vmButton": "Kurti VM",
+      "ctButton": "Kurti CT",
+      "vmTitle": "Kurti virtualią mašiną",
+      "ctTitle": "Kurti konteinerį",
+      "submit": "Kurti",
+      "vmLabel": "Kurti VM {{id}} ({{name}})",
+      "ctLabel": "Kurti CT {{id}} ({{name}})",
+      "noTemplates": "Šiame mazge nėra konteinerių šablonų. Atsisiųskite šabloną Proxmox saugyklos skiltyje CT šablonai.",
+      "noIso": "Nėra diegimo laikmenos",
+      "unprivilegedHint": "Saugiau: root konteineryje nėra root mazge.",
+      "loginHint": "Nustatykite root slaptažodį, SSH raktus arba abu.",
+      "problem": {
+        "vmid": "Pasirinkite ID nuo 100.",
+        "hostname": "Įveskite serverio vardą: raidės, skaitmenys ir brūkšneliai.",
+        "name": "Įveskite pavadinimą: raidės, skaitmenys ir brūkšneliai.",
+        "template": "Pasirinkite šabloną.",
+        "storage": "Pasirinkite saugyklą.",
+        "disk": "Įveskite disko dydį.",
+        "cores": "Įveskite branduolių skaičių.",
+        "sockets": "Įveskite lizdų skaičių.",
+        "memory": "Įveskite bent 16 MiB atminties.",
+        "swap": "Įveskite sukeitimų sritį MiB, 0 – be jos.",
+        "network": "Pasirinkite tiltą, o statiniam adresui įveskite jį taip: 192.168.0.60/24.",
+        "login": "Nustatykite root slaptažodį arba SSH raktus, kad galėtumėte prisijungti.",
+        "password": "Slaptažodį turi sudaryti bent 5 simboliai."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Kita"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Pavadinimas",
+      "hostname": "Serverio vardas",
+      "node": "Mazgas",
+      "targetNode": "Paskirties mazgas",
+      "targetStorage": "Paskirties saugykla",
+      "storage": "Saugykla",
+      "template": "Šablonas",
+      "iso": "Diegimo laikmena",
+      "ostype": "Svečio OS",
+      "rootPassword": "Root slaptažodis",
+      "sshKeys": "SSH viešieji raktai",
+      "unprivileged": "Neprivilegijuotas konteineris",
+      "diskGiB": "Diskas (GiB)",
+      "cores": "Branduoliai",
+      "sockets": "Lizdai",
+      "memoryMiB": "Atmintis (MiB)",
+      "swapMiB": "Sukeitimų sritis (MiB)",
+      "bridge": "Tinklo tiltas",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Statinis",
+      "cidr": "Adresas/prefiksas",
+      "gateway": "Šliuzas",
+      "startAfter": "Paleisti sukūrus",
+      "pick": "Pasirinkite"
+    },
+    "tabs": {
+      "summary": "Suvestinė",
+      "hardware": "Aparatinė įranga",
+      "options": "Parinktys",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Redaguoti",
+    "add": "Pridėti",
+    "remove": "Pašalinti",
+    "removed": "{{key}} pašalinta",
+    "pending": "Laukia",
+    "pendingHint": "Pakeitimai, pažymėti Laukia, įsigalioja, kai svečias perkraunamas iš Proxmox: perkrauti svečio viduje nepakanka.",
+    "processors": "Procesoriai",
+    "processorsValue": "{{sockets}} lizdas × {{cores}} branduoliai, {{cpu}}",
+    "allCores": "Visi",
+    "swap": "Sukeitimų sritis",
+    "balloonShort": "min.",
+    "cpuMemory": {
+      "heading": "Procesorius ir atmintis",
+      "title": "Procesorius ir atmintis"
+    },
+    "cpuType": "CPU tipas",
+    "cpulimit": "CPU riba",
+    "cpulimitHint": "0 – be ribos. 1.5 – pusantro branduolio laiko.",
+    "balloon": "Mažiausia atmintis (MiB)",
+    "balloonHint": "Su balloon tvarkykle svečias grąžina atmintį iki šios reikšmės. Lygi atminčiai ją išjungia, 0 pašalina tvarkyklę.",
+    "disks": "Diskai",
+    "volumes": "Šakninis diskas ir prijungimo taškai",
+    "bus": "Magistralė",
+    "slot": "Bus {{key}}",
+    "iothread": "IO gija",
+    "discard": "Discard",
+    "discardHint": "Leidžia svečiui atlaisvinti nenaudojamus blokus plonojoje saugykloje.",
+    "ssd": "SSD emuliacija",
+    "mountPath": "Prijungimo kelias konteineryje",
+    "backup": "Įtraukti į atsargines kopijas",
+    "addDisk": {
+      "button": "Pridėti diską",
+      "title": "Pridėti diską",
+      "label": "Pridėti {{key}}"
+    },
+    "addMount": {
+      "button": "Pridėti prijungimo tašką",
+      "title": "Pridėti prijungimo tašką"
+    },
+    "resize": {
+      "menu": "Keisti dydį",
+      "title": "Padidinti {{key}}",
+      "grow": "Pridėti (GiB)",
+      "result": "{{from}} GiB taps {{to}} GiB",
+      "noShrink": "Diskus galima tik didinti. Svečio skaidinį ir failų sistemą vėliau reikia padidinti svečio viduje, nebent jis tai padaro paleidžiamas.",
+      "submit": "Padidinti",
+      "label": "Padidinti {{key}} {{size}} GiB"
+    },
+    "move": {
+      "menu": "Perkelti į saugyklą",
+      "title": "Perkelti {{key}}",
+      "submit": "Perkelti",
+      "deleteSource": "Šalinti originalą",
+      "deleteSourceHint": "Išjungus jis paliekamas kaip nenaudojamas diskas.",
+      "label": "Perkelti {{key}} į {{storage}}"
+    },
+    "detach": {
+      "menu": "Atjungti",
+      "title": "Atjungti {{key}}?",
+      "description": "Diskas lieka saugykloje kaip nenaudojamas diskas, jį galima pašalinti arba vėl prijungti."
+    },
+    "unused": {
+      "delete": "Šalinti",
+      "title": "Šalinti {{volume}}?",
+      "description": "Tai pašalina diską ir viską, kas jame yra. To negalima atšaukti."
+    },
+    "cd": {
+      "heading": "CD/DVD įrenginiai",
+      "title": "Laikmena įrenginyje {{key}}",
+      "empty": "Nėra laikmenos"
+    },
+    "nic": {
+      "heading": "Tinklo adapteriai",
+      "add": "Pridėti adapterį",
+      "addTitle": "Pridėti {{key}}",
+      "editTitle": "Redaguoti {{key}}",
+      "none": "Nėra tinklo adapterių.",
+      "model": "Modelis",
+      "name": "Pavadinimas konteineryje",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Statinis",
+        "none": "Nėra",
+        "auto": "SLAAC"
+      },
+      "tag": "VLAN žyma",
+      "tagHint": "Tuščia – be žymos.",
+      "rate": "Spartos riba (MB/s)",
+      "rateHint": "Tuščia – be ribos.",
+      "firewall": "Užkarda",
+      "firewallShort": "užkarda",
+      "removeTitle": "Pašalinti {{key}}?",
+      "removeDescription": "Svečias netenka šio adapterio ir jo adreso."
+    },
+    "problem": {
+      "cpu": "Įveskite bent vieną lizdą ir branduolį.",
+      "cpulimit": "CPU riba yra nuo 0 iki 8192.",
+      "memory": "Įveskite bent 16 MiB atminties.",
+      "balloon": "Mažiausia atmintis negali būti didesnė už atmintį.",
+      "swap": "Įveskite sukeitimų sritį MiB, 0 – be jos.",
+      "noSlot": "Visos šio tipo jungtys užimtos.",
+      "storage": "Pasirinkite saugyklą.",
+      "size": "Įveskite dydį sveikais GiB.",
+      "path": "Įveskite absoliutųjį kelią, pvz., /data, bet ne patį /.",
+      "bridge": "Pasirinkite tiltą.",
+      "tag": "VLAN žyma yra nuo 1 iki 4094.",
+      "rate": "Įveskite didesnę nei 0 spartą arba palikite tuščią.",
+      "name": "Įveskite pavadinimą, pvz., eth0.",
+      "ip4": "Įveskite adresą, pvz., 192.168.0.60/24, ir galiojantį šliuzą.",
+      "ip6": "Įveskite adresą, pvz., fd00::10/64."
+    },
+    "detached": "{{key}} atjungtas; jis lieka kaip nenaudojamas diskas",
+    "coresHint": "Tuščia – naudojami visi mazgo branduoliai."
+  },
+  "options": {
+    "general": "Bendra",
+    "tags": "Žymos",
+    "tagsHint": "Atskirtos kableliais.",
+    "onboot": "Paleisti įsijungus mazgui",
+    "protection": "Apsauga",
+    "protectionHint": "Neleidžia šalinti svečio ir jo diskų, kol apsauga neišjungta.",
+    "agent": "QEMU svečio agentas",
+    "agentHint": "Įjunkite, kai agentas veikia svečiuje, kad būtų matomi jo adresai ir svečias išsijungtų tvarkingai.",
+    "startup": "Paleidimo ir išjungimo tvarka",
+    "startupOrder": "Eilė",
+    "startupUp": "Delsa po paleidimo (s)",
+    "startupDown": "Išjungimo laiko limitas (s)",
+    "dns": "DNS",
+    "nameserver": "DNS serveriai",
+    "searchdomain": "Paieškos domenas",
+    "useHost": "Tuščia – naudojami mazgo nustatymai.",
+    "notes": "Pastabos",
+    "saved": "Parinktys įrašytos",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Kita"
+    },
+    "problem": {
+      "name": "Įveskite pavadinimą.",
+      "startup": "Eilė ir delsos yra sveikieji skaičiai.",
+      "tags": "Žymose naudojamos raidės, skaitmenys, brūkšneliai, taškai ir pabraukimo brūkšniai.",
+      "nameserver": "Įveskite IP adresus, atskirtus tarpais."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "Ši VM neturi cloud-init įrenginio. Pridėkite jį, tada čia nustatykite naudotoją, raktus ir tinklą; svečio atvaizdas turi palaikyti cloud-init.",
+    "addDrive": "Pridėti cloud-init įrenginį",
+    "driveAdded": "Cloud-init įrenginys pridėtas",
+    "user": "Naudotojas",
+    "username": "Naudotojo vardas",
+    "usernameHint": "Tuščia – naudojamas numatytasis atvaizdo naudotojas.",
+    "password": "Slaptažodis",
+    "passwordHint": "Tuščia – paliekamas dabartinis. Proxmox jį saugo kaip maišos reikšmę.",
+    "network": "Tinklas",
+    "saved": "Cloud-init nustatymai įrašyti",
+    "regenerate": "Pergeneruoti atvaizdą",
+    "regenerated": "Cloud-init atvaizdas pergeneruotas",
+    "regenerateHint": "Įrašo nustatymus į {{drive}}. Svečias juos nuskaito kito paleidimo metu."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Suvestinė",
+      "iso": "ISO atvaizdai",
+      "vztmpl": "CT šablonai",
+      "backup": "Atsarginės kopijos",
+      "images": "Diskų atvaizdai"
+    },
+    "content": "Turinys",
+    "contentTypes": {
+      "images": "VM diskai",
+      "rootdir": "Konteinerių diskai",
+      "iso": "ISO atvaizdai",
+      "vztmpl": "CT šablonai",
+      "backup": "Atsarginės kopijos",
+      "snippets": "Fragmentai",
+      "import": "Importas"
+    },
+    "shared": "Bendrinama",
+    "empty": "Čia dar nieko nėra.",
+    "owner": "svečias {{vmid}}",
+    "protected": "Apsaugota",
+    "download": {
+      "button": "Atsisiųsti iš URL",
+      "title": {
+        "iso": "Atsisiųsti ISO atvaizdą į {{storage}}",
+        "vztmpl": "Atsisiųsti CT šabloną į {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Failo pavadinimas",
+      "algorithm": "Kontrolinės sumos tipas",
+      "noChecksum": "Nėra",
+      "checksum": "Kontrolinė suma",
+      "verify": "Tikrinti serverio sertifikatą",
+      "submit": "Atsisiųsti",
+      "label": "Atsisiųsti {{name}}",
+      "problem": {
+        "url": "Įveskite http arba https URL.",
+        "filename": "Failo pavadinime naudojamos raidės, skaitmenys, taškai, brūkšneliai ir pabraukimo brūkšniai.",
+        "extension": "ISO atvaizdai baigiasi .iso arba .img; šablonai – .tar.gz, .tar.xz arba .tar.zst.",
+        "checksum": "Pasirinkite kontrolinės sumos tipą ir įveskite sumą šešioliktainiu formatu arba palikite abu laukus tuščius."
+      }
+    },
+    "catalog": {
+      "button": "Šablonai",
+      "title": "Konteinerių šablonai saugyklai {{storage}}",
+      "search": "Ieškoti šablonų...",
+      "have": "Atsisiųsta",
+      "label": "Atsisiųsti {{name}}"
+    },
+    "delete": {
+      "title": "Šalinti {{name}}?",
+      "description": "Tai pašalina failą iš saugyklos. To negalima atšaukti.",
+      "submit": "Šalinti",
+      "done": "{{name}} pašalintas"
+    },
+    "upload": {
+      "button": "Įkelti",
+      "cancel": "Atšaukti įkėlimą",
+      "done": "{{name}} įkeltas",
+      "failed": "Nepavyko įkelti {{name}}: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Suvestinė",
+      "network": "Tinklas",
+      "system": "Sistema",
+      "services": "Tarnybos",
+      "updates": "Naujiniai",
+      "disks": "Diskai",
+      "tasks": "Užduotys",
+      "log": "Žurnalas"
+    },
+    "services": {
+      "start": "Paleisti",
+      "stop": "Sustabdyti",
+      "restart": "Paleisti iš naujo",
+      "reload": "Įkelti iš naujo",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Sustabdyti {{name}}?",
+        "restart": "Paleisti {{name}} iš naujo?",
+        "description": "Pačios Proxmox tarnybos palaiko mazgo ir jo API veikimą; sustabdžius vieną, šis įrankis gali atsijungti, kol ji vėl bus paleista."
+      }
+    },
+    "updates": {
+      "refresh": "Atnaujinti paketų sąrašus",
+      "refreshLabel": "Atnaujinti paketų sąrašus mazge {{node}}",
+      "count_one": "Galima atnaujinti {{count}} paketą",
+      "count_few": "Galima atnaujinti {{count}} paketus",
+      "count_many": "Galima atnaujinti {{count}} paketo",
+      "count_other": "Galima atnaujinti {{count}} paketų",
+      "none": "Viskas atnaujinta",
+      "installHint": "Naujinius įdiekite iš mazgo terminalo komanda apt full-upgrade; Proxmox per savo API nenaujina.",
+      "views": {
+        "packages": "Paketai",
+        "repositories": "Saugyklos"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "{{disk}} SMART",
+      "health": "Būklė",
+      "usedBy": "naudoja {{used}}",
+      "unused": "nenaudojamas",
+      "wearout": "Liko {{value}}% resurso",
+      "views": {
+        "disks": "Diskai",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Katalogas",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "{{count}} loginis tomas",
+        "lvCount_few": "{{count}} loginiai tomai",
+        "lvCount_many": "{{count}} loginio tomo",
+        "lvCount_other": "{{count}} loginių tomų",
+        "metadata": "metaduomenys {{used}} / {{size}}",
+        "frag": "fragmentuota {{value}}%",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "Nėra LVM tomų grupių.",
+          "lvmthin": "Nėra LVM-Thin telkinių.",
+          "directory": "Nėra katalogo saugyklos atskirame diske.",
+          "zfs": "Nėra ZFS telkinių."
+        },
+        "create": {
+          "lvm": "Kurti LVM tomų grupę",
+          "lvmthin": "Kurti LVM-Thin telkinį",
+          "directory": "Kurti katalogą",
+          "zfs": "Kurti ZFS telkinį"
+        },
+        "createSubmit": "Kurti",
+        "createLabel": "Kurti {{name}} mazge {{node}}",
+        "wipeWarning": "Pasirinkti diskai bus suskaidyti ir suformatuoti. Siūlomi tik tušti diskai.",
+        "name": "Pavadinimas",
+        "device": "Diskas",
+        "devices": "Diskai",
+        "pickDisk": "Pasirinkite diską",
+        "noUnused": "Nenaudojamų diskų nėra. Pirmiausia išvalykite vieną skiltyje Diskai, jei jo turinys nebereikalingas.",
+        "filesystem": "Failų sistema",
+        "raidlevel": "RAID lygis",
+        "raid": {
+          "single": "Vienas diskas",
+          "mirror": "Veidrodis",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Glaudinimas",
+        "addStorage": "Pridėti kaip saugyklą",
+        "addStorageHint": "Paverčia jį to paties pavadinimo Proxmox saugykla diskams, konteineriams ar atsarginėms kopijoms.",
+        "problem": {
+          "name": "Pavadinimas prasideda raide ir sudarytas iš raidžių, skaitmenų, -, _ arba .",
+          "device": "Pasirinkite diską.",
+          "oneDevice": "Pasirinkite vieną diską.",
+          "tooFew": "Šiam RAID lygiui reikia bent {{count}} diskų.",
+          "even": "RAID10 reikia lyginio diskų skaičiaus.",
+          "ashift": "ashift yra nuo 9 iki 16."
+        },
+        "remove": "Pašalinti",
+        "removeTitle": "Pašalinti {{name}}?",
+        "removeWarning": "Svečiai, kurių diskai jame, jų netenka. Šalinant niekas iš jo iš anksto neperkeliama.",
+        "removeLabel": "Pašalinti {{name}} mazge {{node}}",
+        "cleanupConfig": "Taip pat pašalinti saugyklos įrašą",
+        "cleanupDisks": "Išvalyti jo diskus",
+        "cleanupDisksHint": "Ištrina diskus, kad juos būtų galima vėl naudoti.",
+        "inUse": {
+          "lvm": "Jame vis dar yra loginių tomų. Pirmiausia juos pašalinkite; šioje grupėje gali būti paties mazgo sistema.",
+          "lvmthin": "Jame vis dar yra duomenų. Pirmiausia perkelkite arba pašalinkite jame esančius svečių diskus."
+        }
+      },
+      "gpt": "Inicijuoti GPT",
+      "gptTitle": "Inicijuoti {{disk}} su GPT?",
+      "gptDescription": "Įrašo į diską tuščią GPT skaidinių lentelę.",
+      "gptLabel": "Inicijuoti {{disk}} mazge {{node}}",
+      "wipe": "Išvalyti",
+      "wipeTitle": "Išvalyti {{disk}}?",
+      "wipeWarning": "Ištrina skaidinių lentelę ir visus failų sistemų, LVM bei ZFS parašus diske (dabar: {{used}}). Jo turinys bus prarastas visam laikui.",
+      "wipeLabel": "Išvalyti {{disk}} mazge {{node}}",
+      "typePath": "Patvirtinkite įvesdami {{disk}}"
+    },
+    "log": {
+      "search": "Filtruoti žurnalą...",
+      "empty": "Atitinkančių eilučių nėra."
+    },
+    "power": {
+      "menu": "Mazgo maitinimas",
+      "termixWarning": "Jei Termix veikia šiame mazge, jis taip pat nustos veikti, kol mazgas vėl įsijungs.",
+      "typeName": "Patvirtinkite įvesdami {{node}}",
+      "reboot": {
+        "menu": "Perkrauti mazgą",
+        "title": "Perkrauti {{node}}?",
+        "submit": "Perkrauti",
+        "label": "Perkrauti {{node}}",
+        "warning_one": "{{count}} veikiantis svečias pirmiausia sustabdomas arba išjungiamas, kaip nurodo jo paleidimo nustatymai.",
+        "warning_few": "{{count}} veikiantys svečiai pirmiausia sustabdomi arba išjungiami, kaip nurodo jų paleidimo nustatymai.",
+        "warning_many": "{{count}} veikiančio svečio pirmiausia sustabdoma arba išjungiama, kaip nurodo jų paleidimo nustatymai.",
+        "warning_other": "{{count}} veikiančių svečių pirmiausia sustabdoma arba išjungiama, kaip nurodo jų paleidimo nustatymai."
+      },
+      "shutdown": {
+        "menu": "Išjungti mazgą",
+        "title": "Išjungti {{node}}?",
+        "submit": "Išjungti",
+        "label": "Išjungti {{node}}",
+        "warning_one": "{{count}} veikiantis svečias išsijungia kartu su juo, ir niekas jo vėl nepaleis, kol kas nors neįjungs mazgo.",
+        "warning_few": "{{count}} veikiantys svečiai išsijungia kartu su juo, ir niekas jų vėl nepaleis, kol kas nors neįjungs mazgo.",
+        "warning_many": "{{count}} veikiančio svečio išsijungia kartu su juo, ir niekas jų vėl nepaleis, kol kas nors neįjungs mazgo.",
+        "warning_other": "{{count}} veikiančių svečių išsijungia kartu su juo, ir niekas jų vėl nepaleis, kol kas nors neįjungs mazgo."
+      }
+    },
+    "shell": "Apvalkalas",
+    "shellHint": "Atidaro šio serverio SSH terminalą Termix programoje.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Paieškos domenas",
+        "server": "DNS serveris {{n}}",
+        "editTitle": "{{node}} DNS",
+        "saved": "DNS įrašytas",
+        "problem": {
+          "search": "Įveskite paieškos domeną, pvz., example.com.",
+          "server": "DNS serveris yra IPv4 arba IPv6 adresas.",
+          "noServer": "Įveskite bent vieną DNS serverį."
+        }
+      },
+      "time": {
+        "title": "Laikas",
+        "zone": "Laiko juosta",
+        "local": "Vietinis laikas",
+        "editTitle": "{{node}} laiko juosta",
+        "hint": "Patį laikrodį mazge palaiko NTP (chrony).",
+        "saved": "Laiko juosta nustatyta į {{zone}}"
+      },
+      "hosts": {
+        "title": "Serveriai",
+        "editTitle": "{{node}} /etc/hosts",
+        "warning": "Paties mazgo vardas turi ir toliau būti išsprendžiamas į jo adresą, kitaip klasteris ir jo žiniatinklio sąsaja nustos veikti.",
+        "saved": "/etc/hosts įrašytas"
+      },
+      "certs": {
+        "title": "Sertifikatai",
+        "issuer": "išdavė {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Galioja iki {{date}}",
+          "expiring": "Baigia galioti {{date}}",
+          "expired": "Nebegalioja nuo {{date}}",
+          "notYet": "Dar negalioja"
+        },
+        "upload": "Įkelti savo",
+        "uploadTitle": "Savas sertifikatas mazgui {{node}}",
+        "uploaded": "Sertifikatas įkeltas",
+        "chain": "Sertifikatų grandinė",
+        "chainHint": "PEM: pirmiausia mazgo sertifikatas, po to tarpiniai.",
+        "key": "Privatusis raktas",
+        "keyHint": "PEM, neužšifruotas. Palikite tuščią, kad liktų mazge jau esantis raktas.",
+        "fromFile": "Nuskaityti iš failo",
+        "badCert": "Tai nėra PEM sertifikatas.",
+        "badKey": "Tai nėra PEM privatusis raktas.",
+        "restart": "Paleisti žiniatinklio sąsają iš naujo, kad jis būtų naudojamas",
+        "restartHint": "pveproxy paleidžiamas iš naujo; Termix kelioms sekundėms netenka API.",
+        "remove": "Pašalinti savą",
+        "removeTitle": "Pašalinti savą sertifikatą?",
+        "removeDescription": "Mazgas grįžta prie savo pasirašyto sertifikato, o žiniatinklio sąsaja paleidžiama iš naujo.",
+        "removed": "Savas sertifikatas pašalintas"
+      }
+    },
+    "repos": {
+      "on": "Įjungta",
+      "off": "Išjungta",
+      "enable": "Įjungti",
+      "disable": "Išjungti",
+      "enableTitle": "Įjungti šią saugyklą?",
+      "enabled": "Saugykla įjungta",
+      "disabled": "Saugykla išjungta",
+      "add": "Pridėti:",
+      "added": "Saugykla {{name}} pridėta",
+      "hint": "Po pakeitimo skiltyje Paketai paleiskite Atnaujinti paketų sąrašus. Enterprise saugykloms reikia prenumeratos."
+    },
+    "taskHistory": {
+      "type": "Tipas, pvz., vzdump",
+      "vmid": "VM/CT ID",
+      "user": "Naudotojas",
+      "errorsOnly": "Tik nepavykusios užduotys",
+      "none": "Atitinkančių užduočių nėra.",
+      "more": "Įkelti daugiau",
+      "state": {
+        "running": "Vykdoma",
+        "ok": "Gerai"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Užsakyti sertifikatą",
+      "renew": "Atnaujinti",
+      "orderLabel": "Užsakyti ACME sertifikatą mazgui {{node}}",
+      "renewLabel": "Atnaujinti ACME sertifikatą mazgui {{node}}",
+      "usesAccount": "Paskyra: {{account}}",
+      "none": "nėra",
+      "noDomains": "Domenų dar nėra. Redaguokite, kad pridėtumėte vardus, kuriais atsako šis mazgas.",
+      "viaHttp": "HTTP iššūkis",
+      "viaDns": "DNS iššūkis per {{plugin}}",
+      "accounts": "Paskyros",
+      "plugins": "DNS iššūkio papildiniai",
+      "remove": "Pašalinti",
+      "domainsTitle": "{{node}} ACME domenai",
+      "domainsSaved": "ACME domenai įrašyti",
+      "domain": "Domenas",
+      "challenge": "Iššūkis",
+      "alias": "Pseudonimas",
+      "addDomain": "Pridėti domeną",
+      "httpHint": "HTTP iššūkiui reikia, kad šio mazgo 80 prievadas būtų pasiekiamas iš interneto pagal domeną. DNS veikia ir be to, taip pat pakaitos simbolių domenams.",
+      "hint": "Paskyros ir papildiniai bendri visam klasteriui; domenai nustatomi kiekvienam mazgui.",
+      "problem": {
+        "noDomain": "Pridėkite bent vieną domeną.",
+        "tooMany": "Mazgas gali turėti ne daugiau kaip šešis ACME domenus.",
+        "domain": "Domenas yra pilnas vardas, pvz., pve.example.com.",
+        "wildcard": "Pakaitos simbolių domenui reikia DNS iššūkio papildinio."
+      },
+      "account": {
+        "title": "Paskyra",
+        "pick": "Pasirinkite paskyrą",
+        "add": "Registruoti paskyrą",
+        "addTitle": "Registruoti ACME paskyrą",
+        "register": "Registruoti",
+        "registerLabel": "Registruoti ACME paskyrą {{name}}",
+        "name": "Pavadinimas",
+        "email": "El. paštas",
+        "directory": "ACME katalogas",
+        "customDirectory": "Savas URL",
+        "directoryUrl": "Katalogo URL",
+        "acceptTos": "Sutikti su paslaugos teikimo sąlygomis",
+        "eabKid": "EAB rakto ID",
+        "eabHmac": "EAB HMAC raktas",
+        "eabHint": "Tik CA, kurios prašo External Account Binding.",
+        "none": "ACME paskyros dar nėra.",
+        "needOne": "Pirmiausia užregistruokite ACME paskyrą.",
+        "removeTitle": "Išjungti paskyrą {{name}}?",
+        "removeDescription": "Paskyra išjungiama CA ir pašalinama čia. Jau išduoti sertifikatai toliau galioja.",
+        "removeLabel": "Išjungti ACME paskyrą {{name}}",
+        "problem": {
+          "name": "Pavadinimą sudaro raidės, skaitmenys, -, _ arba .",
+          "email": "Įveskite el. pašto adresą.",
+          "directory": "Katalogas yra http arba https URL.",
+          "tos": "Norėdami registruotis, sutikite su paslaugos teikimo sąlygomis.",
+          "eab": "EAB reikia ir rakto ID, ir HMAC rakto."
+        }
+      },
+      "plugin": {
+        "add": "Pridėti papildinį",
+        "addTitle": "Pridėti DNS iššūkio papildinį",
+        "id": "Papildinio ID",
+        "api": "DNS API",
+        "pickApi": "Pasirinkite DNS teikėją",
+        "delay": "Patvirtinimo delsa (s)",
+        "delayHint": "Kiek laukti, kol TXT įrašas pasklis.",
+        "noFields": "Proxmox šiam teikėjui laukų nenurodo; skaitomus kintamuosius rasite acme.sh dokumentacijoje.",
+        "none": "DNS papildinių nėra. HTTP veikia ir be jų.",
+        "disabled": "Išjungta",
+        "removeTitle": "Pašalinti papildinį {{name}}?",
+        "removeDescription": "Jį naudojančių domenų nebebus galima patvirtinti."
+      }
+    }
+  },
+  "console": {
+    "open": "Konsolė",
+    "openHint": "Atidaro svečio Termix serverį arba pasiūlo pirmiausia jį pridėti į Termix.",
+    "tabTitle": "Proxmox konsolė",
+    "tabLabel": "{{name}} — Konsolė",
+    "pick": "Atidarykite veikiančios VM arba konteinerio konsolę Proxmox įrankyje.",
+    "connect": "Prisijungti",
+    "reconnect": "Prisijungti iš naujo",
+    "disconnect": "Atsijungti",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Visas ekranas",
+    "notRunning": "Paleiskite svečią, kad atidarytumėte jo konsolę.",
+    "lost": "Ryšys su konsole nutrūko.",
+    "ended": "Konsolė uždaryta.",
+    "status": {
+      "idle": "Neprisijungta",
+      "connecting": "Jungiamasi...",
+      "connected": "Prisijungta",
+      "closed": "Atsijungta",
+      "error": "Nepavyko prisijungti"
+    },
+    "proxmox": "Proxmox konsolė",
+    "proxmoxHint": "Pačios Proxmox konsolė per mazgą: VM ekranas, apvalkalas konteineryje. Svečiui, kuris dar neturi tinklo."
+  },
+  "pool": {
+    "members": "Nariai",
+    "empty": "Šiame telkinyje nieko nėra."
+  },
+  "sdn": {
+    "hint": "SDN zonos, VNet ir potinkliai atsiras su klasterio valdymu vėlesnėje versijoje."
+  },
+  "network": {
+    "add": "Kurti",
+    "apply": "Taikyti",
+    "revert": "Grąžinti",
+    "pending": "Dar netaikyta",
+    "hint": "Pakeitimai įrašomi į /etc/network/interfaces.new ir įsigalioja paspaudus Taikyti, kuris iš naujo įkelia mazgo tinklą.",
+    "type": "Tipas",
+    "name": "Pavadinimas",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Šliuzas (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Šliuzas (IPv6)",
+    "ports": "Tilto prievadai",
+    "slaves": "Pavaldžiosios sąsajos",
+    "portsHint": "Sąsajų pavadinimai, atskirti tarpais.",
+    "bondMode": "Režimas",
+    "vlanDevice": "VLAN pagrindinis įrenginys",
+    "mtu": "MTU",
+    "comments": "Komentaras",
+    "autostart": "Automatinis paleidimas",
+    "vlanAware": "VLAN palaikymas",
+    "vlanAwareHint": "Leidžia šio tilto svečiams naudoti VLAN žymas.",
+    "inactive": "Neaktyvi",
+    "create": "Kurti",
+    "createTitle": "Kurti sąsają",
+    "editTitle": "Redaguoti {{iface}}",
+    "types": {
+      "bridge": "Tiltas",
+      "bond": "Jungtis",
+      "vlan": "VLAN",
+      "eth": "Prievadas",
+      "OVSBridge": "OVS tiltas",
+      "alias": "Pseudonimas"
+    },
+    "nameHint": {
+      "bridge": "vmbr ir skaičius, pvz., vmbr1.",
+      "bond": "bond ir skaičius, pvz., bond0.",
+      "vlan": "įrenginys.žyma, pvz., vmbr0.10, arba vlan10 su pagrindiniu įrenginiu."
+    },
+    "addressWarning": "Ši sąsaja turi adresą, kuriuo Termix pasiekia mazgą. Klaida gali atjungti Termix, kol kas nors pataisys mazgą per jo konsolę.",
+    "removeTitle": "Pašalinti {{iface}}?",
+    "removeDescription": "Sąsaja pašalinama, kai pakeitimas pritaikomas.",
+    "applyTitle": "Taikyti tinklo pakeitimus mazge {{node}}?",
+    "applyDescription": "Mazgas iš naujo įkelia savo tinklą. Jei nauji nustatymai klaidingi, mazgas ir Termix ryšys su juo gali atsijungti.",
+    "applyLabel": "Taikyti tinklą mazge {{node}}",
+    "reverted": "Tinklo pakeitimai grąžinti",
+    "problem": {
+      "cidr": "Įveskite adresą, pvz., 10.10.0.1/24.",
+      "gateway": "Šliuzui reikia IPv4 adreso ir galiojančio šliuzo IP.",
+      "cidr6": "Įveskite adresą, pvz., fd00::1/64.",
+      "ports": "Įveskite sąsajų pavadinimus, atskirtus tarpais.",
+      "slaves": "Jungčiai reikia bent vienos pavaldžiosios sąsajos.",
+      "vlanDevice": "Nurodykite vlanN sąsajos pagrindinį įrenginį.",
+      "mtu": "MTU yra nuo 1280 iki 65520.",
+      "name": {
+        "bridge": "Tilto pavadinimas yra vmbr ir skaičius.",
+        "bond": "Jungties pavadinimas yra bond ir skaičius.",
+        "vlan": "VLAN pavadinimas yra įrenginys.žyma arba vlan ir skaičius."
+      }
+    }
+  },
+  "import": {
+    "open": "Importuoti į Termix",
+    "title": "Importuoti svečius kaip Termix serverius",
+    "hint": "Kiekviena pasirinkta VM ar konteineris tampa Termix serveriu su žyma proxmox. Importuojant taip pat atnaujinami anksčiau importuotų svečių pavadinimai, adresai ir žymos, o Proxmox nebesantys pažymimi žyma proxmox-missing.",
+    "loading": "Ieškoma svečių ir jų adresų…",
+    "counts": "Svečių: {{total}}, jau importuota: {{imported}}",
+    "selectAll": "Žymėti viską",
+    "selectNone": "Nieko nežymėti",
+    "none": "Šiame klasteryje nėra VM ar konteinerių.",
+    "imported": "Importuota",
+    "noAddress": "nėra adreso",
+    "folder": "Aplankas",
+    "folderDefault": "Aplankas pavadinimu {{node}}",
+    "folderSearch": "Ieškokite arba kurkite, / poaplankiui",
+    "folderCreate": "Kurti „{{folder}}“",
+    "folderNone": "Aplankų dar nėra",
+    "connection": "Jungtis naudojant",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Konteinerių vykdymo aplinka",
+    "runtimeOff": "Be Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "Nežinoma OS"
+    },
+    "sshLogin": "SSH prisijungimas",
+    "desktopLogin": "RDP ir VNC prisijungimas",
+    "desktopHint": "Prisijungimui reikia Remote Desktop papildinio.",
+    "login": {
+      "nodeCredential": "Mazgo prisijungimo duomenys",
+      "nodeUser": "Mazgo naudotojo vardas",
+      "username": "Tik naudotojo vardas",
+      "none": "Be prisijungimo"
+    },
+    "username": "Naudotojo vardas",
+    "submit_one": "Importuoti {{count}} svečią",
+    "submit_few": "Importuoti {{count}} svečius",
+    "submit_many": "Importuoti {{count}} svečio",
+    "submit_other": "Importuoti {{count}} svečių",
+    "refresh": "Atnaujinti importuotus",
+    "done": "Sukurta {{created}}, atnaujinta {{updated}}, pažymėta kaip trūkstami {{markedMissing}}",
+    "lastSync": "Paskutinis sinchronizavimas {{when}}.",
+    "lastSyncFailed": "Paskutinis sinchronizavimas {{when}} nepavyko: {{error}}",
+    "syncHint": "Serverio Proxmox nustatymuose įjunkite Sinchronizuoti importuotus svečius, kad jie būtų atnaujinami pagal tvarkaraštį.",
+    "addTitle": "Pridėti {{name}} į Termix",
+    "addHint": "Šis svečias dar nėra Termix serveris. Pridėkite jį, kad atidarytumėte jo terminalą, tada Konsolė jį atidarys iškart.",
+    "addSubmit": "Pridėti ir prisijungti",
+    "gone": "Proxmox šio svečio nebeišvardija."
+  }
+}

@@ -2,7 +2,7 @@ import express, { type Response, type Router } from "express";
 import type { PluginContext } from "@termix-ssh/plugin-sdk/backend";
 import { PveError, type PveMethod, type PveParams } from "./pve/client.js";
 import { SETTINGS, parseHostConfig, withPveClient } from "./pve/connection.js";
-import { findRule, hostLevelFor } from "./pve/policy.js";
+import { findRule, hostLevelFor, paramsAllowed } from "./pve/policy.js";
 
 const METHODS: PveMethod[] = ["GET", "POST", "PUT", "DELETE"];
 const MAX_PATH_SEGMENTS = 12;
@@ -187,6 +187,12 @@ export function registerRoutes(ctx: PluginContext, router: Router): void {
       return void res.status(403).json({
         error: `${body.method} /${body.path.join("/")} is not allowed`,
         code: "PVE_PATH_NOT_ALLOWED",
+      });
+    }
+    if (!paramsAllowed(rule, body.params)) {
+      return void res.status(403).json({
+        error: `These parameters are not allowed for ${body.method} /${body.path.join("/")}`,
+        code: "PVE_PARAMS_NOT_ALLOWED",
       });
     }
     if (!(await ctx.rbac.has(rule.permission))) {

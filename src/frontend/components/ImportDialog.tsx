@@ -436,7 +436,7 @@ function describe(
     t(`types.${g.type}`),
     g.os.label ?? t(`import.os.${g.os.family}`),
     g.node,
-    g.status,
+    t(`states.${g.status}`, { defaultValue: g.status }),
     g.ip ?? t("import.noAddress"),
   ].join(" · ");
 }

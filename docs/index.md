@@ -22,7 +22,7 @@ Open Proxmox from Tools, or right-click a node in the host list and pick Open in
 - A node shows its use, version and charts, and has Create VM and Create CT.
 - A guest shows its use and charts, with buttons for what its state allows: Start, Shut down, Reboot, Suspend, Resume, Stop and Reset. Stop and Reset ask first, because they cut the power.
 - More on a guest has Clone, Migrate, Convert to template and Delete. Delete asks you to type the guest's ID.
-- Tasks at the bottom lists the cluster's recent tasks. Click one to read its log. Tasks you start are followed until they end.
+- Tasks at the bottom lists the cluster's recent tasks. Click its heading to fold it away; it remembers that. Click one to read its log. Tasks you start are followed until they end.
 
 Charts show an hour, a day, a week, a month or a year, as averages or maximums. Nodes also chart server load, swap and pressure stall (CPU, memory, IO) on PVE 9.
 
@@ -57,7 +57,11 @@ A storage has a tab for each kind of content it holds. ISO images and CT templat
 
 ## Nodes
 
-A node has tabs for Network, Services (start, stop, restart, reload), Updates (refresh the package lists; install upgrades from the node's terminal), Disks (health and SMART) and Log. Network lists the node's interfaces. Create makes a bridge, bond or VLAN; an interface's menu edits or removes it. Changes wait in `/etc/network/interfaces.new` until Apply, which reloads the node's network, or Revert, which drops them. Termix warns before you change the interface it reaches the node on. Shell opens the node's terminal. The power button reboots or shuts the node down after you type its name. If Termix runs on that node, it goes down too.
+A node has tabs for Network, System, Services (start, stop, restart, reload), Updates, Disks, Tasks and Log, in the order of Proxmox's node menu.
+
+System shows and edits the node's DNS (search domain and up to three servers), its time zone and `/etc/hosts`, lists its certificates with their expiry, uploads a custom certificate (chain and key as PEM, pasted or read from a file) or removes it, and sets up ACME: register accounts, add DNS challenge plugins, pick the node's account and domains (HTTP or DNS challenge, up to six), then order or renew the certificate. ACME accounts and plugins need the Administer permission. Updates has Packages (refresh the package lists; install upgrades from the node's terminal) and Repositories (turn APT repositories on and off, add Proxmox's standard ones). Disks has the disks with health and SMART, Initialize GPT and Wipe (after typing the disk's path), and the LVM volume groups, LVM-Thin pools, directories and ZFS pools on them. Create makes one on unused disks (ZFS with its RAID level, compression and ashift) and can add it as storage; Remove takes it away, optionally with its storage entry and wiping its disks, after typing its name. Tasks is the node's task history, filtered by type, guest, user or failures, with each task's log.
+
+Network lists the node's interfaces. Create makes a bridge, bond or VLAN; an interface's menu edits or removes it. Changes wait in `/etc/network/interfaces.new` until Apply, which reloads the node's network, or Revert, which drops them. Termix warns before you change the interface it reaches the node on. Shell opens the node's terminal. The power button reboots or shuts the node down after you type its name. If Termix runs on that node, it goes down too.
 
 ## Permissions
 

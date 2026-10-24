@@ -1,7 +1,7 @@
 {
   "id": "pve",
   "name": "Proxmox VE",
-  "version": "0.2.9",
+  "version": "0.2.14",
   "description": "Manage Proxmox VE from Termix: virtual machines, containers, storage, network, backups, firewall, access and the cluster.",
   "author": {
     "name": "Дмитрий Ляхов"

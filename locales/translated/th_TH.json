@@ -1,0 +1,1018 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "จัดการ Proxmox VE จาก Termix: เครื่องเสมือน คอนเทนเนอร์ สตอเรจ เครือข่าย การสำรองข้อมูล ไฟร์วอลล์ การเข้าถึง และคลัสเตอร์"
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "เปิดใน Proxmox"
+  },
+  "permissions": {
+    "view": {
+      "title": "ดู Proxmox",
+      "description": "ดูโหนด เกสต์ สตอเรจ กราฟ และงานบนโฮสต์ Proxmox ที่คุณเชื่อมต่อได้"
+    },
+    "operate": {
+      "title": "ควบคุมเกสต์ Proxmox",
+      "description": "เริ่ม หยุด ปิดเครื่อง รีบูต พัก และทำงานต่อ VM และคอนเทนเนอร์ ต้องมีสิทธิ์แก้ไขโฮสต์"
+    },
+    "console": {
+      "title": "เปิดคอนโซล Proxmox",
+      "description": "เปิดหน้าจอของ VM และเชลล์ root ในคอนเทนเนอร์ ต้องมีสิทธิ์แก้ไขโฮสต์"
+    },
+    "configure": {
+      "title": "กำหนดค่า Proxmox",
+      "description": "สร้าง โคลน ย้าย แปลง และลบ VM และคอนเทนเนอร์ ต้องมีสิทธิ์แก้ไขโฮสต์"
+    },
+    "administer": {
+      "title": "ดูแลระบบ Proxmox",
+      "description": "จัดการผู้ใช้ กลุ่ม บทบาท พูล 2FA โทเค็น realm และคลัสเตอร์ ต้องมีสิทธิ์แก้ไขโฮสต์"
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "โหนด Proxmox",
+      "description": "ทำเครื่องหมายโฮสต์นี้เป็นโหนด Proxmox VE จากนั้นจะแสดงในเครื่องมือ Proxmox ใต้เครื่องมือ"
+    },
+    "transport": {
+      "label": "เชื่อมต่อผ่าน",
+      "description": "อัตโนมัติจะใช้ API ผ่านอุโมงค์ SSH เมื่อบันทึกโทเค็นแล้ว และใช้ pvesh ผ่าน SSH จนกว่าจะถึงตอนนั้น",
+      "auto": "อัตโนมัติ",
+      "tunnel": "API ผ่านอุโมงค์ SSH",
+      "direct": "API โดยตรง",
+      "pvesh": "pvesh ผ่าน SSH"
+    },
+    "tokenId": {
+      "label": "ID โทเค็น API",
+      "description": "สร้างใน Proxmox ที่ ดาต้าเซ็นเตอร์ > สิทธิ์ > โทเค็น API มีรูปแบบเป็น user@realm!name",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "ข้อมูลลับโทเค็น API",
+      "description": "แสดงเพียงครั้งเดียวเมื่อสร้างโทเค็น จัดเก็บแบบเข้ารหัส"
+    },
+    "apiHost": {
+      "label": "ที่อยู่ API",
+      "description": "สำหรับ API โดยตรงเท่านั้น เว้นว่างเพื่อใช้ที่อยู่ของโฮสต์นี้"
+    },
+    "apiPort": {
+      "label": "พอร์ต API",
+      "description": "8006 เว้นแต่คุณได้เปลี่ยน"
+    },
+    "caCert": {
+      "label": "ใบรับรอง CA",
+      "description": "สำหรับ API โดยตรงเท่านั้น CA ของโหนดในรูปแบบ PEM จาก /etc/pve/pve-root-ca.pem เว้นว่างหาก API มีใบรับรองที่เชื่อถือได้สาธารณะ",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "เกสต์ที่นำเข้า",
+    "importSync": {
+      "label": "ซิงค์เกสต์ที่นำเข้าอยู่เสมอ",
+      "description": "อัปเดตชื่อ ที่อยู่ และแท็กของเกสต์ที่นำเข้าจากโหนดนี้ และติดแท็ก proxmox-missing ให้เกสต์ที่ถูกลบออกจาก Proxmox"
+    },
+    "importInterval": {
+      "label": "ซิงค์ทุก (นาที)",
+      "description": "อย่างน้อย 5 นาที"
+    },
+    "importAddNew": {
+      "label": "เพิ่มเกสต์ใหม่เมื่อซิงค์",
+      "description": "นำเข้าเกสต์ที่สร้างใน Proxmox หลังการนำเข้าครั้งแรก ด้วยค่าเริ่มต้นที่ใช้ล่าสุดในกล่องโต้ตอบนำเข้า"
+    },
+    "importDefaults": {
+      "label": "ค่าเริ่มต้นการนำเข้า"
+    },
+    "importState": {
+      "label": "การซิงค์เกสต์ล่าสุด"
+    },
+    "source": {
+      "label": "เกสต์ Proxmox"
+    }
+  },
+  "app": {
+    "loading": "กำลังโหลด...",
+    "loadFailed": "ไม่สามารถโหลดคลัสเตอร์ได้",
+    "refreshFailed": "รีเฟรชล้มเหลว: {{message}}",
+    "retry": "ลองอีกครั้ง",
+    "refresh": "รีเฟรช",
+    "search": "ค้นหาเกสต์ โหนด และสตอเรจ...",
+    "status": "{{nodes}} โหนด, เกสต์ทำงาน {{running}} จาก {{total}}",
+    "pickHost": "โฮสต์ Proxmox",
+    "pickResource": "เลือกโหนด เกสต์ หรือสตอเรจทางด้านซ้าย",
+    "noHosts": "ยังไม่มีโฮสต์ Proxmox",
+    "noHostsHint": "เปิดการตั้งค่าของโฮสต์ เปิดโหนด Proxmox ใต้ SSH แล้วเลือกวิธีเชื่อมต่อ จากนั้นโหนดจะแสดงที่นี่",
+    "cancel": "ยกเลิก",
+    "working": "กำลังดำเนินการ...",
+    "save": "บันทึก",
+    "reset": "รีเซ็ต",
+    "close": "ปิด",
+    "yes": "ใช่",
+    "no": "ไม่",
+    "edit": "แก้ไข"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix ไม่เชื่อถือใบรับรองของโหนด ในการตั้งค่า Proxmox ของโฮสต์ ให้วาง CA ของโหนดจาก /etc/pve/pve-root-ca.pem ลงในใบรับรอง CA หรือเลือก API ผ่านอุโมงค์ SSH",
+    "tlsHostname": "ใบรับรองของโหนดเป็นของชื่ออื่น ตั้งที่อยู่ API เป็นชื่อหรือที่อยู่ที่ใบรับรองระบุ",
+    "tlsExpired": "ใบรับรองของโหนดหมดอายุหรือยังไม่มีผล ต่ออายุใน Proxmox ที่ โหนด > ระบบ > ใบรับรอง",
+    "notEnabled": "โฮสต์นี้ไม่ได้ทำเครื่องหมายเป็นโหนด Proxmox เปิดโหนด Proxmox ในการตั้งค่าของโฮสต์",
+    "hostAccess": "คุณต้องมีสิทธิ์แก้ไขโฮสต์นี้จึงจะเปลี่ยนแปลงได้"
+  },
+  "tree": {
+    "nothingFound": "ไม่มีรายการที่ตรงกับการค้นหา",
+    "expand": "ขยาย",
+    "collapse": "ยุบ",
+    "datacenter": "ดาต้าเซ็นเตอร์",
+    "folders": {
+      "lxc": "คอนเทนเนอร์ LXC",
+      "qemu": "เครื่องเสมือน",
+      "node": "โหนด",
+      "pool": "พูล",
+      "sdn": "เครือข่าย",
+      "storage": "สตอเรจ"
+    },
+    "views": {
+      "folder": "มุมมองโฟลเดอร์",
+      "server": "มุมมองเซิร์ฟเวอร์"
+    }
+  },
+  "types": {
+    "node": "โหนด",
+    "qemu": "VM",
+    "lxc": "คอนเทนเนอร์",
+    "storage": "สตอเรจ",
+    "pool": "พูล",
+    "sdn": "โซน SDN"
+  },
+  "states": {
+    "running": "กำลังทำงาน",
+    "stopped": "หยุดแล้ว",
+    "paused": "หยุดชั่วคราว",
+    "suspended": "พักไว้",
+    "online": "ออนไลน์",
+    "offline": "ออฟไลน์",
+    "available": "พร้อมใช้งาน",
+    "unknown": "ไม่ทราบ"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "หน่วยความจำ",
+    "disk": "ดิสก์",
+    "rootDisk": "ดิสก์ root",
+    "usage": "การใช้งาน",
+    "cores_other": "{{count}} คอร์",
+    "swap": "Swap"
+  },
+  "summary": {
+    "title": "สรุป",
+    "node": "โหนด",
+    "vmid": "ID",
+    "uptime": "เวลาทำงาน",
+    "pool": "พูล",
+    "ha": "HA",
+    "tags": "แท็ก",
+    "guests": "เกสต์",
+    "guestsRunning": "ทำงาน {{running}} จาก {{total}}",
+    "cpuModel": "CPU",
+    "sockets": "ซ็อกเก็ต",
+    "load": "โหลดเฉลี่ย",
+    "pveVersion": "Proxmox VE",
+    "kernel": "เคอร์เนล",
+    "ips": "ที่อยู่"
+  },
+  "charts": {
+    "title": "กราฟ",
+    "cpu": "CPU",
+    "load": "โหลดเฉลี่ย",
+    "memory": "หน่วยความจำ",
+    "network": "เครือข่าย",
+    "diskIo": "Disk I/O",
+    "cpuUsage": "การใช้ CPU",
+    "ioDelay": "ความหน่วง IO",
+    "used": "ใช้แล้ว",
+    "total": "ทั้งหมด",
+    "in": "เข้า",
+    "out": "ออก",
+    "read": "อ่าน",
+    "write": "เขียน",
+    "timeframe": {
+      "hour": "ชั่วโมง",
+      "day": "วัน",
+      "week": "สัปดาห์",
+      "month": "เดือน",
+      "year": "ปี"
+    },
+    "noData": "ไม่มีข้อมูลในช่วงเวลานี้",
+    "serverLoad": "โหลดเซิร์ฟเวอร์",
+    "loadAverage": "โหลดเฉลี่ย",
+    "swap": "Swap",
+    "pressureCpu": "แรงกดดัน CPU (PSI)",
+    "pressureMemory": "แรงกดดันหน่วยความจำ (PSI)",
+    "pressureIo": "แรงกดดัน IO (PSI)",
+    "some": "Some",
+    "full": "Full",
+    "average": "เฉลี่ย",
+    "maximum": "สูงสุด"
+  },
+  "tasks": {
+    "title": "งาน",
+    "started": "เริ่มเมื่อ",
+    "node": "โหนด",
+    "user": "ผู้ใช้",
+    "task": "งาน",
+    "status": "สถานะ",
+    "running": "กำลังทำงาน",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} บน {{node}}",
+    "done": "{{label}}: เสร็จสิ้น",
+    "failed": "{{label}} ล้มเหลว: {{reason}}"
+  },
+  "guests": {
+    "more": "การดำเนินการเพิ่มเติม",
+    "isTemplate": "เทมเพลต",
+    "locked": "ล็อกอยู่: {{lock}}",
+    "power": {
+      "start": "เริ่ม",
+      "shutdown": "ปิดเครื่อง",
+      "stop": "หยุด",
+      "reboot": "รีบูต",
+      "suspend": "พัก",
+      "resume": "ทำงานต่อ",
+      "reset": "รีเซ็ต",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "หยุด {{name}} ตอนนี้หรือไม่?",
+        "reset": "รีเซ็ต {{name}} ตอนนี้หรือไม่?",
+        "description": "การดำเนินการนี้ตัดไฟเหมือนถอดปลั๊ก งานที่ยังไม่ได้บันทึกในเกสต์จะสูญหาย"
+      }
+    },
+    "clone": {
+      "menu": "โคลน",
+      "title": "โคลน {{name}}",
+      "submit": "โคลน",
+      "label": "โคลน {{source}} เป็น {{id}}",
+      "full": "โคลนเต็ม",
+      "fullHint": "คัดลอกทุกดิสก์ ทำให้โคลนไม่ขึ้นกับต้นฉบับ",
+      "linkedHint": "ปิดเพื่อสร้างโคลนแบบลิงก์ที่ใช้ดิสก์ของเทมเพลตร่วมกัน และสร้างเสร็จในไม่กี่วินาที",
+      "sameStorage": "สตอเรจเดียวกับต้นฉบับ"
+    },
+    "migrate": {
+      "menu": "ย้าย",
+      "title": "ย้าย {{name}}",
+      "submit": "ย้าย",
+      "label": "ย้าย {{name}} ไปยัง {{target}}",
+      "noOtherNodes": "ไม่มีโหนดออนไลน์อื่นในคลัสเตอร์นี้ให้ย้ายไป",
+      "onlineHint": "VM กำลังทำงานและจะย้ายแบบสดโดยไม่ต้องหยุด",
+      "restartHint": "คอนเทนเนอร์กำลังทำงาน จะหยุด ย้าย และเริ่มใหม่บนปลายทาง"
+    },
+    "template": {
+      "menu": "แปลงเป็นเทมเพลต",
+      "confirm": "แปลง {{name}} เป็นเทมเพลตหรือไม่?",
+      "description": "เทมเพลตไม่สามารถเริ่มได้ โคลนได้เท่านั้น การดำเนินการนี้ไม่สามารถย้อนกลับได้",
+      "submit": "แปลง",
+      "label": "แปลง {{name}} เป็นเทมเพลต"
+    },
+    "delete": {
+      "menu": "ลบ",
+      "title": "ลบ {{name}}",
+      "submit": "ลบ",
+      "label": "ลบ {{name}}",
+      "warning": "การดำเนินการนี้ลบเกสต์ {{vmid}} และดิสก์ของมัน ไม่สามารถย้อนกลับได้",
+      "stopFirst": "หยุดเกสต์ก่อนลบ",
+      "typeId": "พิมพ์ {{vmid}} เพื่อยืนยัน",
+      "purge": "ลบออกจากงานสำรองข้อมูล การจำลอง และ HA",
+      "purgeHint": "ไม่เหลืองานที่ชี้ไปยังเกสต์ที่ไม่มีอยู่แล้ว",
+      "unreferenced": "ลบดิสก์ที่ไม่มีการอ้างอิงด้วย",
+      "unreferencedHint": "ดิสก์บนสตอเรจที่เปิดใช้งานซึ่งมี ID นี้แต่ไม่อยู่ในการกำหนดค่า"
+    },
+    "create": {
+      "vmButton": "สร้าง VM",
+      "ctButton": "สร้าง CT",
+      "vmTitle": "สร้างเครื่องเสมือน",
+      "ctTitle": "สร้างคอนเทนเนอร์",
+      "submit": "สร้าง",
+      "vmLabel": "สร้าง VM {{id}} ({{name}})",
+      "ctLabel": "สร้าง CT {{id}} ({{name}})",
+      "noTemplates": "ไม่มีเทมเพลตคอนเทนเนอร์บนโหนดนี้ ดาวน์โหลดใน Proxmox ที่สตอเรจ > เทมเพลต CT",
+      "noIso": "ไม่มีสื่อติดตั้ง",
+      "unprivilegedHint": "ปลอดภัยกว่า: root ในคอนเทนเนอร์ไม่ใช่ root บนโหนด",
+      "loginHint": "ตั้งรหัสผ่าน root, คีย์ SSH หรือทั้งสองอย่าง",
+      "problem": {
+        "vmid": "เลือก ID ตั้งแต่ 100 ขึ้นไป",
+        "hostname": "ป้อนชื่อโฮสต์: ตัวอักษร ตัวเลข และขีด",
+        "name": "ป้อนชื่อ: ตัวอักษร ตัวเลข และขีด",
+        "template": "เลือกเทมเพลต",
+        "storage": "เลือกสตอเรจ",
+        "disk": "ป้อนขนาดดิสก์",
+        "cores": "ป้อนจำนวนคอร์",
+        "sockets": "ป้อนจำนวนซ็อกเก็ต",
+        "memory": "ป้อนหน่วยความจำอย่างน้อย 16 MiB",
+        "swap": "ป้อน swap เป็น MiB, 0 หากไม่ใช้",
+        "network": "เลือกบริดจ์ และสำหรับที่อยู่แบบคงที่ ให้ป้อนเช่น 192.168.0.60/24",
+        "login": "ตั้งรหัสผ่าน root หรือคีย์ SSH เพื่อให้เข้าสู่ระบบได้",
+        "password": "รหัสผ่านต้องมีอย่างน้อย 5 ตัวอักษร"
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "อื่นๆ"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "ชื่อ",
+      "hostname": "ชื่อโฮสต์",
+      "node": "โหนด",
+      "targetNode": "โหนดปลายทาง",
+      "targetStorage": "สตอเรจปลายทาง",
+      "storage": "สตอเรจ",
+      "template": "เทมเพลต",
+      "iso": "สื่อติดตั้ง",
+      "ostype": "OS ของเกสต์",
+      "rootPassword": "รหัสผ่าน root",
+      "sshKeys": "คีย์สาธารณะ SSH",
+      "unprivileged": "คอนเทนเนอร์แบบไม่มีสิทธิ์พิเศษ",
+      "diskGiB": "ดิสก์ (GiB)",
+      "cores": "คอร์",
+      "sockets": "ซ็อกเก็ต",
+      "memoryMiB": "หน่วยความจำ (MiB)",
+      "swapMiB": "Swap (MiB)",
+      "bridge": "บริดจ์เครือข่าย",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "คงที่",
+      "cidr": "ที่อยู่/prefix",
+      "gateway": "เกตเวย์",
+      "startAfter": "เริ่มหลังสร้าง",
+      "pick": "เลือกหนึ่งรายการ"
+    },
+    "tabs": {
+      "summary": "สรุป",
+      "hardware": "ฮาร์ดแวร์",
+      "options": "ตัวเลือก",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "แก้ไข",
+    "add": "เพิ่ม",
+    "remove": "นำออก",
+    "removed": "นำ {{key}} ออกแล้ว",
+    "pending": "รอดำเนินการ",
+    "pendingHint": "การเปลี่ยนแปลงที่ทำเครื่องหมายว่ารอดำเนินการจะมีผลเมื่อเกสต์รีสตาร์ทจาก Proxmox การรีบูตภายในเกสต์ไม่เพียงพอ",
+    "processors": "โปรเซสเซอร์",
+    "processorsValue": "{{sockets}} ซ็อกเก็ต × {{cores}} คอร์, {{cpu}}",
+    "allCores": "ทั้งหมด",
+    "swap": "Swap",
+    "balloonShort": "ต่ำสุด",
+    "cpuMemory": {
+      "heading": "โปรเซสเซอร์และหน่วยความจำ",
+      "title": "โปรเซสเซอร์และหน่วยความจำ"
+    },
+    "cpuType": "ชนิด CPU",
+    "cpulimit": "ขีดจำกัด CPU",
+    "cpulimitHint": "0 คือไม่จำกัด 1.5 คือเวลาเท่ากับหนึ่งคอร์ครึ่ง",
+    "balloon": "หน่วยความจำต่ำสุด (MiB)",
+    "balloonHint": "ด้วยไดรเวอร์ balloon เกสต์จะคืนหน่วยความจำลงไปถึงค่านี้ ค่าเท่ากับหน่วยความจำจะปิดใช้งาน 0 จะลบไดรเวอร์",
+    "disks": "ดิสก์",
+    "volumes": "ดิสก์ root และจุดเมานต์",
+    "bus": "บัส",
+    "slot": "จะเป็น {{key}}",
+    "iothread": "IO thread",
+    "discard": "Discard",
+    "discardHint": "ให้เกสต์คืนบล็อกที่ไม่ได้ใช้บนสตอเรจแบบ thin",
+    "ssd": "จำลอง SSD",
+    "mountPath": "พาธเมานต์ในคอนเทนเนอร์",
+    "backup": "รวมในการสำรองข้อมูล",
+    "addDisk": {
+      "button": "เพิ่มดิสก์",
+      "title": "เพิ่มดิสก์",
+      "label": "เพิ่ม {{key}}"
+    },
+    "addMount": {
+      "button": "เพิ่มจุดเมานต์",
+      "title": "เพิ่มจุดเมานต์"
+    },
+    "resize": {
+      "menu": "ปรับขนาด",
+      "title": "ขยาย {{key}}",
+      "grow": "เพิ่ม (GiB)",
+      "result": "{{from}} GiB จะกลายเป็น {{to}} GiB",
+      "noShrink": "ดิสก์ขยายได้อย่างเดียว ต้องขยายพาร์ติชันและระบบไฟล์ภายในเกสต์ภายหลัง เว้นแต่เกสต์จะทำเองเมื่อบูต",
+      "submit": "ขยาย",
+      "label": "ขยาย {{key}} เพิ่ม {{size}} GiB"
+    },
+    "move": {
+      "menu": "ย้ายไปยังสตอเรจ",
+      "title": "ย้าย {{key}}",
+      "submit": "ย้าย",
+      "deleteSource": "ลบต้นฉบับ",
+      "deleteSourceHint": "ปิดเพื่อเก็บไว้เป็นดิสก์ที่ไม่ได้ใช้",
+      "label": "ย้าย {{key}} ไปยัง {{storage}}"
+    },
+    "detach": {
+      "menu": "ถอด",
+      "title": "ถอด {{key}} หรือไม่?",
+      "description": "ดิสก์จะยังอยู่บนสตอเรจเป็นดิสก์ที่ไม่ได้ใช้ และสามารถลบหรือต่อกลับได้"
+    },
+    "unused": {
+      "delete": "ลบ",
+      "title": "ลบ {{volume}} หรือไม่?",
+      "description": "การดำเนินการนี้ลบดิสก์และทุกอย่างบนดิสก์ ไม่สามารถย้อนกลับได้"
+    },
+    "cd": {
+      "heading": "ไดรฟ์ CD/DVD",
+      "title": "สื่อใน {{key}}",
+      "empty": "ไม่มีสื่อ"
+    },
+    "nic": {
+      "heading": "อะแดปเตอร์เครือข่าย",
+      "add": "เพิ่มอะแดปเตอร์",
+      "addTitle": "เพิ่ม {{key}}",
+      "editTitle": "แก้ไข {{key}}",
+      "none": "ไม่มีอะแดปเตอร์เครือข่าย",
+      "model": "รุ่น",
+      "name": "ชื่อในคอนเทนเนอร์",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "คงที่",
+        "none": "ไม่มี",
+        "auto": "SLAAC"
+      },
+      "tag": "แท็ก VLAN",
+      "tagHint": "เว้นว่างสำหรับไม่ติดแท็ก",
+      "rate": "จำกัดอัตรา (MB/s)",
+      "rateHint": "เว้นว่างสำหรับไม่จำกัด",
+      "firewall": "ไฟร์วอลล์",
+      "firewallShort": "ไฟร์วอลล์",
+      "removeTitle": "นำ {{key}} ออกหรือไม่?",
+      "removeDescription": "เกสต์จะสูญเสียอะแดปเตอร์นี้และที่อยู่ของมัน"
+    },
+    "problem": {
+      "cpu": "ป้อนซ็อกเก็ตและคอร์อย่างน้อยหนึ่ง",
+      "cpulimit": "ขีดจำกัด CPU อยู่ระหว่าง 0 ถึง 8192",
+      "memory": "ป้อนหน่วยความจำอย่างน้อย 16 MiB",
+      "balloon": "หน่วยความจำต่ำสุดต้องไม่มากกว่าหน่วยความจำ",
+      "swap": "ป้อน swap เป็น MiB, 0 หากไม่ใช้",
+      "noSlot": "สล็อตประเภทนี้ถูกใช้หมดแล้ว",
+      "storage": "เลือกสตอเรจ",
+      "size": "ป้อนขนาดเป็นจำนวนเต็ม GiB",
+      "path": "ป้อนพาธสัมบูรณ์ เช่น /data ไม่ใช่ / เอง",
+      "bridge": "เลือกบริดจ์",
+      "tag": "แท็ก VLAN อยู่ระหว่าง 1 ถึง 4094",
+      "rate": "ป้อนอัตราที่มากกว่า 0 หรือเว้นว่าง",
+      "name": "ป้อนชื่อ เช่น eth0",
+      "ip4": "ป้อนที่อยู่ เช่น 192.168.0.60/24 และเกตเวย์ที่ถูกต้อง",
+      "ip6": "ป้อนที่อยู่ เช่น fd00::10/64"
+    },
+    "detached": "ถอด {{key}} แล้ว ยังคงอยู่เป็นดิสก์ที่ไม่ได้ใช้",
+    "coresHint": "เว้นว่างเพื่อใช้ทุกคอร์ของโหนด"
+  },
+  "options": {
+    "general": "ทั่วไป",
+    "tags": "แท็ก",
+    "tagsHint": "คั่นด้วยเครื่องหมายจุลภาค",
+    "onboot": "เริ่มเมื่อโหนดบูต",
+    "protection": "การป้องกัน",
+    "protectionHint": "บล็อกการลบเกสต์และดิสก์จนกว่าจะปิด",
+    "agent": "QEMU guest agent",
+    "agentHint": "เปิดเมื่อ agent ทำงานในเกสต์แล้ว เพื่อรับที่อยู่และปิดเครื่องอย่างถูกต้อง",
+    "startup": "ลำดับการเริ่มและปิด",
+    "startupOrder": "ลำดับ",
+    "startupUp": "หน่วงหลังเริ่ม (วินาที)",
+    "startupDown": "หมดเวลาปิดเครื่อง (วินาที)",
+    "dns": "DNS",
+    "nameserver": "เซิร์ฟเวอร์ DNS",
+    "searchdomain": "โดเมนค้นหา",
+    "useHost": "เว้นว่างเพื่อใช้ค่าของโหนด",
+    "notes": "บันทึกย่อ",
+    "saved": "บันทึกตัวเลือกแล้ว",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "อื่นๆ"
+    },
+    "problem": {
+      "name": "ป้อนชื่อ",
+      "startup": "ลำดับและการหน่วงเป็นจำนวนเต็ม",
+      "tags": "แท็กใช้ตัวอักษร ตัวเลข ขีด จุด และขีดล่าง",
+      "nameserver": "ป้อนที่อยู่ IP คั่นด้วยช่องว่าง"
+    }
+  },
+  "cloudinit": {
+    "noDrive": "VM นี้ไม่มีไดรฟ์ cloud-init เพิ่มไดรฟ์ แล้วตั้งค่าผู้ใช้ คีย์ และเครือข่ายที่นี่ อิมเมจของเกสต์ต้องรองรับ cloud-init",
+    "addDrive": "เพิ่มไดรฟ์ cloud-init",
+    "driveAdded": "เพิ่มไดรฟ์ cloud-init แล้ว",
+    "user": "ผู้ใช้",
+    "username": "ชื่อผู้ใช้",
+    "usernameHint": "เว้นว่างเพื่อใช้ผู้ใช้เริ่มต้นของอิมเมจ",
+    "password": "รหัสผ่าน",
+    "passwordHint": "เว้นว่างเพื่อคงรหัสผ่านปัจจุบัน Proxmox จัดเก็บแบบแฮช",
+    "network": "เครือข่าย",
+    "saved": "บันทึกการตั้งค่า cloud-init แล้ว",
+    "regenerate": "สร้างอิมเมจใหม่",
+    "regenerated": "สร้างอิมเมจ cloud-init ใหม่แล้ว",
+    "regenerateHint": "เขียนการตั้งค่าลงใน {{drive}} เกสต์จะอ่านในการบูตครั้งถัดไป"
+  },
+  "storage": {
+    "tabs": {
+      "summary": "สรุป",
+      "iso": "อิมเมจ ISO",
+      "vztmpl": "เทมเพลต CT",
+      "backup": "ข้อมูลสำรอง",
+      "images": "อิมเมจดิสก์"
+    },
+    "content": "เนื้อหา",
+    "contentTypes": {
+      "images": "ดิสก์ VM",
+      "rootdir": "ดิสก์คอนเทนเนอร์",
+      "iso": "อิมเมจ ISO",
+      "vztmpl": "เทมเพลต CT",
+      "backup": "ข้อมูลสำรอง",
+      "snippets": "Snippets",
+      "import": "นำเข้า"
+    },
+    "shared": "แชร์",
+    "empty": "ยังไม่มีอะไรที่นี่",
+    "owner": "เกสต์ {{vmid}}",
+    "protected": "ป้องกันแล้ว",
+    "download": {
+      "button": "ดาวน์โหลดจาก URL",
+      "title": {
+        "iso": "ดาวน์โหลดอิมเมจ ISO ไปยัง {{storage}}",
+        "vztmpl": "ดาวน์โหลดเทมเพลต CT ไปยัง {{storage}}"
+      },
+      "url": "URL",
+      "filename": "ชื่อไฟล์",
+      "algorithm": "ชนิด checksum",
+      "noChecksum": "ไม่มี",
+      "checksum": "Checksum",
+      "verify": "ตรวจสอบใบรับรองของเซิร์ฟเวอร์",
+      "submit": "ดาวน์โหลด",
+      "label": "ดาวน์โหลด {{name}}",
+      "problem": {
+        "url": "ป้อน URL แบบ http หรือ https",
+        "filename": "ชื่อไฟล์ใช้ตัวอักษร ตัวเลข จุด ขีด และขีดล่าง",
+        "extension": "อิมเมจ ISO ลงท้ายด้วย .iso หรือ .img ส่วนเทมเพลตลงท้ายด้วย .tar.gz, .tar.xz หรือ .tar.zst",
+        "checksum": "เลือกชนิด checksum และป้อน checksum เป็นเลขฐานสิบหก หรือเว้นว่างทั้งสองช่อง"
+      }
+    },
+    "catalog": {
+      "button": "เทมเพลต",
+      "title": "เทมเพลตคอนเทนเนอร์สำหรับ {{storage}}",
+      "search": "ค้นหาเทมเพลต...",
+      "have": "ดาวน์โหลดแล้ว",
+      "label": "ดาวน์โหลด {{name}}"
+    },
+    "delete": {
+      "title": "ลบ {{name}} หรือไม่?",
+      "description": "การดำเนินการนี้ลบไฟล์ออกจากสตอเรจ ไม่สามารถย้อนกลับได้",
+      "submit": "ลบ",
+      "done": "ลบ {{name}} แล้ว"
+    },
+    "upload": {
+      "button": "อัปโหลด",
+      "cancel": "ยกเลิกการอัปโหลด",
+      "done": "อัปโหลด {{name}} แล้ว",
+      "failed": "อัปโหลด {{name}} ล้มเหลว: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "สรุป",
+      "network": "เครือข่าย",
+      "system": "ระบบ",
+      "services": "บริการ",
+      "updates": "อัปเดต",
+      "disks": "ดิสก์",
+      "tasks": "งาน",
+      "log": "บันทึก"
+    },
+    "services": {
+      "start": "เริ่ม",
+      "stop": "หยุด",
+      "restart": "รีสตาร์ท",
+      "reload": "โหลดใหม่",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "หยุด {{name}} หรือไม่?",
+        "restart": "รีสตาร์ท {{name}} หรือไม่?",
+        "description": "บริการของ Proxmox เองทำให้โหนดและ API ทำงานอยู่ การหยุดบริการใดบริการหนึ่งอาจตัดการเชื่อมต่อเครื่องมือนี้จนกว่าจะเริ่มใหม่"
+      }
+    },
+    "updates": {
+      "refresh": "รีเฟรชรายการแพ็กเกจ",
+      "refreshLabel": "รีเฟรชรายการแพ็กเกจบน {{node}}",
+      "count_other": "อัปเกรดได้ {{count}} แพ็กเกจ",
+      "none": "ทุกอย่างเป็นปัจจุบัน",
+      "installHint": "ติดตั้งการอัปเกรดจากเทอร์มินัลของโหนดด้วย apt full-upgrade เนื่องจาก Proxmox ไม่อัปเกรดผ่าน API",
+      "views": {
+        "packages": "แพ็กเกจ",
+        "repositories": "Repository"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART ของ {{disk}}",
+      "health": "สุขภาพ",
+      "usedBy": "ใช้โดย {{used}}",
+      "unused": "ไม่ได้ใช้",
+      "wearout": "อายุคงเหลือ {{value}}%",
+      "views": {
+        "disks": "ดิสก์",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "ไดเรกทอรี",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_other": "{{count}} logical volume",
+        "metadata": "เมทาดาตา {{used}} / {{size}}",
+        "frag": "กระจัดกระจาย {{value}}%",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "ไม่มี LVM volume group",
+          "lvmthin": "ไม่มีพูล LVM-Thin",
+          "directory": "ไม่มีสตอเรจแบบไดเรกทอรีบนดิสก์เฉพาะ",
+          "zfs": "ไม่มีพูล ZFS"
+        },
+        "create": {
+          "lvm": "สร้าง LVM volume group",
+          "lvmthin": "สร้างพูล LVM-Thin",
+          "directory": "สร้างไดเรกทอรี",
+          "zfs": "สร้างพูล ZFS"
+        },
+        "createSubmit": "สร้าง",
+        "createLabel": "สร้าง {{name}} บน {{node}}",
+        "wipeWarning": "ดิสก์ที่เลือกจะถูกแบ่งพาร์ติชันและฟอร์แมต จะแสดงเฉพาะดิสก์ที่ว่างเปล่าเท่านั้น",
+        "name": "ชื่อ",
+        "device": "ดิสก์",
+        "devices": "ดิสก์",
+        "pickDisk": "เลือกดิสก์",
+        "noUnused": "ไม่มีดิสก์ที่ไม่ได้ใช้ ล้างดิสก์ในแท็บดิสก์ก่อน หากข้อมูลบนดิสก์ลบได้",
+        "filesystem": "ระบบไฟล์",
+        "raidlevel": "ระดับ RAID",
+        "raid": {
+          "single": "ดิสก์เดี่ยว",
+          "mirror": "Mirror",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "การบีบอัด",
+        "addStorage": "เพิ่มเป็นสตอเรจ",
+        "addStorageHint": "ทำให้เป็นสตอเรจ Proxmox ชื่อเดียวกัน สำหรับดิสก์ คอนเทนเนอร์ หรือข้อมูลสำรอง",
+        "problem": {
+          "name": "ชื่อต้องขึ้นต้นด้วยตัวอักษร และมีตัวอักษร ตัวเลข -, _ หรือ .",
+          "device": "เลือกดิสก์",
+          "oneDevice": "เลือกดิสก์หนึ่งลูก",
+          "tooFew": "ระดับ RAID นี้ต้องใช้ดิสก์อย่างน้อย {{count}} ลูก",
+          "even": "RAID10 ต้องใช้ดิสก์จำนวนคู่",
+          "ashift": "ashift อยู่ระหว่าง 9 ถึง 16"
+        },
+        "remove": "นำออก",
+        "removeTitle": "นำ {{name}} ออกหรือไม่?",
+        "removeWarning": "เกสต์ที่มีดิสก์อยู่บนนี้จะสูญเสียดิสก์นั้น การนำออกไม่ได้ย้ายข้อมูลใดออกไปก่อน",
+        "removeLabel": "นำ {{name}} บน {{node}} ออก",
+        "cleanupConfig": "นำรายการสตอเรจออกด้วย",
+        "cleanupDisks": "ล้างดิสก์ของมัน",
+        "cleanupDisksHint": "ลบข้อมูลบนดิสก์เพื่อให้นำกลับมาใช้ได้อีก",
+        "inUse": {
+          "lvm": "ยังมี logical volume อยู่ นำออกก่อน กลุ่มนี้อาจมีระบบของโหนดเองอยู่",
+          "lvmthin": "ยังมีข้อมูลอยู่ ย้ายหรือนำดิสก์เกสต์บนนี้ออกก่อน"
+        }
+      },
+      "gpt": "เริ่มต้นด้วย GPT",
+      "gptTitle": "เริ่มต้น {{disk}} ด้วย GPT หรือไม่?",
+      "gptDescription": "เขียนตารางพาร์ติชัน GPT ว่างลงในดิสก์",
+      "gptLabel": "เริ่มต้น {{disk}} บน {{node}}",
+      "wipe": "ล้าง",
+      "wipeTitle": "ล้าง {{disk}} หรือไม่?",
+      "wipeWarning": "ลบตารางพาร์ติชันและลายเซ็นระบบไฟล์ LVM และ ZFS ทั้งหมดบนดิสก์ (ปัจจุบัน: {{used}}) ข้อมูลบนดิสก์จะหายไปถาวร",
+      "wipeLabel": "ล้าง {{disk}} บน {{node}}",
+      "typePath": "พิมพ์ {{disk}} เพื่อยืนยัน"
+    },
+    "log": {
+      "search": "กรองบันทึก...",
+      "empty": "ไม่มีบรรทัดที่ตรงกัน"
+    },
+    "power": {
+      "menu": "พลังงานโหนด",
+      "termixWarning": "หาก Termix ทำงานบนโหนดนี้ Termix จะหยุดทำงานด้วยจนกว่าโหนดจะกลับมา",
+      "typeName": "พิมพ์ {{node}} เพื่อยืนยัน",
+      "reboot": {
+        "menu": "รีบูตโหนด",
+        "title": "รีบูต {{node}} หรือไม่?",
+        "submit": "รีบูต",
+        "label": "รีบูต {{node}}",
+        "warning_other": "เกสต์ที่กำลังทำงาน {{count}} รายการจะหยุดหรือปิดเครื่องก่อน ตามการตั้งค่าการเริ่มต้นของแต่ละรายการ"
+      },
+      "shutdown": {
+        "menu": "ปิดเครื่องโหนด",
+        "title": "ปิดเครื่อง {{node}} หรือไม่?",
+        "submit": "ปิดเครื่อง",
+        "label": "ปิดเครื่อง {{node}}",
+        "warning_other": "เกสต์ที่กำลังทำงาน {{count}} รายการจะหยุดไปด้วย และจะไม่มีอะไรเริ่มใหม่จนกว่าจะมีคนเปิดเครื่องโหนด"
+      }
+    },
+    "shell": "เชลล์",
+    "shellHint": "เปิดเทอร์มินัล SSH ของโฮสต์นี้ใน Termix",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "โดเมนค้นหา",
+        "server": "เซิร์ฟเวอร์ DNS {{n}}",
+        "editTitle": "DNS ของ {{node}}",
+        "saved": "บันทึก DNS แล้ว",
+        "problem": {
+          "search": "ป้อนโดเมนค้นหา เช่น example.com",
+          "server": "เซิร์ฟเวอร์ DNS คือที่อยู่ IPv4 หรือ IPv6",
+          "noServer": "ป้อนเซิร์ฟเวอร์ DNS อย่างน้อยหนึ่งรายการ"
+        }
+      },
+      "time": {
+        "title": "เวลา",
+        "zone": "เขตเวลา",
+        "local": "เวลาท้องถิ่น",
+        "editTitle": "เขตเวลาของ {{node}}",
+        "hint": "นาฬิกาถูกรักษาโดย NTP (chrony) บนโหนด",
+        "saved": "ตั้งเขตเวลาเป็น {{zone}} แล้ว"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "/etc/hosts ของ {{node}}",
+        "warning": "ชื่อของโหนดเองต้องยังคงแปลงเป็นที่อยู่ของมัน มิฉะนั้นคลัสเตอร์และเว็บอินเทอร์เฟซจะหยุดทำงาน",
+        "saved": "บันทึก /etc/hosts แล้ว"
+      },
+      "certs": {
+        "title": "ใบรับรอง",
+        "issuer": "ออกโดย {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "ใช้ได้ถึง {{date}}",
+          "expiring": "หมดอายุ {{date}}",
+          "expired": "หมดอายุแล้ว {{date}}",
+          "notYet": "ยังไม่มีผล"
+        },
+        "upload": "อัปโหลดแบบกำหนดเอง",
+        "uploadTitle": "ใบรับรองแบบกำหนดเองสำหรับ {{node}}",
+        "uploaded": "อัปโหลดใบรับรองแล้ว",
+        "chain": "สายใบรับรอง",
+        "chainHint": "PEM: ใบรับรองของโหนดก่อน แล้วตามด้วยใบรับรองระดับกลาง",
+        "key": "คีย์ส่วนตัว",
+        "keyHint": "PEM ไม่เข้ารหัส เว้นว่างเพื่อใช้คีย์ที่มีอยู่บนโหนด",
+        "fromFile": "อ่านจากไฟล์",
+        "badCert": "นี่ไม่ใช่ใบรับรอง PEM",
+        "badKey": "นี่ไม่ใช่คีย์ส่วนตัว PEM",
+        "restart": "รีสตาร์ทเว็บอินเทอร์เฟซเพื่อใช้งาน",
+        "restartHint": "pveproxy จะรีสตาร์ท Termix จะเข้าถึง API ไม่ได้ไม่กี่วินาที",
+        "remove": "นำแบบกำหนดเองออก",
+        "removeTitle": "นำใบรับรองแบบกำหนดเองออกหรือไม่?",
+        "removeDescription": "โหนดจะกลับไปใช้ใบรับรองที่ลงนามเอง และเว็บอินเทอร์เฟซจะรีสตาร์ท",
+        "removed": "นำใบรับรองแบบกำหนดเองออกแล้ว"
+      }
+    },
+    "repos": {
+      "on": "เปิดใช้งาน",
+      "off": "ปิดใช้งาน",
+      "enable": "เปิดใช้งาน",
+      "disable": "ปิดใช้งาน",
+      "enableTitle": "เปิดใช้งาน repository นี้หรือไม่?",
+      "enabled": "เปิดใช้งาน repository แล้ว",
+      "disabled": "ปิดใช้งาน repository แล้ว",
+      "add": "เพิ่ม:",
+      "added": "เพิ่ม repository {{name}} แล้ว",
+      "hint": "เรียกใช้ รีเฟรชรายการแพ็กเกจ ใต้แพ็กเกจหลังการเปลี่ยนแปลง Repository แบบ Enterprise ต้องมีการสมัครสมาชิก"
+    },
+    "taskHistory": {
+      "type": "ชนิด เช่น vzdump",
+      "vmid": "VM/CT ID",
+      "user": "ผู้ใช้",
+      "errorsOnly": "เฉพาะงานที่ล้มเหลว",
+      "none": "ไม่มีงานที่ตรงกัน",
+      "more": "โหลดเพิ่ม",
+      "state": {
+        "running": "กำลังทำงาน",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "ขอใบรับรอง",
+      "renew": "ต่ออายุ",
+      "orderLabel": "ขอใบรับรอง ACME สำหรับ {{node}}",
+      "renewLabel": "ต่ออายุใบรับรอง ACME สำหรับ {{node}}",
+      "usesAccount": "บัญชี: {{account}}",
+      "none": "ไม่มี",
+      "noDomains": "ยังไม่มีโดเมน แก้ไขเพื่อเพิ่มชื่อที่โหนดนี้ตอบรับ",
+      "viaHttp": "การตรวจสอบผ่าน HTTP",
+      "viaDns": "DNS challenge ผ่าน {{plugin}}",
+      "accounts": "บัญชี",
+      "plugins": "ปลั๊กอิน DNS challenge",
+      "remove": "นำออก",
+      "domainsTitle": "โดเมน ACME ของ {{node}}",
+      "domainsSaved": "บันทึกโดเมน ACME แล้ว",
+      "domain": "โดเมน",
+      "challenge": "Challenge",
+      "alias": "Alias",
+      "addDomain": "เพิ่มโดเมน",
+      "httpHint": "HTTP challenge ต้องให้พอร์ต 80 ของโหนดนี้เข้าถึงได้จากอินเทอร์เน็ตภายใต้โดเมนนั้น DNS ทำงานได้โดยไม่ต้องใช้ และรองรับ wildcard",
+      "hint": "บัญชีและปลั๊กอินใช้ร่วมกันทั้งคลัสเตอร์ ส่วนโดเมนแยกตามโหนด",
+      "problem": {
+        "noDomain": "เพิ่มโดเมนอย่างน้อยหนึ่งรายการ",
+        "tooMany": "โหนดมีโดเมน ACME ได้สูงสุดหกรายการ",
+        "domain": "โดเมนคือชื่อเต็ม เช่น pve.example.com",
+        "wildcard": "โดเมน wildcard ต้องใช้ปลั๊กอิน DNS challenge"
+      },
+      "account": {
+        "title": "บัญชี",
+        "pick": "เลือกบัญชี",
+        "add": "ลงทะเบียนบัญชี",
+        "addTitle": "ลงทะเบียนบัญชี ACME",
+        "register": "ลงทะเบียน",
+        "registerLabel": "ลงทะเบียนบัญชี ACME {{name}}",
+        "name": "ชื่อ",
+        "email": "อีเมล",
+        "directory": "ไดเรกทอรี ACME",
+        "customDirectory": "URL แบบกำหนดเอง",
+        "directoryUrl": "URL ไดเรกทอรี",
+        "acceptTos": "ยอมรับข้อกำหนดในการให้บริการ",
+        "eabKid": "EAB key ID",
+        "eabHmac": "EAB HMAC key",
+        "eabHint": "สำหรับ CA ที่ต้องการ External Account Binding เท่านั้น",
+        "none": "ยังไม่มีบัญชี ACME",
+        "needOne": "ลงทะเบียนบัญชี ACME ก่อน",
+        "removeTitle": "ปิดใช้งานบัญชี {{name}} หรือไม่?",
+        "removeDescription": "บัญชีจะถูกปิดใช้งานที่ CA และนำออกจากที่นี่ ใบรับรองที่ออกไปแล้วยังใช้งานได้",
+        "removeLabel": "ปิดใช้งานบัญชี ACME {{name}}",
+        "problem": {
+          "name": "ชื่อมีตัวอักษร ตัวเลข -, _ หรือ .",
+          "email": "ป้อนที่อยู่อีเมล",
+          "directory": "ไดเรกทอรีคือ URL แบบ http หรือ https",
+          "tos": "ยอมรับข้อกำหนดในการให้บริการเพื่อลงทะเบียน",
+          "eab": "EAB ต้องมีทั้ง key ID และ HMAC key"
+        }
+      },
+      "plugin": {
+        "add": "เพิ่มปลั๊กอิน",
+        "addTitle": "เพิ่มปลั๊กอิน DNS challenge",
+        "id": "ID ปลั๊กอิน",
+        "api": "DNS API",
+        "pickApi": "เลือกผู้ให้บริการ DNS",
+        "delay": "หน่วงการตรวจสอบ (วินาที)",
+        "delayHint": "ระยะเวลารอให้ระเบียน TXT แพร่กระจาย",
+        "noFields": "Proxmox ไม่มีฟิลด์สำหรับผู้ให้บริการนี้ ดูเอกสารของ acme.sh สำหรับตัวแปรที่อ่าน",
+        "none": "ไม่มีปลั๊กอิน DNS HTTP ทำงานได้โดยไม่ต้องใช้",
+        "disabled": "ปิดใช้งาน",
+        "removeTitle": "นำปลั๊กอิน {{name}} ออกหรือไม่?",
+        "removeDescription": "โดเมนที่ใช้ปลั๊กอินนี้จะไม่สามารถตรวจสอบได้อีก"
+      }
+    }
+  },
+  "console": {
+    "open": "คอนโซล",
+    "openHint": "เปิดโฮสต์ Termix ของเกสต์ หรือเสนอให้เพิ่มลงใน Termix ก่อน",
+    "tabTitle": "คอนโซล Proxmox",
+    "tabLabel": "{{name}} — คอนโซล",
+    "pick": "เปิดคอนโซลจาก VM หรือคอนเทนเนอร์ที่กำลังทำงานในเครื่องมือ Proxmox",
+    "connect": "เชื่อมต่อ",
+    "reconnect": "เชื่อมต่ออีกครั้ง",
+    "disconnect": "ตัดการเชื่อมต่อ",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "เต็มหน้าจอ",
+    "notRunning": "เริ่มเกสต์เพื่อเปิดคอนโซล",
+    "lost": "การเชื่อมต่อคอนโซลขาดหาย",
+    "ended": "ปิดคอนโซลแล้ว",
+    "status": {
+      "idle": "ไม่ได้เชื่อมต่อ",
+      "connecting": "กำลังเชื่อมต่อ...",
+      "connected": "เชื่อมต่อแล้ว",
+      "closed": "ตัดการเชื่อมต่อแล้ว",
+      "error": "ไม่สามารถเชื่อมต่อได้"
+    },
+    "proxmox": "คอนโซล Proxmox",
+    "proxmoxHint": "คอนโซลของ Proxmox เองผ่านโหนด: หน้าจอของ VM หรือเชลล์ในคอนเทนเนอร์ สำหรับเกสต์ที่ยังไม่มีเครือข่าย"
+  },
+  "pool": {
+    "members": "สมาชิก",
+    "empty": "ไม่มีอะไรในพูลนี้"
+  },
+  "sdn": {
+    "hint": "โซน SDN, VNet และซับเน็ตจะมาพร้อมการจัดการคลัสเตอร์ในรุ่นถัดไป"
+  },
+  "network": {
+    "add": "สร้าง",
+    "apply": "นำไปใช้",
+    "revert": "ย้อนกลับ",
+    "pending": "ยังไม่ได้นำไปใช้",
+    "hint": "การเปลี่ยนแปลงจะบันทึกลงใน /etc/network/interfaces.new และมีผลเมื่อกดนำไปใช้ ซึ่งจะโหลดเครือข่ายของโหนดใหม่",
+    "type": "ชนิด",
+    "name": "ชื่อ",
+    "cidr": "IPv4/CIDR",
+    "gateway": "เกตเวย์ (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "เกตเวย์ (IPv6)",
+    "ports": "พอร์ตบริดจ์",
+    "slaves": "Slaves",
+    "portsHint": "ชื่ออินเทอร์เฟซ คั่นด้วยช่องว่าง",
+    "bondMode": "โหมด",
+    "vlanDevice": "อุปกรณ์ raw ของ VLAN",
+    "mtu": "MTU",
+    "comments": "ความคิดเห็น",
+    "autostart": "เริ่มอัตโนมัติ",
+    "vlanAware": "รองรับ VLAN",
+    "vlanAwareHint": "ให้เกสต์บนบริดจ์นี้ใช้แท็ก VLAN ได้",
+    "inactive": "ไม่ทำงาน",
+    "create": "สร้าง",
+    "createTitle": "สร้างอินเทอร์เฟซ",
+    "editTitle": "แก้ไข {{iface}}",
+    "types": {
+      "bridge": "Bridge",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "พอร์ต",
+      "OVSBridge": "OVS Bridge",
+      "alias": "Alias"
+    },
+    "nameHint": {
+      "bridge": "vmbr ตามด้วยตัวเลข เช่น vmbr1",
+      "bond": "bond ตามด้วยตัวเลข เช่น bond0",
+      "vlan": "device.tag เช่น vmbr0.10 หรือ vlan10 พร้อมอุปกรณ์ raw"
+    },
+    "addressWarning": "อินเทอร์เฟซนี้มีที่อยู่ที่ Termix ใช้เข้าถึงโหนด ความผิดพลาดอาจตัดการเชื่อมต่อ Termix จนกว่าจะมีคนแก้ไขโหนดที่คอนโซล",
+    "removeTitle": "นำ {{iface}} ออกหรือไม่?",
+    "removeDescription": "อินเทอร์เฟซจะถูกนำออกเมื่อนำการเปลี่ยนแปลงไปใช้",
+    "applyTitle": "นำการเปลี่ยนแปลงเครือข่ายไปใช้บน {{node}} หรือไม่?",
+    "applyDescription": "โหนดจะโหลดเครือข่ายใหม่ หากการตั้งค่าใหม่ผิด โหนดและการเชื่อมต่อของ Termix อาจออฟไลน์",
+    "applyLabel": "นำเครือข่ายไปใช้บน {{node}}",
+    "reverted": "ย้อนกลับการเปลี่ยนแปลงเครือข่ายแล้ว",
+    "problem": {
+      "cidr": "ป้อนที่อยู่ เช่น 10.10.0.1/24",
+      "gateway": "เกตเวย์ต้องมีที่อยู่ IPv4 และ IP เกตเวย์ที่ถูกต้อง",
+      "cidr6": "ป้อนที่อยู่ เช่น fd00::1/64",
+      "ports": "ป้อนชื่ออินเทอร์เฟซคั่นด้วยช่องว่าง",
+      "slaves": "Bond ต้องมี slave อย่างน้อยหนึ่งรายการ",
+      "vlanDevice": "ระบุอุปกรณ์ raw สำหรับอินเทอร์เฟซ vlanN",
+      "mtu": "MTU อยู่ระหว่าง 1280 ถึง 65520",
+      "name": {
+        "bridge": "Bridge ตั้งชื่อเป็น vmbr ตามด้วยตัวเลข",
+        "bond": "Bond ตั้งชื่อเป็น bond ตามด้วยตัวเลข",
+        "vlan": "VLAN ตั้งชื่อเป็น device.tag หรือ vlan ตามด้วยตัวเลข"
+      }
+    }
+  },
+  "import": {
+    "open": "นำเข้าสู่ Termix",
+    "title": "นำเข้าเกสต์เป็นโฮสต์ Termix",
+    "hint": "VM หรือคอนเทนเนอร์ที่เลือกแต่ละรายการจะกลายเป็นโฮสต์ Termix ที่ติดแท็ก proxmox การนำเข้ายังรีเฟรชชื่อ ที่อยู่ และแท็กของเกสต์ที่นำเข้าก่อนหน้า และติดแท็ก proxmox-missing ให้เกสต์ที่หายไปจาก Proxmox",
+    "loading": "กำลังค้นหาเกสต์และที่อยู่…",
+    "counts": "{{total}} เกสต์, นำเข้าแล้ว {{imported}}",
+    "selectAll": "เลือกทั้งหมด",
+    "selectNone": "ไม่เลือกเลย",
+    "none": "คลัสเตอร์นี้ไม่มี VM หรือคอนเทนเนอร์",
+    "imported": "นำเข้าแล้ว",
+    "noAddress": "ไม่มีที่อยู่",
+    "folder": "โฟลเดอร์",
+    "folderDefault": "โฟลเดอร์ชื่อ {{node}}",
+    "folderSearch": "ค้นหาหรือสร้าง, / สำหรับโฟลเดอร์ย่อย",
+    "folderCreate": "สร้าง \"{{folder}}\"",
+    "folderNone": "ยังไม่มีโฟลเดอร์",
+    "connection": "เชื่อมต่อด้วย",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "รันไทม์คอนเทนเนอร์",
+    "runtimeOff": "ไม่มี Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "OS ที่ไม่รู้จัก"
+    },
+    "sshLogin": "การเข้าสู่ระบบ SSH",
+    "desktopLogin": "การเข้าสู่ระบบ RDP และ VNC",
+    "desktopHint": "ต้องใช้ปลั๊กอิน Remote Desktop เพื่อเชื่อมต่อ",
+    "login": {
+      "nodeCredential": "ข้อมูลรับรองของโหนด",
+      "nodeUser": "ชื่อผู้ใช้ของโหนด",
+      "username": "ชื่อผู้ใช้เท่านั้น",
+      "none": "ไม่เข้าสู่ระบบ"
+    },
+    "username": "ชื่อผู้ใช้",
+    "submit_other": "นำเข้า {{count}} เกสต์",
+    "refresh": "รีเฟรชที่นำเข้า",
+    "done": "สร้าง {{created}}, อัปเดต {{updated}}, ทำเครื่องหมายว่าหายไป {{markedMissing}}",
+    "lastSync": "ซิงค์ล่าสุด {{when}}",
+    "lastSyncFailed": "ซิงค์ล่าสุด {{when}} ล้มเหลว: {{error}}",
+    "syncHint": "เปิด ซิงค์เกสต์ที่นำเข้าอยู่เสมอ ในการตั้งค่า Proxmox ของโฮสต์เพื่อรีเฟรชตามกำหนดเวลา",
+    "addTitle": "เพิ่ม {{name}} ลงใน Termix",
+    "addHint": "เกสต์นี้ยังไม่เป็นโฮสต์ Termix เพิ่มเพื่อเปิดเทอร์มินัล จากนั้นคอนโซลจะเปิดได้ทันที",
+    "addSubmit": "เพิ่มและเชื่อมต่อ",
+    "gone": "Proxmox ไม่มีเกสต์นี้อีกต่อไป"
+  }
+}

@@ -1,0 +1,1018 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Quản lý Proxmox VE từ Termix: máy ảo, container, lưu trữ, mạng, sao lưu, tường lửa, quyền truy cập và cụm."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Mở trong Proxmox"
+  },
+  "permissions": {
+    "view": {
+      "title": "Xem Proxmox",
+      "description": "Xem node, guest, lưu trữ, biểu đồ và tác vụ trên các máy chủ Proxmox bạn có thể kết nối."
+    },
+    "operate": {
+      "title": "Vận hành guest Proxmox",
+      "description": "Khởi động, dừng, tắt, khởi động lại, tạm ngưng và tiếp tục VM và container. Cần quyền chỉnh sửa máy chủ."
+    },
+    "console": {
+      "title": "Mở console Proxmox",
+      "description": "Mở màn hình của VM và shell root trong container. Cần quyền chỉnh sửa máy chủ."
+    },
+    "configure": {
+      "title": "Cấu hình Proxmox",
+      "description": "Tạo, nhân bản, di chuyển, chuyển đổi và xóa VM và container. Cần quyền chỉnh sửa máy chủ."
+    },
+    "administer": {
+      "title": "Quản trị Proxmox",
+      "description": "Quản lý người dùng, nhóm, vai trò, pool, 2FA, token, realm và cụm. Cần quyền chỉnh sửa máy chủ."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Node Proxmox",
+      "description": "Đánh dấu máy chủ này là node Proxmox VE. Sau đó nó hiển thị trong công cụ Proxmox ở mục Công cụ."
+    },
+    "transport": {
+      "label": "Kết nối qua",
+      "description": "Tự động dùng API qua đường hầm SSH khi đã lưu token, và dùng pvesh qua SSH cho đến lúc đó.",
+      "auto": "Tự động",
+      "tunnel": "API qua đường hầm SSH",
+      "direct": "API trực tiếp",
+      "pvesh": "pvesh qua SSH"
+    },
+    "tokenId": {
+      "label": "ID token API",
+      "description": "Tạo trong Proxmox tại Trung tâm dữ liệu > Quyền > API Tokens. Có dạng user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "Bí mật token API",
+      "description": "Chỉ hiển thị một lần khi tạo token. Được lưu mã hóa."
+    },
+    "apiHost": {
+      "label": "Địa chỉ API",
+      "description": "Chỉ cho API trực tiếp. Để trống để dùng địa chỉ của máy chủ này."
+    },
+    "apiPort": {
+      "label": "Cổng API",
+      "description": "8006 trừ khi bạn đã thay đổi."
+    },
+    "caCert": {
+      "label": "Chứng chỉ CA",
+      "description": "Chỉ cho API trực tiếp. CA của node ở định dạng PEM, từ /etc/pve/pve-root-ca.pem. Để trống nếu API có chứng chỉ được tin cậy công khai.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Guest đã nhập",
+    "importSync": {
+      "label": "Giữ đồng bộ guest đã nhập",
+      "description": "Cập nhật tên, địa chỉ và thẻ của các guest đã nhập từ node này, và gắn thẻ proxmox-missing cho những guest đã bị xóa khỏi Proxmox."
+    },
+    "importInterval": {
+      "label": "Đồng bộ mỗi (phút)",
+      "description": "Ít nhất 5 phút."
+    },
+    "importAddNew": {
+      "label": "Thêm guest mới khi đồng bộ",
+      "description": "Nhập các guest được tạo trong Proxmox sau lần nhập đầu tiên, với các giá trị mặc định dùng lần cuối trong hộp thoại nhập."
+    },
+    "importDefaults": {
+      "label": "Mặc định khi nhập"
+    },
+    "importState": {
+      "label": "Lần đồng bộ guest gần nhất"
+    },
+    "source": {
+      "label": "Guest Proxmox"
+    }
+  },
+  "app": {
+    "loading": "Đang tải...",
+    "loadFailed": "Không thể tải cụm",
+    "refreshFailed": "Làm mới thất bại: {{message}}",
+    "retry": "Thử lại",
+    "refresh": "Làm mới",
+    "search": "Tìm guest, node và lưu trữ...",
+    "status": "{{nodes}} node, {{running}}/{{total}} guest đang chạy",
+    "pickHost": "Máy chủ Proxmox",
+    "pickResource": "Chọn một node, guest hoặc lưu trữ ở bên trái",
+    "noHosts": "Chưa có máy chủ Proxmox",
+    "noHostsHint": "Mở cài đặt của máy chủ, bật Node Proxmox trong mục SSH và chọn cách kết nối. Node sẽ hiển thị ở đây.",
+    "cancel": "Hủy",
+    "working": "Đang xử lý...",
+    "save": "Lưu",
+    "reset": "Đặt lại",
+    "close": "Đóng",
+    "yes": "Có",
+    "no": "Không",
+    "edit": "Sửa"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix không tin cậy chứng chỉ của node. Trong cài đặt Proxmox của máy chủ, dán CA của node từ /etc/pve/pve-root-ca.pem vào Chứng chỉ CA, hoặc chọn API qua đường hầm SSH.",
+    "tlsHostname": "Chứng chỉ của node dành cho tên khác. Đặt Địa chỉ API thành tên hoặc địa chỉ mà chứng chỉ liệt kê.",
+    "tlsExpired": "Chứng chỉ của node đã hết hạn hoặc chưa có hiệu lực. Gia hạn trong Proxmox tại node > Hệ thống > Chứng chỉ.",
+    "notEnabled": "Máy chủ này chưa được đánh dấu là node Proxmox. Bật Node Proxmox trong cài đặt của máy chủ.",
+    "hostAccess": "Bạn cần quyền chỉnh sửa máy chủ này để thay đổi nó."
+  },
+  "tree": {
+    "nothingFound": "Không có kết quả phù hợp.",
+    "expand": "Mở rộng",
+    "collapse": "Thu gọn",
+    "datacenter": "Trung tâm dữ liệu",
+    "folders": {
+      "lxc": "LXC Container",
+      "qemu": "Máy ảo",
+      "node": "Node",
+      "pool": "Pool",
+      "sdn": "Mạng",
+      "storage": "Lưu trữ"
+    },
+    "views": {
+      "folder": "Xem theo thư mục",
+      "server": "Xem theo máy chủ"
+    }
+  },
+  "types": {
+    "node": "Node",
+    "qemu": "VM",
+    "lxc": "Container",
+    "storage": "Lưu trữ",
+    "pool": "Pool",
+    "sdn": "Vùng SDN"
+  },
+  "states": {
+    "running": "Đang chạy",
+    "stopped": "Đã dừng",
+    "paused": "Tạm dừng",
+    "suspended": "Tạm ngưng",
+    "online": "Trực tuyến",
+    "offline": "Ngoại tuyến",
+    "available": "Khả dụng",
+    "unknown": "Không rõ"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Bộ nhớ",
+    "disk": "Ổ đĩa",
+    "rootDisk": "Ổ đĩa root",
+    "usage": "Sử dụng",
+    "cores_other": "{{count}} lõi",
+    "swap": "Swap"
+  },
+  "summary": {
+    "title": "Tóm tắt",
+    "node": "Node",
+    "vmid": "ID",
+    "uptime": "Thời gian hoạt động",
+    "pool": "Pool",
+    "ha": "HA",
+    "tags": "Thẻ",
+    "guests": "Guest",
+    "guestsRunning": "{{running}}/{{total}} đang chạy",
+    "cpuModel": "CPU",
+    "sockets": "socket",
+    "load": "Tải trung bình",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Kernel",
+    "ips": "Địa chỉ"
+  },
+  "charts": {
+    "title": "Biểu đồ",
+    "cpu": "CPU",
+    "load": "Tải trung bình",
+    "memory": "Bộ nhớ",
+    "network": "Mạng",
+    "diskIo": "I/O ổ đĩa",
+    "cpuUsage": "Mức dùng CPU",
+    "ioDelay": "Độ trễ IO",
+    "used": "Đã dùng",
+    "total": "Tổng",
+    "in": "Vào",
+    "out": "Ra",
+    "read": "Đọc",
+    "write": "Ghi",
+    "timeframe": {
+      "hour": "Giờ",
+      "day": "Ngày",
+      "week": "Tuần",
+      "month": "Tháng",
+      "year": "Năm"
+    },
+    "noData": "Không có dữ liệu cho khoảng thời gian này",
+    "serverLoad": "Tải máy chủ",
+    "loadAverage": "Tải trung bình",
+    "swap": "Swap",
+    "pressureCpu": "Áp lực CPU (stall)",
+    "pressureMemory": "Áp lực bộ nhớ (stall)",
+    "pressureIo": "Áp lực IO (stall)",
+    "some": "Some",
+    "full": "Full",
+    "average": "Trung bình",
+    "maximum": "Tối đa"
+  },
+  "tasks": {
+    "title": "Tác vụ",
+    "started": "Bắt đầu",
+    "node": "Node",
+    "user": "Người dùng",
+    "task": "Tác vụ",
+    "status": "Trạng thái",
+    "running": "Đang chạy",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} trên {{node}}",
+    "done": "{{label}}: xong",
+    "failed": "{{label}} thất bại: {{reason}}"
+  },
+  "guests": {
+    "more": "Thao tác khác",
+    "isTemplate": "Mẫu",
+    "locked": "Đã khóa: {{lock}}",
+    "power": {
+      "start": "Khởi động",
+      "shutdown": "Tắt máy",
+      "stop": "Dừng",
+      "reboot": "Khởi động lại",
+      "suspend": "Tạm ngưng",
+      "resume": "Tiếp tục",
+      "reset": "Reset",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Dừng {{name}} ngay?",
+        "reset": "Reset {{name}} ngay?",
+        "description": "Thao tác này ngắt điện như rút phích cắm. Công việc chưa lưu trong guest sẽ bị mất."
+      }
+    },
+    "clone": {
+      "menu": "Nhân bản",
+      "title": "Nhân bản {{name}}",
+      "submit": "Nhân bản",
+      "label": "Nhân bản {{source}} thành {{id}}",
+      "full": "Nhân bản đầy đủ",
+      "fullHint": "Sao chép mọi ổ đĩa, nên bản sao không phụ thuộc vào bản gốc.",
+      "linkedHint": "Tắt sẽ tạo bản sao liên kết dùng chung ổ đĩa của mẫu và được tạo trong vài giây.",
+      "sameStorage": "Cùng lưu trữ với bản gốc"
+    },
+    "migrate": {
+      "menu": "Di chuyển",
+      "title": "Di chuyển {{name}}",
+      "submit": "Di chuyển",
+      "label": "Di chuyển {{name}} sang {{target}}",
+      "noOtherNodes": "Không có node trực tuyến nào khác trong cụm này để di chuyển sang.",
+      "onlineHint": "VM đang chạy và sẽ di chuyển trực tiếp mà không dừng.",
+      "restartHint": "Container đang chạy. Nó sẽ dừng, di chuyển và khởi động lại trên node đích."
+    },
+    "template": {
+      "menu": "Chuyển thành mẫu",
+      "confirm": "Chuyển {{name}} thành mẫu?",
+      "description": "Mẫu không thể khởi động, chỉ có thể nhân bản. Không thể hoàn tác.",
+      "submit": "Chuyển đổi",
+      "label": "Chuyển {{name}} thành mẫu"
+    },
+    "delete": {
+      "menu": "Xóa",
+      "title": "Xóa {{name}}",
+      "submit": "Xóa",
+      "label": "Xóa {{name}}",
+      "warning": "Thao tác này xóa guest {{vmid}} và các ổ đĩa của nó. Không thể hoàn tác.",
+      "stopFirst": "Dừng guest trước khi xóa.",
+      "typeId": "Nhập {{vmid}} để xác nhận",
+      "purge": "Xóa khỏi các tác vụ sao lưu, sao chép và HA",
+      "purgeHint": "Không để lại tác vụ nào trỏ tới guest không còn tồn tại.",
+      "unreferenced": "Xóa cả các ổ đĩa không được tham chiếu",
+      "unreferencedHint": "Các ổ đĩa trên lưu trữ đang bật có ID này mà cấu hình không liệt kê."
+    },
+    "create": {
+      "vmButton": "Tạo VM",
+      "ctButton": "Tạo CT",
+      "vmTitle": "Tạo máy ảo",
+      "ctTitle": "Tạo container",
+      "submit": "Tạo",
+      "vmLabel": "Tạo VM {{id}} ({{name}})",
+      "ctLabel": "Tạo CT {{id}} ({{name}})",
+      "noTemplates": "Không có mẫu container trên node này. Tải về trong Proxmox tại một lưu trữ > CT Templates.",
+      "noIso": "Không có phương tiện cài đặt",
+      "unprivilegedHint": "An toàn hơn: root trong container không phải là root trên node.",
+      "loginHint": "Đặt mật khẩu root, khóa SSH hoặc cả hai.",
+      "problem": {
+        "vmid": "Chọn ID từ 100 trở lên.",
+        "hostname": "Nhập tên máy: chữ cái, chữ số và dấu gạch ngang.",
+        "name": "Nhập tên: chữ cái, chữ số và dấu gạch ngang.",
+        "template": "Chọn một mẫu.",
+        "storage": "Chọn một lưu trữ.",
+        "disk": "Nhập dung lượng ổ đĩa.",
+        "cores": "Nhập số lõi.",
+        "sockets": "Nhập số socket.",
+        "memory": "Nhập ít nhất 16 MiB bộ nhớ.",
+        "swap": "Nhập swap theo MiB, 0 nếu không dùng.",
+        "network": "Chọn bridge và, với địa chỉ tĩnh, nhập dạng 192.168.0.60/24.",
+        "login": "Đặt mật khẩu root hoặc khóa SSH để có thể đăng nhập.",
+        "password": "Mật khẩu cần ít nhất 5 ký tự."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Khác"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Tên",
+      "hostname": "Tên máy",
+      "node": "Node",
+      "targetNode": "Node đích",
+      "targetStorage": "Lưu trữ đích",
+      "storage": "Lưu trữ",
+      "template": "Mẫu",
+      "iso": "Phương tiện cài đặt",
+      "ostype": "Hệ điều hành guest",
+      "rootPassword": "Mật khẩu root",
+      "sshKeys": "Khóa công khai SSH",
+      "unprivileged": "Container không đặc quyền",
+      "diskGiB": "Ổ đĩa (GiB)",
+      "cores": "Lõi",
+      "sockets": "Socket",
+      "memoryMiB": "Bộ nhớ (MiB)",
+      "swapMiB": "Swap (MiB)",
+      "bridge": "Bridge mạng",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Tĩnh",
+      "cidr": "Địa chỉ/prefix",
+      "gateway": "Gateway",
+      "startAfter": "Khởi động sau khi tạo",
+      "pick": "Chọn một"
+    },
+    "tabs": {
+      "summary": "Tóm tắt",
+      "hardware": "Phần cứng",
+      "options": "Tùy chọn",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Sửa",
+    "add": "Thêm",
+    "remove": "Gỡ bỏ",
+    "removed": "Đã gỡ bỏ {{key}}",
+    "pending": "Đang chờ",
+    "pendingHint": "Các thay đổi được đánh dấu Đang chờ sẽ áp dụng khi guest khởi động lại từ Proxmox: khởi động lại bên trong guest là không đủ.",
+    "processors": "Bộ xử lý",
+    "processorsValue": "{{sockets}} socket × {{cores}} lõi, {{cpu}}",
+    "allCores": "Tất cả",
+    "swap": "Swap",
+    "balloonShort": "tối thiểu",
+    "cpuMemory": {
+      "heading": "Bộ xử lý và bộ nhớ",
+      "title": "Bộ xử lý và bộ nhớ"
+    },
+    "cpuType": "Loại CPU",
+    "cpulimit": "Giới hạn CPU",
+    "cpulimitHint": "0 là không giới hạn. 1.5 là thời gian của một lõi rưỡi.",
+    "balloon": "Bộ nhớ tối thiểu (MiB)",
+    "balloonHint": "Với driver balloon, guest trả lại bộ nhớ xuống tới mức này. Bằng bộ nhớ sẽ tắt nó, 0 sẽ gỡ driver.",
+    "disks": "Ổ đĩa",
+    "volumes": "Ổ đĩa root và điểm gắn kết",
+    "bus": "Bus",
+    "slot": "Sẽ là {{key}}",
+    "iothread": "IO thread",
+    "discard": "Discard",
+    "discardHint": "Cho phép guest giải phóng các khối không dùng trên lưu trữ thin.",
+    "ssd": "Giả lập SSD",
+    "mountPath": "Đường dẫn gắn kết trong container",
+    "backup": "Đưa vào sao lưu",
+    "addDisk": {
+      "button": "Thêm ổ đĩa",
+      "title": "Thêm ổ đĩa",
+      "label": "Thêm {{key}}"
+    },
+    "addMount": {
+      "button": "Thêm điểm gắn kết",
+      "title": "Thêm điểm gắn kết"
+    },
+    "resize": {
+      "menu": "Đổi kích thước",
+      "title": "Mở rộng {{key}}",
+      "grow": "Thêm (GiB)",
+      "result": "{{from}} GiB thành {{to}} GiB",
+      "noShrink": "Ổ đĩa chỉ có thể mở rộng. Sau đó cần mở rộng phân vùng và hệ thống tệp bên trong guest, trừ khi guest tự làm khi khởi động.",
+      "submit": "Mở rộng",
+      "label": "Mở rộng {{key}} thêm {{size}} GiB"
+    },
+    "move": {
+      "menu": "Chuyển sang lưu trữ",
+      "title": "Chuyển {{key}}",
+      "submit": "Chuyển",
+      "deleteSource": "Xóa bản gốc",
+      "deleteSourceHint": "Tắt sẽ giữ nó như một ổ đĩa không dùng.",
+      "label": "Chuyển {{key}} sang {{storage}}"
+    },
+    "detach": {
+      "menu": "Tháo",
+      "title": "Tháo {{key}}?",
+      "description": "Ổ đĩa vẫn nằm trên lưu trữ như một ổ đĩa không dùng và có thể xóa hoặc gắn lại."
+    },
+    "unused": {
+      "delete": "Xóa",
+      "title": "Xóa {{volume}}?",
+      "description": "Thao tác này xóa ổ đĩa và mọi thứ trên đó. Không thể hoàn tác."
+    },
+    "cd": {
+      "heading": "Ổ CD/DVD",
+      "title": "Phương tiện trong {{key}}",
+      "empty": "Không có phương tiện"
+    },
+    "nic": {
+      "heading": "Bộ điều hợp mạng",
+      "add": "Thêm bộ điều hợp",
+      "addTitle": "Thêm {{key}}",
+      "editTitle": "Sửa {{key}}",
+      "none": "Không có bộ điều hợp mạng.",
+      "model": "Kiểu",
+      "name": "Tên trong container",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Tĩnh",
+        "none": "Không",
+        "auto": "SLAAC"
+      },
+      "tag": "Thẻ VLAN",
+      "tagHint": "Để trống nếu không gắn thẻ.",
+      "rate": "Giới hạn tốc độ (MB/s)",
+      "rateHint": "Để trống nếu không giới hạn.",
+      "firewall": "Tường lửa",
+      "firewallShort": "tường lửa",
+      "removeTitle": "Gỡ bỏ {{key}}?",
+      "removeDescription": "Guest sẽ mất bộ điều hợp này và địa chỉ của nó."
+    },
+    "problem": {
+      "cpu": "Nhập ít nhất một socket và một lõi.",
+      "cpulimit": "Giới hạn CPU từ 0 đến 8192.",
+      "memory": "Nhập ít nhất 16 MiB bộ nhớ.",
+      "balloon": "Bộ nhớ tối thiểu không thể lớn hơn bộ nhớ.",
+      "swap": "Nhập swap theo MiB, 0 nếu không dùng.",
+      "noSlot": "Mọi khe loại này đều đã được dùng.",
+      "storage": "Chọn một lưu trữ.",
+      "size": "Nhập kích thước theo GiB nguyên.",
+      "path": "Nhập đường dẫn tuyệt đối như /data, không phải chính /.",
+      "bridge": "Chọn một bridge.",
+      "tag": "Thẻ VLAN từ 1 đến 4094.",
+      "rate": "Nhập tốc độ lớn hơn 0, hoặc để trống.",
+      "name": "Nhập tên như eth0.",
+      "ip4": "Nhập địa chỉ dạng 192.168.0.60/24 và một gateway hợp lệ.",
+      "ip6": "Nhập địa chỉ dạng fd00::10/64."
+    },
+    "detached": "Đã tháo {{key}}; nó vẫn là một ổ đĩa không dùng",
+    "coresHint": "Để trống sẽ dùng mọi lõi của node."
+  },
+  "options": {
+    "general": "Chung",
+    "tags": "Thẻ",
+    "tagsHint": "Phân tách bằng dấu phẩy.",
+    "onboot": "Khởi động khi node khởi động",
+    "protection": "Bảo vệ",
+    "protectionHint": "Chặn việc xóa guest và ổ đĩa của nó cho đến khi tắt.",
+    "agent": "QEMU guest agent",
+    "agentHint": "Bật khi agent đã chạy trong guest, để lấy địa chỉ và tắt máy sạch.",
+    "startup": "Thứ tự khởi động và tắt",
+    "startupOrder": "Thứ tự",
+    "startupUp": "Độ trễ sau khởi động (giây)",
+    "startupDown": "Thời gian chờ tắt (giây)",
+    "dns": "DNS",
+    "nameserver": "Máy chủ DNS",
+    "searchdomain": "Tên miền tìm kiếm",
+    "useHost": "Để trống sẽ dùng của node.",
+    "notes": "Ghi chú",
+    "saved": "Đã lưu tùy chọn",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Khác"
+    },
+    "problem": {
+      "name": "Nhập tên.",
+      "startup": "Thứ tự và độ trễ là số nguyên.",
+      "tags": "Thẻ dùng chữ cái, chữ số, dấu gạch ngang, dấu chấm và gạch dưới.",
+      "nameserver": "Nhập địa chỉ IP phân tách bằng dấu cách."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "VM này không có ổ cloud-init. Hãy thêm một ổ, rồi đặt người dùng, khóa và mạng tại đây; image của guest phải hỗ trợ cloud-init.",
+    "addDrive": "Thêm ổ cloud-init",
+    "driveAdded": "Đã thêm ổ cloud-init",
+    "user": "Người dùng",
+    "username": "Tên người dùng",
+    "usernameHint": "Để trống sẽ dùng người dùng mặc định của image.",
+    "password": "Mật khẩu",
+    "passwordHint": "Để trống sẽ giữ mật khẩu hiện tại. Proxmox lưu dưới dạng băm.",
+    "network": "Mạng",
+    "saved": "Đã lưu cài đặt cloud-init",
+    "regenerate": "Tạo lại image",
+    "regenerated": "Đã tạo lại image cloud-init",
+    "regenerateHint": "Ghi cài đặt vào {{drive}}. Guest sẽ đọc chúng ở lần khởi động tiếp theo."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Tóm tắt",
+      "iso": "Image ISO",
+      "vztmpl": "Mẫu CT",
+      "backup": "Bản sao lưu",
+      "images": "Image ổ đĩa"
+    },
+    "content": "Chứa",
+    "contentTypes": {
+      "images": "Ổ đĩa VM",
+      "rootdir": "Ổ đĩa container",
+      "iso": "Image ISO",
+      "vztmpl": "Mẫu CT",
+      "backup": "Bản sao lưu",
+      "snippets": "Snippet",
+      "import": "Nhập"
+    },
+    "shared": "Dùng chung",
+    "empty": "Chưa có gì ở đây.",
+    "owner": "guest {{vmid}}",
+    "protected": "Được bảo vệ",
+    "download": {
+      "button": "Tải về từ URL",
+      "title": {
+        "iso": "Tải image ISO về {{storage}}",
+        "vztmpl": "Tải mẫu CT về {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Tên tệp",
+      "algorithm": "Loại checksum",
+      "noChecksum": "Không",
+      "checksum": "Checksum",
+      "verify": "Kiểm tra chứng chỉ của máy chủ",
+      "submit": "Tải về",
+      "label": "Tải về {{name}}",
+      "problem": {
+        "url": "Nhập URL http hoặc https.",
+        "filename": "Tên tệp dùng chữ cái, chữ số, dấu chấm, dấu gạch ngang và gạch dưới.",
+        "extension": "Image ISO kết thúc bằng .iso hoặc .img; mẫu kết thúc bằng .tar.gz, .tar.xz hoặc .tar.zst.",
+        "checksum": "Chọn loại checksum và nhập checksum dạng hex, hoặc để trống cả hai."
+      }
+    },
+    "catalog": {
+      "button": "Mẫu",
+      "title": "Mẫu container cho {{storage}}",
+      "search": "Tìm mẫu...",
+      "have": "Đã tải về",
+      "label": "Tải về {{name}}"
+    },
+    "delete": {
+      "title": "Xóa {{name}}?",
+      "description": "Thao tác này xóa tệp khỏi lưu trữ. Không thể hoàn tác.",
+      "submit": "Xóa",
+      "done": "Đã xóa {{name}}"
+    },
+    "upload": {
+      "button": "Tải lên",
+      "cancel": "Hủy tải lên",
+      "done": "Đã tải lên {{name}}",
+      "failed": "Tải lên {{name}} thất bại: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Tóm tắt",
+      "network": "Mạng",
+      "system": "Hệ thống",
+      "services": "Dịch vụ",
+      "updates": "Cập nhật",
+      "disks": "Ổ đĩa",
+      "tasks": "Tác vụ",
+      "log": "Nhật ký"
+    },
+    "services": {
+      "start": "Khởi động",
+      "stop": "Dừng",
+      "restart": "Khởi động lại",
+      "reload": "Tải lại",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Dừng {{name}}?",
+        "restart": "Khởi động lại {{name}}?",
+        "description": "Các dịch vụ của chính Proxmox giữ cho node và API hoạt động; dừng một dịch vụ có thể làm công cụ này mất kết nối cho đến khi nó khởi động lại."
+      }
+    },
+    "updates": {
+      "refresh": "Làm mới danh sách gói",
+      "refreshLabel": "Làm mới danh sách gói trên {{node}}",
+      "count_other": "Có thể nâng cấp {{count}} gói",
+      "none": "Mọi thứ đều đã cập nhật",
+      "installHint": "Cài đặt bản nâng cấp từ terminal của node bằng apt full-upgrade; Proxmox không nâng cấp qua API.",
+      "views": {
+        "packages": "Gói",
+        "repositories": "Kho"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART của {{disk}}",
+      "health": "Tình trạng",
+      "usedBy": "được dùng bởi {{used}}",
+      "unused": "không dùng",
+      "wearout": "còn {{value}}% tuổi thọ",
+      "views": {
+        "disks": "Ổ đĩa",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Thư mục",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_other": "{{count}} logical volume",
+        "metadata": "metadata {{used}} / {{size}}",
+        "frag": "phân mảnh {{value}}%",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "Không có volume group LVM.",
+          "lvmthin": "Không có pool LVM-Thin.",
+          "directory": "Không có lưu trữ thư mục trên ổ đĩa riêng.",
+          "zfs": "Không có pool ZFS."
+        },
+        "create": {
+          "lvm": "Tạo volume group LVM",
+          "lvmthin": "Tạo pool LVM-Thin",
+          "directory": "Tạo thư mục",
+          "zfs": "Tạo pool ZFS"
+        },
+        "createSubmit": "Tạo",
+        "createLabel": "Tạo {{name}} trên {{node}}",
+        "wipeWarning": "Các ổ đĩa đã chọn sẽ được phân vùng và định dạng. Chỉ những ổ đĩa trống mới được hiển thị.",
+        "name": "Tên",
+        "device": "Ổ đĩa",
+        "devices": "Ổ đĩa",
+        "pickDisk": "Chọn ổ đĩa",
+        "noUnused": "Không có ổ đĩa nào chưa dùng. Hãy xóa sạch một ổ trong mục Ổ đĩa trước, nếu dữ liệu trên đó có thể bỏ.",
+        "filesystem": "Hệ thống tệp",
+        "raidlevel": "Mức RAID",
+        "raid": {
+          "single": "Một ổ đĩa",
+          "mirror": "Mirror",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Nén",
+        "addStorage": "Thêm làm lưu trữ",
+        "addStorageHint": "Tạo một lưu trữ Proxmox cùng tên, cho ổ đĩa, container hoặc bản sao lưu.",
+        "problem": {
+          "name": "Tên bắt đầu bằng chữ cái và gồm chữ cái, chữ số, -, _ hoặc .",
+          "device": "Chọn một ổ đĩa.",
+          "oneDevice": "Chọn một ổ đĩa.",
+          "tooFew": "Mức RAID này cần ít nhất {{count}} ổ đĩa.",
+          "even": "RAID10 cần số ổ đĩa chẵn.",
+          "ashift": "ashift nằm trong khoảng 9 đến 16."
+        },
+        "remove": "Gỡ bỏ",
+        "removeTitle": "Gỡ bỏ {{name}}?",
+        "removeWarning": "Guest có ổ đĩa trên đó sẽ mất chúng. Gỡ bỏ không di chuyển gì ra trước.",
+        "removeLabel": "Gỡ bỏ {{name}} trên {{node}}",
+        "cleanupConfig": "Gỡ bỏ cả mục lưu trữ",
+        "cleanupDisks": "Xóa sạch ổ đĩa của nó",
+        "cleanupDisksHint": "Xóa sạch các ổ đĩa để có thể dùng lại.",
+        "inUse": {
+          "lvm": "Vẫn còn logical volume. Hãy gỡ bỏ chúng trước; nhóm này có thể chứa hệ thống của chính node.",
+          "lvmthin": "Vẫn còn dữ liệu. Hãy di chuyển hoặc gỡ bỏ các ổ đĩa guest trên đó trước."
+        }
+      },
+      "gpt": "Khởi tạo GPT",
+      "gptTitle": "Khởi tạo {{disk}} với GPT?",
+      "gptDescription": "Ghi một bảng phân vùng GPT trống vào ổ đĩa.",
+      "gptLabel": "Khởi tạo {{disk}} trên {{node}}",
+      "wipe": "Xóa sạch",
+      "wipeTitle": "Xóa sạch {{disk}}?",
+      "wipeWarning": "Xóa bảng phân vùng và mọi chữ ký hệ thống tệp, LVM và ZFS trên ổ đĩa (hiện tại: {{used}}). Dữ liệu trên đó sẽ mất vĩnh viễn.",
+      "wipeLabel": "Xóa sạch {{disk}} trên {{node}}",
+      "typePath": "Nhập {{disk}} để xác nhận"
+    },
+    "log": {
+      "search": "Lọc nhật ký...",
+      "empty": "Không có dòng nào khớp."
+    },
+    "power": {
+      "menu": "Nguồn node",
+      "termixWarning": "Nếu Termix chạy trên node này, nó cũng sẽ ngừng hoạt động cho đến khi node hoạt động trở lại.",
+      "typeName": "Nhập {{node}} để xác nhận",
+      "reboot": {
+        "menu": "Khởi động lại node",
+        "title": "Khởi động lại {{node}}?",
+        "submit": "Khởi động lại",
+        "label": "Khởi động lại {{node}}",
+        "warning_other": "{{count}} guest đang chạy sẽ dừng hoặc tắt trước, theo cài đặt khởi động của chúng."
+      },
+      "shutdown": {
+        "menu": "Tắt node",
+        "title": "Tắt {{node}}?",
+        "submit": "Tắt máy",
+        "label": "Tắt {{node}}",
+        "warning_other": "{{count}} guest đang chạy sẽ ngừng cùng node, và không gì khởi động lại chúng cho đến khi có người bật node."
+      }
+    },
+    "shell": "Shell",
+    "shellHint": "Mở terminal SSH của máy chủ này trong Termix.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Tên miền tìm kiếm",
+        "server": "Máy chủ DNS {{n}}",
+        "editTitle": "DNS của {{node}}",
+        "saved": "Đã lưu DNS",
+        "problem": {
+          "search": "Nhập tên miền tìm kiếm, như example.com.",
+          "server": "Máy chủ DNS là một địa chỉ IPv4 hoặc IPv6.",
+          "noServer": "Nhập ít nhất một máy chủ DNS."
+        }
+      },
+      "time": {
+        "title": "Thời gian",
+        "zone": "Múi giờ",
+        "local": "Giờ địa phương",
+        "editTitle": "Múi giờ của {{node}}",
+        "hint": "Đồng hồ được duy trì bởi NTP (chrony) trên node.",
+        "saved": "Đã đặt múi giờ thành {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "/etc/hosts của {{node}}",
+        "warning": "Tên của chính node phải tiếp tục phân giải thành địa chỉ của nó, nếu không cụm và giao diện web sẽ ngừng hoạt động.",
+        "saved": "Đã lưu /etc/hosts"
+      },
+      "certs": {
+        "title": "Chứng chỉ",
+        "issuer": "cấp bởi {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Hiệu lực đến {{date}}",
+          "expiring": "Hết hạn {{date}}",
+          "expired": "Đã hết hạn {{date}}",
+          "notYet": "Chưa có hiệu lực"
+        },
+        "upload": "Tải lên tùy chỉnh",
+        "uploadTitle": "Chứng chỉ tùy chỉnh cho {{node}}",
+        "uploaded": "Đã tải lên chứng chỉ",
+        "chain": "Chuỗi chứng chỉ",
+        "chainHint": "PEM: chứng chỉ của node trước, sau đó là các chứng chỉ trung gian.",
+        "key": "Khóa riêng",
+        "keyHint": "PEM, không mã hóa. Để trống để giữ khóa đã có trên node.",
+        "fromFile": "Đọc từ tệp",
+        "badCert": "Đây không phải chứng chỉ PEM.",
+        "badKey": "Đây không phải khóa riêng PEM.",
+        "restart": "Khởi động lại giao diện web để sử dụng",
+        "restartHint": "pveproxy khởi động lại; Termix mất kết nối API trong vài giây.",
+        "remove": "Gỡ bỏ tùy chỉnh",
+        "removeTitle": "Gỡ bỏ chứng chỉ tùy chỉnh?",
+        "removeDescription": "Node quay lại dùng chứng chỉ tự ký, và giao diện web khởi động lại.",
+        "removed": "Đã gỡ bỏ chứng chỉ tùy chỉnh"
+      }
+    },
+    "repos": {
+      "on": "Đã bật",
+      "off": "Đã tắt",
+      "enable": "Bật",
+      "disable": "Tắt",
+      "enableTitle": "Bật kho này?",
+      "enabled": "Đã bật kho",
+      "disabled": "Đã tắt kho",
+      "add": "Thêm:",
+      "added": "Đã thêm kho {{name}}",
+      "hint": "Chạy Làm mới danh sách gói trong mục Gói sau khi thay đổi. Kho Enterprise cần có gói đăng ký."
+    },
+    "taskHistory": {
+      "type": "Loại, ví dụ vzdump",
+      "vmid": "VM/CT ID",
+      "user": "Người dùng",
+      "errorsOnly": "Chỉ tác vụ thất bại",
+      "none": "Không có tác vụ nào khớp.",
+      "more": "Tải thêm",
+      "state": {
+        "running": "Đang chạy",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Yêu cầu chứng chỉ",
+      "renew": "Gia hạn",
+      "orderLabel": "Yêu cầu chứng chỉ ACME cho {{node}}",
+      "renewLabel": "Gia hạn chứng chỉ ACME cho {{node}}",
+      "usesAccount": "Tài khoản: {{account}}",
+      "none": "không có",
+      "noDomains": "Chưa có tên miền. Sửa để thêm các tên mà node này phản hồi.",
+      "viaHttp": "Thử thách HTTP",
+      "viaDns": "Thử thách DNS qua {{plugin}}",
+      "accounts": "Tài khoản",
+      "plugins": "Plugin thử thách DNS",
+      "remove": "Gỡ bỏ",
+      "domainsTitle": "Tên miền ACME của {{node}}",
+      "domainsSaved": "Đã lưu tên miền ACME",
+      "domain": "Tên miền",
+      "challenge": "Thử thách",
+      "alias": "Bí danh",
+      "addDomain": "Thêm tên miền",
+      "httpHint": "Thử thách HTTP cần cổng 80 của node này truy cập được từ internet theo tên miền. DNS hoạt động mà không cần điều đó, và hỗ trợ wildcard.",
+      "hint": "Tài khoản và plugin được dùng chung cho cả cụm; tên miền là riêng cho từng node.",
+      "problem": {
+        "noDomain": "Thêm ít nhất một tên miền.",
+        "tooMany": "Một node có tối đa sáu tên miền ACME.",
+        "domain": "Tên miền là tên đầy đủ như pve.example.com.",
+        "wildcard": "Tên miền wildcard cần plugin thử thách DNS."
+      },
+      "account": {
+        "title": "Tài khoản",
+        "pick": "Chọn tài khoản",
+        "add": "Đăng ký tài khoản",
+        "addTitle": "Đăng ký tài khoản ACME",
+        "register": "Đăng ký",
+        "registerLabel": "Đăng ký tài khoản ACME {{name}}",
+        "name": "Tên",
+        "email": "E-mail",
+        "directory": "Thư mục ACME",
+        "customDirectory": "URL tùy chỉnh",
+        "directoryUrl": "URL thư mục",
+        "acceptTos": "Chấp nhận điều khoản dịch vụ",
+        "eabKid": "ID khóa EAB",
+        "eabHmac": "Khóa HMAC EAB",
+        "eabHint": "Chỉ dành cho CA yêu cầu External Account Binding.",
+        "none": "Chưa có tài khoản ACME.",
+        "needOne": "Hãy đăng ký tài khoản ACME trước.",
+        "removeTitle": "Vô hiệu hóa tài khoản {{name}}?",
+        "removeDescription": "Tài khoản bị vô hiệu hóa tại CA và gỡ bỏ khỏi đây. Các chứng chỉ đã cấp vẫn hoạt động.",
+        "removeLabel": "Vô hiệu hóa tài khoản ACME {{name}}",
+        "problem": {
+          "name": "Tên gồm chữ cái, chữ số, -, _ hoặc .",
+          "email": "Nhập địa chỉ e-mail.",
+          "directory": "Thư mục là một URL http hoặc https.",
+          "tos": "Chấp nhận điều khoản dịch vụ để đăng ký.",
+          "eab": "EAB cần cả ID khóa và khóa HMAC."
+        }
+      },
+      "plugin": {
+        "add": "Thêm plugin",
+        "addTitle": "Thêm plugin thử thách DNS",
+        "id": "ID plugin",
+        "api": "DNS API",
+        "pickApi": "Chọn nhà cung cấp DNS",
+        "delay": "Độ trễ xác thực (giây)",
+        "delayHint": "Thời gian chờ bản ghi TXT lan truyền.",
+        "noFields": "Proxmox không liệt kê trường nào cho nhà cung cấp này; xem tài liệu của acme.sh để biết các biến mà nó đọc.",
+        "none": "Không có plugin DNS. HTTP hoạt động mà không cần plugin.",
+        "disabled": "Đã tắt",
+        "removeTitle": "Gỡ bỏ plugin {{name}}?",
+        "removeDescription": "Các tên miền dùng plugin này sẽ không thể xác thực được nữa."
+      }
+    }
+  },
+  "console": {
+    "open": "Console",
+    "openHint": "Mở máy chủ Termix của guest, hoặc đề nghị thêm nó vào Termix trước.",
+    "tabTitle": "Console Proxmox",
+    "tabLabel": "{{name}} — Console",
+    "pick": "Mở console từ một VM hoặc container đang chạy trong công cụ Proxmox.",
+    "connect": "Kết nối",
+    "reconnect": "Kết nối lại",
+    "disconnect": "Ngắt kết nối",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Toàn màn hình",
+    "notRunning": "Khởi động guest để mở console của nó.",
+    "lost": "Mất kết nối console.",
+    "ended": "Đã đóng console.",
+    "status": {
+      "idle": "Chưa kết nối",
+      "connecting": "Đang kết nối...",
+      "connected": "Đã kết nối",
+      "closed": "Đã ngắt kết nối",
+      "error": "Không thể kết nối"
+    },
+    "proxmox": "Console Proxmox",
+    "proxmoxHint": "Console của chính Proxmox qua node: màn hình của VM, shell trong container. Dành cho guest chưa có mạng."
+  },
+  "pool": {
+    "members": "Thành viên",
+    "empty": "Pool này không có gì."
+  },
+  "sdn": {
+    "hint": "Vùng SDN, VNet và subnet sẽ có cùng tính năng quản lý cụm trong bản phát hành sau."
+  },
+  "network": {
+    "add": "Tạo",
+    "apply": "Áp dụng",
+    "revert": "Hoàn nguyên",
+    "pending": "Chưa áp dụng",
+    "hint": "Thay đổi được lưu vào /etc/network/interfaces.new và có hiệu lực khi Áp dụng, thao tác này tải lại mạng của node.",
+    "type": "Loại",
+    "name": "Tên",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Gateway (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Gateway (IPv6)",
+    "ports": "Cổng bridge",
+    "slaves": "Slave",
+    "portsHint": "Tên giao diện, phân tách bằng dấu cách.",
+    "bondMode": "Chế độ",
+    "vlanDevice": "Thiết bị raw VLAN",
+    "mtu": "MTU",
+    "comments": "Ghi chú",
+    "autostart": "Tự khởi động",
+    "vlanAware": "Hỗ trợ VLAN",
+    "vlanAwareHint": "Cho phép guest trên bridge này dùng thẻ VLAN.",
+    "inactive": "Không hoạt động",
+    "create": "Tạo",
+    "createTitle": "Tạo giao diện",
+    "editTitle": "Sửa {{iface}}",
+    "types": {
+      "bridge": "Bridge",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Cổng",
+      "OVSBridge": "OVS Bridge",
+      "alias": "Bí danh"
+    },
+    "nameHint": {
+      "bridge": "vmbr theo sau là một số, như vmbr1.",
+      "bond": "bond theo sau là một số, như bond0.",
+      "vlan": "device.tag như vmbr0.10, hoặc vlan10 với một thiết bị raw."
+    },
+    "addressWarning": "Giao diện này mang địa chỉ mà Termix dùng để truy cập node. Một sai sót có thể khiến Termix mất kết nối cho đến khi có người sửa node tại console của nó.",
+    "removeTitle": "Gỡ bỏ {{iface}}?",
+    "removeDescription": "Giao diện sẽ bị gỡ bỏ khi thay đổi được áp dụng.",
+    "applyTitle": "Áp dụng thay đổi mạng trên {{node}}?",
+    "applyDescription": "Node sẽ tải lại mạng. Nếu cài đặt mới sai, node và kết nối của Termix tới nó có thể bị ngoại tuyến.",
+    "applyLabel": "Áp dụng mạng trên {{node}}",
+    "reverted": "Đã hoàn nguyên thay đổi mạng",
+    "problem": {
+      "cidr": "Nhập địa chỉ dạng 10.10.0.1/24.",
+      "gateway": "Gateway cần địa chỉ IPv4 và IP gateway hợp lệ.",
+      "cidr6": "Nhập địa chỉ dạng fd00::1/64.",
+      "ports": "Nhập tên giao diện phân tách bằng dấu cách.",
+      "slaves": "Bond cần ít nhất một slave.",
+      "vlanDevice": "Chỉ định thiết bị raw cho giao diện vlanN.",
+      "mtu": "MTU từ 1280 đến 65520.",
+      "name": {
+        "bridge": "Bridge được đặt tên là vmbr và một số.",
+        "bond": "Bond được đặt tên là bond và một số.",
+        "vlan": "VLAN được đặt tên là device.tag hoặc vlan và một số."
+      }
+    }
+  },
+  "import": {
+    "open": "Nhập vào Termix",
+    "title": "Nhập guest làm máy chủ Termix",
+    "hint": "Mỗi VM hoặc container được chọn trở thành một máy chủ Termix, gắn thẻ proxmox. Việc nhập cũng làm mới tên, địa chỉ và thẻ của các guest đã nhập trước đó, và gắn thẻ proxmox-missing cho những guest không còn trong Proxmox.",
+    "loading": "Đang tìm guest và địa chỉ của chúng…",
+    "counts": "{{total}} guest, {{imported}} đã nhập",
+    "selectAll": "Chọn tất cả",
+    "selectNone": "Bỏ chọn tất cả",
+    "none": "Cụm này không có VM hoặc container nào.",
+    "imported": "Đã nhập",
+    "noAddress": "không có địa chỉ",
+    "folder": "Thư mục",
+    "folderDefault": "Thư mục tên {{node}}",
+    "folderSearch": "Tìm hoặc tạo, / cho thư mục con",
+    "folderCreate": "Tạo \"{{folder}}\"",
+    "folderNone": "Chưa có thư mục",
+    "connection": "Kết nối bằng",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Runtime container",
+    "runtimeOff": "Không có Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "Hệ điều hành không rõ"
+    },
+    "sshLogin": "Đăng nhập SSH",
+    "desktopLogin": "Đăng nhập RDP và VNC",
+    "desktopHint": "Cần plugin Remote Desktop để kết nối.",
+    "login": {
+      "nodeCredential": "Thông tin đăng nhập của node",
+      "nodeUser": "Tên người dùng của node",
+      "username": "Chỉ tên người dùng",
+      "none": "Không đăng nhập"
+    },
+    "username": "Tên người dùng",
+    "submit_other": "Nhập {{count}} guest",
+    "refresh": "Làm mới mục đã nhập",
+    "done": "Đã tạo {{created}}, đã cập nhật {{updated}}, đánh dấu thiếu {{markedMissing}}",
+    "lastSync": "Đồng bộ lần cuối {{when}}.",
+    "lastSyncFailed": "Đồng bộ lần cuối {{when}} thất bại: {{error}}",
+    "syncHint": "Bật Giữ đồng bộ guest đã nhập trong cài đặt Proxmox của máy chủ để làm mới theo lịch.",
+    "addTitle": "Thêm {{name}} vào Termix",
+    "addHint": "Guest này chưa phải là máy chủ Termix. Thêm nó để mở terminal, sau đó Console sẽ mở ngay.",
+    "addSubmit": "Thêm và kết nối",
+    "gone": "Proxmox không còn liệt kê guest này."
+  }
+}

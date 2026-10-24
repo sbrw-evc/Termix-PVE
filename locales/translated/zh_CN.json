@@ -1,0 +1,1018 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "在 Termix 中管理 Proxmox VE：虚拟机、容器、存储、网络、备份、防火墙、访问权限和集群。"
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "在 Proxmox 中打开"
+  },
+  "permissions": {
+    "view": {
+      "title": "查看 Proxmox",
+      "description": "查看你可连接的 Proxmox 主机上的节点、虚拟机/容器、存储、图表和任务。"
+    },
+    "operate": {
+      "title": "操作 Proxmox 虚拟机/容器",
+      "description": "启动、停止、关机、重启、挂起和恢复 VM 和容器。需要该主机的编辑权限。"
+    },
+    "console": {
+      "title": "打开 Proxmox 控制台",
+      "description": "打开 VM 的屏幕和容器中的 root shell。需要该主机的编辑权限。"
+    },
+    "configure": {
+      "title": "配置 Proxmox",
+      "description": "创建、克隆、迁移、转换和删除 VM 和容器。需要该主机的编辑权限。"
+    },
+    "administer": {
+      "title": "管理 Proxmox",
+      "description": "管理用户、组、角色、资源池、双因素认证、令牌、认证域和集群。需要该主机的编辑权限。"
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Proxmox 节点",
+      "description": "将此主机标记为 Proxmox VE 节点。之后它会显示在“工具”下的 Proxmox 工具中。"
+    },
+    "transport": {
+      "label": "连接方式",
+      "description": "“自动”在保存令牌后通过 SSH 隧道使用 API，在此之前通过 SSH 使用 pvesh。",
+      "auto": "自动",
+      "tunnel": "通过 SSH 隧道使用 API",
+      "direct": "直接使用 API",
+      "pvesh": "通过 SSH 使用 pvesh"
+    },
+    "tokenId": {
+      "label": "API 令牌 ID",
+      "description": "在 Proxmox 的“数据中心 → 权限 → API 令牌”中创建。格式类似 user@realm!name。",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "API 令牌密钥",
+      "description": "仅在创建令牌时显示一次。加密存储。"
+    },
+    "apiHost": {
+      "label": "API 地址",
+      "description": "仅用于直接使用 API。留空则使用此主机的地址。"
+    },
+    "apiPort": {
+      "label": "API 端口",
+      "description": "默认为 8006，除非你修改过。"
+    },
+    "caCert": {
+      "label": "CA 证书",
+      "description": "仅用于直接使用 API。节点的 CA（PEM 格式），位于 /etc/pve/pve-root-ca.pem。如果 API 使用公开受信任的证书，请留空。",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "已导入的虚拟机/容器",
+    "importSync": {
+      "label": "保持已导入的虚拟机/容器同步",
+      "description": "更新从此节点导入的虚拟机/容器的名称、地址和标签，并为已从 Proxmox 中移除的项添加 proxmox-missing 标签。"
+    },
+    "importInterval": {
+      "label": "同步间隔（分钟）",
+      "description": "至少 5 分钟。"
+    },
+    "importAddNew": {
+      "label": "同步时添加新的虚拟机/容器",
+      "description": "导入首次导入后在 Proxmox 中创建的虚拟机/容器，使用导入对话框中上次使用的默认设置。"
+    },
+    "importDefaults": {
+      "label": "导入默认设置"
+    },
+    "importState": {
+      "label": "上次同步"
+    },
+    "source": {
+      "label": "Proxmox 虚拟机/容器"
+    }
+  },
+  "app": {
+    "loading": "正在加载...",
+    "loadFailed": "无法加载集群",
+    "refreshFailed": "刷新失败：{{message}}",
+    "retry": "重试",
+    "refresh": "刷新",
+    "search": "搜索虚拟机/容器、节点和存储...",
+    "status": "{{nodes}} 个节点，{{total}} 个虚拟机/容器中有 {{running}} 个正在运行",
+    "pickHost": "Proxmox 主机",
+    "pickResource": "在左侧选择节点、虚拟机/容器或存储",
+    "noHosts": "尚无 Proxmox 主机",
+    "noHostsHint": "打开主机设置，在 SSH 下开启“Proxmox 节点”，并选择连接方式。节点随后会显示在这里。",
+    "cancel": "取消",
+    "working": "正在处理...",
+    "save": "保存",
+    "reset": "重置",
+    "close": "关闭",
+    "yes": "是",
+    "no": "否",
+    "edit": "编辑"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix 不信任该节点的证书。请在主机的 Proxmox 设置中，将 /etc/pve/pve-root-ca.pem 中的节点 CA 粘贴到“CA 证书”，或选择“通过 SSH 隧道使用 API”。",
+    "tlsHostname": "该节点的证书属于其他名称。请将“API 地址”设置为证书中列出的名称或地址。",
+    "tlsExpired": "该节点的证书已过期或尚未生效。请在 Proxmox 的“节点 → 系统 → 证书”中续订。",
+    "notEnabled": "此主机未标记为 Proxmox 节点。请在主机设置中开启“Proxmox 节点”。",
+    "hostAccess": "你需要此主机的编辑权限才能修改。"
+  },
+  "tree": {
+    "nothingFound": "没有与搜索匹配的结果。",
+    "expand": "展开",
+    "collapse": "折叠",
+    "datacenter": "数据中心",
+    "folders": {
+      "lxc": "LXC 容器",
+      "qemu": "虚拟机",
+      "node": "节点",
+      "pool": "资源池",
+      "sdn": "网络",
+      "storage": "存储"
+    },
+    "views": {
+      "folder": "文件夹视图",
+      "server": "服务器视图"
+    }
+  },
+  "types": {
+    "node": "节点",
+    "qemu": "VM",
+    "lxc": "容器",
+    "storage": "存储",
+    "pool": "资源池",
+    "sdn": "SDN 区域"
+  },
+  "states": {
+    "running": "运行中",
+    "stopped": "已停止",
+    "paused": "已暂停",
+    "suspended": "已挂起",
+    "online": "在线",
+    "offline": "离线",
+    "available": "可用",
+    "unknown": "未知"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "内存",
+    "disk": "磁盘",
+    "rootDisk": "根磁盘",
+    "usage": "使用率",
+    "cores_other": "{{count}} 个核心",
+    "swap": "交换分区"
+  },
+  "summary": {
+    "title": "概要",
+    "node": "节点",
+    "vmid": "ID",
+    "uptime": "运行时间",
+    "pool": "资源池",
+    "ha": "HA",
+    "tags": "标签",
+    "guests": "虚拟机/容器",
+    "guestsRunning": "{{total}} 个中有 {{running}} 个正在运行",
+    "cpuModel": "CPU",
+    "sockets": "插槽",
+    "load": "平均负载",
+    "pveVersion": "Proxmox VE",
+    "kernel": "内核",
+    "ips": "地址"
+  },
+  "charts": {
+    "title": "图表",
+    "cpu": "CPU",
+    "load": "平均负载",
+    "memory": "内存",
+    "network": "网络",
+    "diskIo": "磁盘 I/O",
+    "cpuUsage": "CPU 使用率",
+    "ioDelay": "IO 延迟",
+    "used": "已用",
+    "total": "总计",
+    "in": "入",
+    "out": "出",
+    "read": "读取",
+    "write": "写入",
+    "timeframe": {
+      "hour": "小时",
+      "day": "天",
+      "week": "周",
+      "month": "月",
+      "year": "年"
+    },
+    "noData": "此时段没有数据",
+    "serverLoad": "服务器负载",
+    "loadAverage": "平均负载",
+    "swap": "交换分区",
+    "pressureCpu": "CPU 压力停滞",
+    "pressureMemory": "内存压力停滞",
+    "pressureIo": "IO 压力停滞",
+    "some": "部分",
+    "full": "完全",
+    "average": "平均值",
+    "maximum": "最大值"
+  },
+  "tasks": {
+    "title": "任务",
+    "started": "开始时间",
+    "node": "节点",
+    "user": "用户",
+    "task": "任务",
+    "status": "状态",
+    "running": "运行中",
+    "ok": "OK",
+    "logTitle": "{{node}} 上的 {{type}} {{id}}",
+    "done": "{{label}}：已完成",
+    "failed": "{{label}} 失败：{{reason}}"
+  },
+  "guests": {
+    "more": "更多操作",
+    "isTemplate": "模板",
+    "locked": "已锁定：{{lock}}",
+    "power": {
+      "start": "启动",
+      "shutdown": "关机",
+      "stop": "停止",
+      "reboot": "重启",
+      "suspend": "挂起",
+      "resume": "恢复",
+      "reset": "重置",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "立即停止 {{name}}？",
+        "reset": "立即重置 {{name}}？",
+        "description": "这会像拔掉电源一样切断电源。虚拟机/容器中未保存的工作将会丢失。"
+      }
+    },
+    "clone": {
+      "menu": "克隆",
+      "title": "克隆 {{name}}",
+      "submit": "克隆",
+      "label": "将 {{source}} 克隆为 {{id}}",
+      "full": "完整克隆",
+      "fullHint": "复制所有磁盘，克隆不依赖原始虚拟机/容器。",
+      "linkedHint": "关闭则创建链接克隆，与模板共享磁盘，几秒内即可完成。",
+      "sameStorage": "与原始项相同的存储"
+    },
+    "migrate": {
+      "menu": "迁移",
+      "title": "迁移 {{name}}",
+      "submit": "迁移",
+      "label": "将 {{name}} 迁移到 {{target}}",
+      "noOtherNodes": "此集群中没有其他在线节点可供迁移。",
+      "onlineHint": "该 VM 正在运行，将在线迁移，无需停止。",
+      "restartHint": "该容器正在运行。它将停止、迁移，并在目标节点上重新启动。"
+    },
+    "template": {
+      "menu": "转换为模板",
+      "confirm": "将 {{name}} 转换为模板？",
+      "description": "模板无法启动，只能克隆。此操作无法撤销。",
+      "submit": "转换",
+      "label": "将 {{name}} 转换为模板"
+    },
+    "delete": {
+      "menu": "删除",
+      "title": "删除 {{name}}",
+      "submit": "删除",
+      "label": "删除 {{name}}",
+      "warning": "这将删除虚拟机/容器 {{vmid}} 及其磁盘。此操作无法撤销。",
+      "stopFirst": "删除前请先停止该虚拟机/容器。",
+      "typeId": "输入 {{vmid}} 以确认",
+      "purge": "从备份作业、复制和 HA 中移除",
+      "purgeHint": "不留下指向已删除虚拟机/容器的作业。",
+      "unreferenced": "同时删除未引用的磁盘",
+      "unreferencedHint": "已启用存储上具有此 ID 但配置中未列出的磁盘。"
+    },
+    "create": {
+      "vmButton": "创建 VM",
+      "ctButton": "创建 CT",
+      "vmTitle": "创建虚拟机",
+      "ctTitle": "创建容器",
+      "submit": "创建",
+      "vmLabel": "创建 VM {{id}}（{{name}}）",
+      "ctLabel": "创建 CT {{id}}（{{name}}）",
+      "noTemplates": "此节点上没有容器模板。请在 Proxmox 中某个存储的“CT 模板”下下载。",
+      "noIso": "无安装介质",
+      "unprivilegedHint": "更安全：容器中的 root 不是节点上的 root。",
+      "loginHint": "设置 root 密码、SSH 密钥或两者。",
+      "problem": {
+        "vmid": "请选择 100 或以上的 ID。",
+        "hostname": "请输入主机名：字母、数字和短横线。",
+        "name": "请输入名称：字母、数字和短横线。",
+        "template": "请选择模板。",
+        "storage": "请选择存储。",
+        "disk": "请输入磁盘大小。",
+        "cores": "请输入核心数。",
+        "sockets": "请输入插槽数。",
+        "memory": "请输入至少 16 MiB 内存。",
+        "swap": "请以 MiB 输入交换分区大小，0 表示无。",
+        "network": "请选择网桥；如使用静态地址，请按 192.168.0.60/24 的格式输入。",
+        "login": "请设置 root 密码或 SSH 密钥以便登录。",
+        "password": "密码至少需要 5 个字符。"
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "其他"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "名称",
+      "hostname": "主机名",
+      "node": "节点",
+      "targetNode": "目标节点",
+      "targetStorage": "目标存储",
+      "storage": "存储",
+      "template": "模板",
+      "iso": "安装介质",
+      "ostype": "客户机操作系统",
+      "rootPassword": "Root 密码",
+      "sshKeys": "SSH 公钥",
+      "unprivileged": "无特权容器",
+      "diskGiB": "磁盘（GiB）",
+      "cores": "核心",
+      "sockets": "插槽",
+      "memoryMiB": "内存（MiB）",
+      "swapMiB": "交换分区（MiB）",
+      "bridge": "网桥",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "静态",
+      "cidr": "地址/前缀",
+      "gateway": "网关",
+      "startAfter": "创建后启动",
+      "pick": "请选择"
+    },
+    "tabs": {
+      "summary": "概要",
+      "hardware": "硬件",
+      "options": "选项",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "编辑",
+    "add": "添加",
+    "remove": "移除",
+    "removed": "已移除 {{key}}",
+    "pending": "待处理",
+    "pendingHint": "标记为“待处理”的更改将在从 Proxmox 重启虚拟机/容器后生效：在虚拟机/容器内部重启不够。",
+    "processors": "处理器",
+    "processorsValue": "{{sockets}} 插槽 × {{cores}} 核心，{{cpu}}",
+    "allCores": "全部",
+    "swap": "交换分区",
+    "balloonShort": "最小",
+    "cpuMemory": {
+      "heading": "处理器和内存",
+      "title": "处理器和内存"
+    },
+    "cpuType": "CPU 类型",
+    "cpulimit": "CPU 限制",
+    "cpulimitHint": "0 表示无限制。1.5 表示一个半核心的时间。",
+    "balloon": "最小内存（MiB）",
+    "balloonHint": "使用 balloon 驱动时，虚拟机会将内存归还至此值。等于内存值则关闭，0 则移除该驱动。",
+    "disks": "磁盘",
+    "volumes": "根磁盘和挂载点",
+    "bus": "总线",
+    "slot": "将为 {{key}}",
+    "iothread": "IO 线程",
+    "discard": "丢弃",
+    "discardHint": "允许虚拟机在精简存储上释放未使用的块。",
+    "ssd": "SSD 仿真",
+    "mountPath": "容器内的挂载路径",
+    "backup": "包含在备份中",
+    "addDisk": {
+      "button": "添加磁盘",
+      "title": "添加磁盘",
+      "label": "添加 {{key}}"
+    },
+    "addMount": {
+      "button": "添加挂载点",
+      "title": "添加挂载点"
+    },
+    "resize": {
+      "menu": "调整大小",
+      "title": "扩容 {{key}}",
+      "grow": "增加（GiB）",
+      "result": "{{from}} GiB 变为 {{to}} GiB",
+      "noShrink": "磁盘只能扩容。之后需要在虚拟机/容器内扩展分区和文件系统，除非它在启动时自动完成。",
+      "submit": "扩容",
+      "label": "将 {{key}} 扩容 {{size}} GiB"
+    },
+    "move": {
+      "menu": "移动到存储",
+      "title": "移动 {{key}}",
+      "submit": "移动",
+      "deleteSource": "删除原始磁盘",
+      "deleteSourceHint": "关闭则将其保留为未使用的磁盘。",
+      "label": "将 {{key}} 移动到 {{storage}}"
+    },
+    "detach": {
+      "menu": "分离",
+      "title": "分离 {{key}}？",
+      "description": "磁盘将作为未使用的磁盘保留在其存储上，可以删除或重新挂载。"
+    },
+    "unused": {
+      "delete": "删除",
+      "title": "删除 {{volume}}？",
+      "description": "这将删除该磁盘及其上的所有内容。此操作无法撤销。"
+    },
+    "cd": {
+      "heading": "CD/DVD 驱动器",
+      "title": "{{key}} 中的介质",
+      "empty": "无介质"
+    },
+    "nic": {
+      "heading": "网络适配器",
+      "add": "添加适配器",
+      "addTitle": "添加 {{key}}",
+      "editTitle": "编辑 {{key}}",
+      "none": "没有网络适配器。",
+      "model": "型号",
+      "name": "容器内的名称",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "静态",
+        "none": "无",
+        "auto": "SLAAC"
+      },
+      "tag": "VLAN 标记",
+      "tagHint": "留空表示不标记。",
+      "rate": "速率限制（MB/s）",
+      "rateHint": "留空表示无限制。",
+      "firewall": "防火墙",
+      "firewallShort": "防火墙",
+      "removeTitle": "移除 {{key}}？",
+      "removeDescription": "虚拟机/容器将失去此适配器及其地址。"
+    },
+    "problem": {
+      "cpu": "请至少输入一个插槽和一个核心。",
+      "cpulimit": "CPU 限制范围为 0 到 8192。",
+      "memory": "请输入至少 16 MiB 内存。",
+      "balloon": "最小内存不能大于内存。",
+      "swap": "请以 MiB 输入交换分区大小，0 表示无。",
+      "noSlot": "此类插槽已全部占用。",
+      "storage": "请选择存储。",
+      "size": "请输入整数 GiB 大小。",
+      "path": "请输入绝对路径，例如 /data，不能是 / 本身。",
+      "bridge": "请选择网桥。",
+      "tag": "VLAN 标记范围为 1 到 4094。",
+      "rate": "请输入大于 0 的速率，或留空。",
+      "name": "请输入名称，例如 eth0。",
+      "ip4": "请按 192.168.0.60/24 的格式输入地址，并输入有效网关。",
+      "ip6": "请按 fd00::10/64 的格式输入地址。"
+    },
+    "detached": "已分离 {{key}}；它将作为未使用的磁盘保留",
+    "coresHint": "留空则使用节点的所有核心。"
+  },
+  "options": {
+    "general": "常规",
+    "tags": "标签",
+    "tagsHint": "以逗号分隔。",
+    "onboot": "节点启动时启动",
+    "protection": "保护",
+    "protectionHint": "在关闭前阻止删除该虚拟机/容器及其磁盘。",
+    "agent": "QEMU 客户机代理",
+    "agentHint": "代理在虚拟机中运行后开启，用于获取地址和正常关机。",
+    "startup": "启动和关机顺序",
+    "startupOrder": "顺序",
+    "startupUp": "启动后延迟（秒）",
+    "startupDown": "关机超时（秒）",
+    "dns": "DNS",
+    "nameserver": "DNS 服务器",
+    "searchdomain": "搜索域",
+    "useHost": "留空则使用节点的设置。",
+    "notes": "备注",
+    "saved": "选项已保存",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "其他"
+    },
+    "problem": {
+      "name": "请输入名称。",
+      "startup": "顺序和延迟必须为整数。",
+      "tags": "标签可使用字母、数字、短横线、点和下划线。",
+      "nameserver": "请输入以空格分隔的 IP 地址。"
+    }
+  },
+  "cloudinit": {
+    "noDrive": "此 VM 没有 cloud-init 驱动器。添加一个后，在此设置用户、密钥和网络；客户机镜像必须支持 cloud-init。",
+    "addDrive": "添加 cloud-init 驱动器",
+    "driveAdded": "已添加 cloud-init 驱动器",
+    "user": "用户",
+    "username": "用户名",
+    "usernameHint": "留空则使用镜像的默认用户。",
+    "password": "密码",
+    "passwordHint": "留空则保留当前密码。由 Proxmox 以哈希形式存储。",
+    "network": "网络",
+    "saved": "Cloud-init 设置已保存",
+    "regenerate": "重新生成镜像",
+    "regenerated": "Cloud-init 镜像已重新生成",
+    "regenerateHint": "将设置写入 {{drive}}。虚拟机将在下次启动时读取。"
+  },
+  "storage": {
+    "tabs": {
+      "summary": "概要",
+      "iso": "ISO 镜像",
+      "vztmpl": "CT 模板",
+      "backup": "备份",
+      "images": "磁盘镜像"
+    },
+    "content": "内容",
+    "contentTypes": {
+      "images": "VM 磁盘",
+      "rootdir": "容器磁盘",
+      "iso": "ISO 镜像",
+      "vztmpl": "CT 模板",
+      "backup": "备份",
+      "snippets": "片段",
+      "import": "导入"
+    },
+    "shared": "共享",
+    "empty": "这里还没有内容。",
+    "owner": "虚拟机/容器 {{vmid}}",
+    "protected": "受保护",
+    "download": {
+      "button": "从 URL 下载",
+      "title": {
+        "iso": "下载 ISO 镜像到 {{storage}}",
+        "vztmpl": "下载 CT 模板到 {{storage}}"
+      },
+      "url": "URL",
+      "filename": "文件名",
+      "algorithm": "校验和类型",
+      "noChecksum": "无",
+      "checksum": "校验和",
+      "verify": "验证服务器证书",
+      "submit": "下载",
+      "label": "下载 {{name}}",
+      "problem": {
+        "url": "请输入 http 或 https URL。",
+        "filename": "文件名可使用字母、数字、点、短横线和下划线。",
+        "extension": "ISO 镜像以 .iso 或 .img 结尾；模板以 .tar.gz、.tar.xz 或 .tar.zst 结尾。",
+        "checksum": "请选择校验和类型并以十六进制输入校验和，或两者都留空。"
+      }
+    },
+    "catalog": {
+      "button": "模板",
+      "title": "{{storage}} 的容器模板",
+      "search": "搜索模板...",
+      "have": "已下载",
+      "label": "下载 {{name}}"
+    },
+    "delete": {
+      "title": "删除 {{name}}？",
+      "description": "这将从存储中删除该文件。此操作无法撤销。",
+      "submit": "删除",
+      "done": "已删除 {{name}}"
+    },
+    "upload": {
+      "button": "上传",
+      "cancel": "取消上传",
+      "done": "已上传 {{name}}",
+      "failed": "{{name}} 上传失败：{{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "概要",
+      "network": "网络",
+      "system": "系统",
+      "services": "服务",
+      "updates": "更新",
+      "disks": "磁盘",
+      "tasks": "任务",
+      "log": "日志"
+    },
+    "services": {
+      "start": "启动",
+      "stop": "停止",
+      "restart": "重启",
+      "reload": "重新加载",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "停止 {{name}}？",
+        "restart": "重启 {{name}}？",
+        "description": "Proxmox 自身的服务维持节点及其 API 的运行；停止其中之一可能导致此工具断开，直到该服务重新启动。"
+      }
+    },
+    "updates": {
+      "refresh": "刷新软件包列表",
+      "refreshLabel": "刷新 {{node}} 上的软件包列表",
+      "count_other": "{{count}} 个软件包可以升级",
+      "none": "一切都是最新的",
+      "installHint": "请在节点终端中使用 apt full-upgrade 安装升级；Proxmox 不通过其 API 进行升级。",
+      "views": {
+        "packages": "软件包",
+        "repositories": "软件源"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "{{disk}} 的 SMART",
+      "health": "健康状况",
+      "usedBy": "被 {{used}} 使用",
+      "unused": "未使用",
+      "wearout": "剩余寿命 {{value}}%",
+      "views": {
+        "disks": "磁盘",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "目录",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_other": "{{count}} 个逻辑卷",
+        "metadata": "元数据 {{used}} / {{size}}",
+        "frag": "碎片率 {{value}}%",
+        "dedup": "去重 {{value}}x",
+        "none": {
+          "lvm": "没有 LVM 卷组。",
+          "lvmthin": "没有 LVM-Thin 池。",
+          "directory": "没有位于独立磁盘上的目录存储。",
+          "zfs": "没有 ZFS 池。"
+        },
+        "create": {
+          "lvm": "创建 LVM 卷组",
+          "lvmthin": "创建 LVM-Thin 池",
+          "directory": "创建目录",
+          "zfs": "创建 ZFS 池"
+        },
+        "createSubmit": "创建",
+        "createLabel": "在 {{node}} 上创建 {{name}}",
+        "wipeWarning": "所选磁盘将被分区和格式化。仅列出没有任何内容的磁盘。",
+        "name": "名称",
+        "device": "磁盘",
+        "devices": "磁盘",
+        "pickDisk": "选择磁盘",
+        "noUnused": "没有未使用的磁盘。如果某个磁盘上的内容可以删除，请先在“磁盘”中擦除它。",
+        "filesystem": "文件系统",
+        "raidlevel": "RAID 级别",
+        "raid": {
+          "single": "单磁盘",
+          "mirror": "镜像",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "压缩",
+        "addStorage": "添加为存储",
+        "addStorageHint": "将其创建为同名的 Proxmox 存储，用于磁盘、容器或备份。",
+        "problem": {
+          "name": "名称以字母开头，可包含字母、数字、-、_ 或 .",
+          "device": "请选择磁盘。",
+          "oneDevice": "请选择一个磁盘。",
+          "tooFew": "此 RAID 级别至少需要 {{count}} 个磁盘。",
+          "even": "RAID10 需要偶数个磁盘。",
+          "ashift": "ashift 的范围为 9 到 16。"
+        },
+        "remove": "移除",
+        "removeTitle": "移除 {{name}}？",
+        "removeWarning": "磁盘位于其上的虚拟机/容器将失去这些磁盘。移除前不会先迁出任何内容。",
+        "removeLabel": "移除 {{node}} 上的 {{name}}",
+        "cleanupConfig": "同时移除存储条目",
+        "cleanupDisks": "擦除其磁盘",
+        "cleanupDisksHint": "擦除磁盘以便再次使用。",
+        "inUse": {
+          "lvm": "其中仍有逻辑卷。请先删除它们；此卷组可能包含节点自身的系统。",
+          "lvmthin": "其中仍有数据。请先移走或删除其上的虚拟机/容器磁盘。"
+        }
+      },
+      "gpt": "使用 GPT 初始化",
+      "gptTitle": "使用 GPT 初始化 {{disk}}？",
+      "gptDescription": "向磁盘写入空的 GPT 分区表。",
+      "gptLabel": "初始化 {{node}} 上的 {{disk}}",
+      "wipe": "擦除",
+      "wipeTitle": "擦除 {{disk}}？",
+      "wipeWarning": "将擦除磁盘上的分区表以及所有文件系统、LVM 和 ZFS 签名（当前：{{used}}）。其上的内容将永久丢失。",
+      "wipeLabel": "擦除 {{node}} 上的 {{disk}}",
+      "typePath": "输入 {{disk}} 以确认"
+    },
+    "log": {
+      "search": "筛选日志...",
+      "empty": "没有匹配的行。"
+    },
+    "power": {
+      "menu": "节点电源",
+      "termixWarning": "如果 Termix 运行在此节点上，它也会随之停止，直到节点恢复。",
+      "typeName": "输入 {{node}} 以确认",
+      "reboot": {
+        "menu": "重启节点",
+        "title": "重启 {{node}}？",
+        "submit": "重启",
+        "label": "重启 {{node}}",
+        "warning_other": "{{count}} 个正在运行的虚拟机/容器将按其启动设置先停止或关机。"
+      },
+      "shutdown": {
+        "menu": "关闭节点",
+        "title": "关闭 {{node}}？",
+        "submit": "关机",
+        "label": "关闭 {{node}}",
+        "warning_other": "{{count}} 个正在运行的虚拟机/容器将随之关闭，并且在有人重新开启节点电源之前不会再次启动。"
+      }
+    },
+    "shell": "Shell",
+    "shellHint": "在 Termix 中打开此主机的 SSH 终端。",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "搜索域",
+        "server": "DNS 服务器 {{n}}",
+        "editTitle": "{{node}} 的 DNS",
+        "saved": "DNS 已保存",
+        "problem": {
+          "search": "请输入搜索域，例如 example.com。",
+          "server": "DNS 服务器必须是 IPv4 或 IPv6 地址。",
+          "noServer": "请至少输入一个 DNS 服务器。"
+        }
+      },
+      "time": {
+        "title": "时间",
+        "zone": "时区",
+        "local": "本地时间",
+        "editTitle": "{{node}} 的时区",
+        "hint": "时钟本身由节点上的 NTP（chrony）维护。",
+        "saved": "时区已设置为 {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "{{node}} 的 /etc/hosts",
+        "warning": "节点自身的名称必须始终解析为其地址，否则集群及其 Web 界面将停止工作。",
+        "saved": "/etc/hosts 已保存"
+      },
+      "certs": {
+        "title": "证书",
+        "issuer": "颁发者：{{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "有效期至 {{date}}",
+          "expiring": "将于 {{date}} 过期",
+          "expired": "已于 {{date}} 过期",
+          "notYet": "尚未生效"
+        },
+        "upload": "上传自定义证书",
+        "uploadTitle": "{{node}} 的自定义证书",
+        "uploaded": "证书已上传",
+        "chain": "证书链",
+        "chainHint": "PEM：先是节点的证书，然后是中间证书。",
+        "key": "私钥",
+        "keyHint": "PEM，未加密。留空则保留节点上已有的私钥。",
+        "fromFile": "从文件读取",
+        "badCert": "这不是 PEM 证书。",
+        "badKey": "这不是 PEM 私钥。",
+        "restart": "重启 Web 界面以使用该证书",
+        "restartHint": "pveproxy 将重启；Termix 会有几秒钟无法访问 API。",
+        "remove": "移除自定义证书",
+        "removeTitle": "移除自定义证书？",
+        "removeDescription": "节点将恢复使用其自签名证书，Web 界面将重启。",
+        "removed": "自定义证书已移除"
+      }
+    },
+    "repos": {
+      "on": "已启用",
+      "off": "已禁用",
+      "enable": "启用",
+      "disable": "禁用",
+      "enableTitle": "启用此软件源？",
+      "enabled": "软件源已启用",
+      "disabled": "软件源已禁用",
+      "add": "添加：",
+      "added": "已添加 {{name}} 软件源",
+      "hint": "更改后请在“软件包”下运行“刷新软件包列表”。Enterprise 软件源需要订阅。"
+    },
+    "taskHistory": {
+      "type": "类型，例如 vzdump",
+      "vmid": "VM/CT ID",
+      "user": "用户",
+      "errorsOnly": "仅显示失败的任务",
+      "none": "没有匹配的任务。",
+      "more": "加载更多",
+      "state": {
+        "running": "运行中",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "申请证书",
+      "renew": "续订",
+      "orderLabel": "为 {{node}} 申请 ACME 证书",
+      "renewLabel": "为 {{node}} 续订 ACME 证书",
+      "usesAccount": "账户：{{account}}",
+      "none": "无",
+      "noDomains": "尚无域名。请编辑以添加此节点响应的名称。",
+      "viaHttp": "HTTP 质询",
+      "viaDns": "通过 {{plugin}} 进行 DNS 质询",
+      "accounts": "账户",
+      "plugins": "DNS 质询插件",
+      "remove": "移除",
+      "domainsTitle": "{{node}} 的 ACME 域名",
+      "domainsSaved": "ACME 域名已保存",
+      "domain": "域名",
+      "challenge": "质询",
+      "alias": "别名",
+      "addDomain": "添加域名",
+      "httpHint": "HTTP 质询要求此节点的 80 端口可通过该域名从互联网访问。DNS 质询无此要求，并且支持通配符。",
+      "hint": "账户和插件由整个集群共享；域名按节点设置。",
+      "problem": {
+        "noDomain": "请至少添加一个域名。",
+        "tooMany": "一个节点最多有六个 ACME 域名。",
+        "domain": "域名必须是完整名称，例如 pve.example.com。",
+        "wildcard": "通配符域名需要 DNS 质询插件。"
+      },
+      "account": {
+        "title": "账户",
+        "pick": "选择账户",
+        "add": "注册账户",
+        "addTitle": "注册 ACME 账户",
+        "register": "注册",
+        "registerLabel": "注册 ACME 账户 {{name}}",
+        "name": "名称",
+        "email": "电子邮件",
+        "directory": "ACME 目录",
+        "customDirectory": "自定义 URL",
+        "directoryUrl": "目录 URL",
+        "acceptTos": "接受服务条款",
+        "eabKid": "EAB 密钥 ID",
+        "eabHmac": "EAB HMAC 密钥",
+        "eabHint": "仅适用于要求外部账户绑定（External Account Binding）的 CA。",
+        "none": "尚无 ACME 账户。",
+        "needOne": "请先注册 ACME 账户。",
+        "removeTitle": "停用账户 {{name}}？",
+        "removeDescription": "该账户将在 CA 处停用并从此处移除。已颁发的证书仍可继续使用。",
+        "removeLabel": "停用 ACME 账户 {{name}}",
+        "problem": {
+          "name": "名称可包含字母、数字、-、_ 或 .",
+          "email": "请输入电子邮件地址。",
+          "directory": "目录必须是 http 或 https URL。",
+          "tos": "请接受服务条款以注册。",
+          "eab": "EAB 需要同时提供密钥 ID 和 HMAC 密钥。"
+        }
+      },
+      "plugin": {
+        "add": "添加插件",
+        "addTitle": "添加 DNS 质询插件",
+        "id": "插件 ID",
+        "api": "DNS API",
+        "pickApi": "选择 DNS 提供商",
+        "delay": "验证延迟（秒）",
+        "delayHint": "等待 TXT 记录传播的时间。",
+        "noFields": "Proxmox 未列出此提供商的字段；请参阅 acme.sh 文档了解其读取的变量。",
+        "none": "没有 DNS 插件。HTTP 质询无需插件。",
+        "disabled": "已禁用",
+        "removeTitle": "移除插件 {{name}}？",
+        "removeDescription": "使用该插件的域名将无法再验证。"
+      }
+    }
+  },
+  "console": {
+    "open": "控制台",
+    "openHint": "打开该虚拟机/容器对应的 Termix 主机，或先提示将其添加到 Termix。",
+    "tabTitle": "Proxmox 控制台",
+    "tabLabel": "{{name}} — 控制台",
+    "pick": "在 Proxmox 工具中从正在运行的 VM 或容器打开控制台。",
+    "connect": "连接",
+    "reconnect": "重新连接",
+    "disconnect": "断开连接",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "全屏",
+    "notRunning": "请启动虚拟机/容器以打开其控制台。",
+    "lost": "控制台连接已断开。",
+    "ended": "控制台已关闭。",
+    "status": {
+      "idle": "未连接",
+      "connecting": "正在连接...",
+      "connected": "已连接",
+      "closed": "已断开",
+      "error": "无法连接"
+    },
+    "proxmox": "Proxmox 控制台",
+    "proxmoxHint": "通过节点使用 Proxmox 自身的控制台：VM 的屏幕、容器中的 shell。适用于尚未联网的虚拟机/容器。"
+  },
+  "pool": {
+    "members": "成员",
+    "empty": "此资源池中没有任何内容。"
+  },
+  "sdn": {
+    "hint": "SDN 区域、VNet 和子网将在后续版本中随集群管理一起提供。"
+  },
+  "network": {
+    "add": "创建",
+    "apply": "应用",
+    "revert": "还原",
+    "pending": "尚未应用",
+    "hint": "更改会保存到 /etc/network/interfaces.new，并在点击“应用”时生效，届时会重新加载节点的网络。",
+    "type": "类型",
+    "name": "名称",
+    "cidr": "IPv4/CIDR",
+    "gateway": "网关（IPv4）",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "网关（IPv6）",
+    "ports": "网桥端口",
+    "slaves": "从属接口",
+    "portsHint": "接口名称，以空格分隔。",
+    "bondMode": "模式",
+    "vlanDevice": "VLAN 原始设备",
+    "mtu": "MTU",
+    "comments": "备注",
+    "autostart": "自动启动",
+    "vlanAware": "VLAN 感知",
+    "vlanAwareHint": "允许此网桥上的虚拟机/容器使用 VLAN 标记。",
+    "inactive": "未激活",
+    "create": "创建",
+    "createTitle": "创建接口",
+    "editTitle": "编辑 {{iface}}",
+    "types": {
+      "bridge": "网桥",
+      "bond": "绑定",
+      "vlan": "VLAN",
+      "eth": "端口",
+      "OVSBridge": "OVS 网桥",
+      "alias": "别名"
+    },
+    "nameHint": {
+      "bridge": "vmbr 加数字，例如 vmbr1。",
+      "bond": "bond 加数字，例如 bond0。",
+      "vlan": "device.tag 格式，例如 vmbr0.10，或使用原始设备时为 vlan10。"
+    },
+    "addressWarning": "此接口承载 Termix 访问节点所用的地址。配置错误可能导致 Termix 断开，直到有人在节点控制台上修复。",
+    "removeTitle": "移除 {{iface}}？",
+    "removeDescription": "应用更改时将移除该接口。",
+    "applyTitle": "在 {{node}} 上应用网络更改？",
+    "applyDescription": "节点将重新加载其网络。如果新设置有误，节点及 Termix 与其的连接可能会断开。",
+    "applyLabel": "在 {{node}} 上应用网络",
+    "reverted": "网络更改已还原",
+    "problem": {
+      "cidr": "请按 10.10.0.1/24 的格式输入地址。",
+      "gateway": "网关需要 IPv4 地址和有效的网关 IP。",
+      "cidr6": "请按 fd00::1/64 的格式输入地址。",
+      "ports": "请输入以空格分隔的接口名称。",
+      "slaves": "绑定至少需要一个从属接口。",
+      "vlanDevice": "请为 vlanN 接口指定原始设备。",
+      "mtu": "MTU 范围为 1280 到 65520。",
+      "name": {
+        "bridge": "网桥命名为 vmbr 加数字。",
+        "bond": "绑定命名为 bond 加数字。",
+        "vlan": "VLAN 命名为 device.tag 或 vlan 加数字。"
+      }
+    }
+  },
+  "import": {
+    "open": "导入到 Termix",
+    "title": "将虚拟机/容器导入为 Termix 主机",
+    "hint": "每个选中的 VM 或容器都将成为带有 proxmox 标签的 Termix 主机。导入还会刷新之前导入的虚拟机/容器的名称、地址和标签，并为已从 Proxmox 中消失的项添加 proxmox-missing 标签。",
+    "loading": "正在查找虚拟机/容器及其地址…",
+    "counts": "{{total}} 个虚拟机/容器，{{imported}} 个已导入",
+    "selectAll": "全选",
+    "selectNone": "全不选",
+    "none": "此集群中没有 VM 或容器。",
+    "imported": "已导入",
+    "noAddress": "无地址",
+    "folder": "文件夹",
+    "folderDefault": "以 {{node}} 命名的文件夹",
+    "folderSearch": "搜索或创建，用 / 表示子文件夹",
+    "folderCreate": "创建“{{folder}}”",
+    "folderNone": "尚无文件夹",
+    "connection": "连接方式",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "容器运行时",
+    "runtimeOff": "无 Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "未知操作系统"
+    },
+    "sshLogin": "SSH 登录",
+    "desktopLogin": "RDP 和 VNC 登录",
+    "desktopHint": "需要远程桌面插件才能连接。",
+    "login": {
+      "nodeCredential": "节点的凭据",
+      "nodeUser": "节点的用户名",
+      "username": "仅用户名",
+      "none": "不登录"
+    },
+    "username": "用户名",
+    "submit_other": "导入 {{count}} 个虚拟机/容器",
+    "refresh": "刷新已导入项",
+    "done": "已创建 {{created}}，已更新 {{updated}}，已标记缺失 {{markedMissing}}",
+    "lastSync": "上次同步：{{when}}。",
+    "lastSyncFailed": "上次同步 {{when}} 失败：{{error}}",
+    "syncHint": "在主机的 Proxmox 设置中开启“保持已导入的虚拟机/容器同步”，即可按计划刷新。",
+    "addTitle": "将 {{name}} 添加到 Termix",
+    "addHint": "此虚拟机/容器还不是 Termix 主机。添加后即可打开其终端，之后“控制台”会直接打开它。",
+    "addSubmit": "添加并连接",
+    "gone": "Proxmox 中已不再列出此虚拟机/容器。"
+  }
+}

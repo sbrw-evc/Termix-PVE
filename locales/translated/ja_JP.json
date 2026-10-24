@@ -1,0 +1,1018 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Termix から Proxmox VE を管理します: 仮想マシン、コンテナ、ストレージ、ネットワーク、バックアップ、ファイアウォール、アクセス、クラスタ。"
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Proxmox で開く"
+  },
+  "permissions": {
+    "view": {
+      "title": "Proxmox の表示",
+      "description": "接続可能な Proxmox ホストのノード、ゲスト、ストレージ、グラフ、タスクを表示します。"
+    },
+    "operate": {
+      "title": "Proxmox ゲストの操作",
+      "description": "VM とコンテナの起動、停止、シャットダウン、再起動、一時停止、再開を行います。ホストの編集権限が必要です。"
+    },
+    "console": {
+      "title": "Proxmox コンソールを開く",
+      "description": "VM の画面とコンテナの root シェルを開きます。ホストの編集権限が必要です。"
+    },
+    "configure": {
+      "title": "Proxmox の設定",
+      "description": "VM とコンテナの作成、クローン、移行、変換、削除を行います。ホストの編集権限が必要です。"
+    },
+    "administer": {
+      "title": "Proxmox の管理",
+      "description": "ユーザー、グループ、ロール、プール、2FA、トークン、レルム、クラスタを管理します。ホストの編集権限が必要です。"
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Proxmox ノード",
+      "description": "このホストを Proxmox VE ノードとしてマークします。ツールの下の Proxmox ツールに表示されます。"
+    },
+    "transport": {
+      "label": "接続方法",
+      "description": "自動では、トークンが保存されると SSH トンネル経由で API を使用し、それまでは SSH 経由の pvesh を使用します。",
+      "auto": "自動",
+      "tunnel": "SSH トンネル経由の API",
+      "direct": "API に直接接続",
+      "pvesh": "SSH 経由の pvesh"
+    },
+    "tokenId": {
+      "label": "API トークン ID",
+      "description": "Proxmox のデータセンター > アクセス権限 > API トークンで作成します。形式は user@realm!name です。",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "API トークンシークレット",
+      "description": "トークン作成時に一度だけ表示されます。暗号化して保存されます。"
+    },
+    "apiHost": {
+      "label": "API アドレス",
+      "description": "API に直接接続する場合のみ。空欄の場合はこのホストのアドレスを使用します。"
+    },
+    "apiPort": {
+      "label": "API ポート",
+      "description": "変更していなければ 8006 です。"
+    },
+    "caCert": {
+      "label": "CA 証明書",
+      "description": "API に直接接続する場合のみ。/etc/pve/pve-root-ca.pem にあるノードの CA (PEM 形式)。API が公的に信頼された証明書を持つ場合は空欄にします。",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "インポートしたゲスト",
+    "importSync": {
+      "label": "インポートしたゲストを同期する",
+      "description": "このノードからインポートしたゲストの名前、アドレス、タグを更新し、Proxmox から削除されたゲストに proxmox-missing タグを付けます。"
+    },
+    "importInterval": {
+      "label": "同期間隔 (分)",
+      "description": "5 分以上。"
+    },
+    "importAddNew": {
+      "label": "同期時に新しいゲストを追加",
+      "description": "初回インポート後に Proxmox で作成されたゲストを、インポートダイアログで最後に使用した既定値でインポートします。"
+    },
+    "importDefaults": {
+      "label": "インポートの既定値"
+    },
+    "importState": {
+      "label": "最終ゲスト同期"
+    },
+    "source": {
+      "label": "Proxmox ゲスト"
+    }
+  },
+  "app": {
+    "loading": "読み込み中...",
+    "loadFailed": "クラスタを読み込めませんでした",
+    "refreshFailed": "更新に失敗しました: {{message}}",
+    "retry": "再試行",
+    "refresh": "更新",
+    "search": "ゲスト、ノード、ストレージを検索...",
+    "status": "{{nodes}} ノード、{{total}} ゲスト中 {{running}} 稼働中",
+    "pickHost": "Proxmox ホスト",
+    "pickResource": "左側でノード、ゲスト、またはストレージを選択してください",
+    "noHosts": "Proxmox ホストはまだありません",
+    "noHostsHint": "ホストの設定を開き、SSH の下にある Proxmox ノードをオンにして、接続方法を選択してください。ノードがここに表示されます。",
+    "cancel": "キャンセル",
+    "working": "処理中...",
+    "save": "保存",
+    "reset": "リセット",
+    "close": "閉じる",
+    "yes": "はい",
+    "no": "いいえ",
+    "edit": "編集"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix はノードの証明書を信頼していません。ホストの Proxmox 設定で、/etc/pve/pve-root-ca.pem にあるノードの CA を CA 証明書に貼り付けるか、SSH トンネル経由の API を選択してください。",
+    "tlsHostname": "ノードの証明書は別の名前用です。API アドレスを証明書に記載された名前またはアドレスに設定してください。",
+    "tlsExpired": "ノードの証明書が期限切れか、まだ有効ではありません。Proxmox のノード > システム > 証明書で更新してください。",
+    "notEnabled": "このホストは Proxmox ノードとしてマークされていません。ホストの設定で Proxmox ノードをオンにしてください。",
+    "hostAccess": "このホストを変更するには編集権限が必要です。"
+  },
+  "tree": {
+    "nothingFound": "検索に一致するものはありません。",
+    "expand": "展開",
+    "collapse": "折りたたむ",
+    "datacenter": "データセンター",
+    "folders": {
+      "lxc": "LXC コンテナ",
+      "qemu": "仮想マシン",
+      "node": "ノード",
+      "pool": "プール",
+      "sdn": "ネットワーク",
+      "storage": "ストレージ"
+    },
+    "views": {
+      "folder": "フォルダービュー",
+      "server": "サーバービュー"
+    }
+  },
+  "types": {
+    "node": "ノード",
+    "qemu": "VM",
+    "lxc": "コンテナ",
+    "storage": "ストレージ",
+    "pool": "プール",
+    "sdn": "SDN ゾーン"
+  },
+  "states": {
+    "running": "稼働中",
+    "stopped": "停止",
+    "paused": "一時停止",
+    "suspended": "サスペンド",
+    "online": "オンライン",
+    "offline": "オフライン",
+    "available": "利用可能",
+    "unknown": "不明"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "メモリ",
+    "disk": "ディスク",
+    "rootDisk": "ルートディスク",
+    "usage": "使用率",
+    "cores_other": "{{count}} コア",
+    "swap": "スワップ"
+  },
+  "summary": {
+    "title": "サマリー",
+    "node": "ノード",
+    "vmid": "ID",
+    "uptime": "稼働時間",
+    "pool": "プール",
+    "ha": "HA",
+    "tags": "タグ",
+    "guests": "ゲスト",
+    "guestsRunning": "{{total}} 中 {{running}} 稼働中",
+    "cpuModel": "CPU",
+    "sockets": "ソケット",
+    "load": "ロードアベレージ",
+    "pveVersion": "Proxmox VE",
+    "kernel": "カーネル",
+    "ips": "アドレス"
+  },
+  "charts": {
+    "title": "グラフ",
+    "cpu": "CPU",
+    "load": "ロードアベレージ",
+    "memory": "メモリ",
+    "network": "ネットワーク",
+    "diskIo": "ディスク I/O",
+    "cpuUsage": "CPU 使用率",
+    "ioDelay": "IO 遅延",
+    "used": "使用済み",
+    "total": "合計",
+    "in": "受信",
+    "out": "送信",
+    "read": "読み取り",
+    "write": "書き込み",
+    "timeframe": {
+      "hour": "時間",
+      "day": "日",
+      "week": "週",
+      "month": "月",
+      "year": "年"
+    },
+    "noData": "この期間のデータはありません",
+    "serverLoad": "サーバー負荷",
+    "loadAverage": "ロードアベレージ",
+    "swap": "スワップ",
+    "pressureCpu": "CPU プレッシャーストール",
+    "pressureMemory": "メモリプレッシャーストール",
+    "pressureIo": "IO プレッシャーストール",
+    "some": "Some",
+    "full": "Full",
+    "average": "平均",
+    "maximum": "最大"
+  },
+  "tasks": {
+    "title": "タスク",
+    "started": "開始",
+    "node": "ノード",
+    "user": "ユーザー",
+    "task": "タスク",
+    "status": "ステータス",
+    "running": "実行中",
+    "ok": "OK",
+    "logTitle": "{{node}} 上の {{type}} {{id}}",
+    "done": "{{label}}: 完了",
+    "failed": "{{label}} に失敗しました: {{reason}}"
+  },
+  "guests": {
+    "more": "その他の操作",
+    "isTemplate": "テンプレート",
+    "locked": "ロック中: {{lock}}",
+    "power": {
+      "start": "起動",
+      "shutdown": "シャットダウン",
+      "stop": "停止",
+      "reboot": "再起動",
+      "suspend": "一時停止",
+      "resume": "再開",
+      "reset": "リセット",
+      "label": "{{name}} を{{action}}",
+      "confirm": {
+        "stop": "{{name}} を今すぐ停止しますか?",
+        "reset": "{{name}} を今すぐリセットしますか?",
+        "description": "電源プラグを抜くように電源を切ります。ゲスト内で保存されていない作業は失われます。"
+      }
+    },
+    "clone": {
+      "menu": "クローン",
+      "title": "{{name}} のクローン",
+      "submit": "クローン",
+      "label": "{{source}} を {{id}} にクローン",
+      "full": "フルクローン",
+      "fullHint": "すべてのディスクをコピーするため、クローンは元に依存しません。",
+      "linkedHint": "オフにすると、テンプレートのディスクを共有するリンククローンを数秒で作成します。",
+      "sameStorage": "元と同じストレージ"
+    },
+    "migrate": {
+      "menu": "移行",
+      "title": "{{name}} の移行",
+      "submit": "移行",
+      "label": "{{name}} を {{target}} に移行",
+      "noOtherNodes": "このクラスタには移行先となる他のオンラインノードがありません。",
+      "onlineHint": "VM は稼働中のため、停止せずにライブ移行します。",
+      "restartHint": "コンテナは稼働中です。停止し、移動してから移行先で再び起動します。"
+    },
+    "template": {
+      "menu": "テンプレートに変換",
+      "confirm": "{{name}} をテンプレートに変換しますか?",
+      "description": "テンプレートは起動できず、クローンのみ可能です。この操作は元に戻せません。",
+      "submit": "変換",
+      "label": "{{name}} をテンプレートに変換"
+    },
+    "delete": {
+      "menu": "削除",
+      "title": "{{name}} の削除",
+      "submit": "削除",
+      "label": "{{name}} を削除",
+      "warning": "ゲスト {{vmid}} とそのディスクを削除します。この操作は元に戻せません。",
+      "stopFirst": "削除する前にゲストを停止してください。",
+      "typeId": "確認のため {{vmid}} と入力してください",
+      "purge": "バックアップジョブ、レプリケーション、HA から削除",
+      "purgeHint": "存在しないゲストを指すジョブを残しません。",
+      "unreferenced": "参照されていないディスクも削除",
+      "unreferencedHint": "有効なストレージ上にあり、この ID を持つが設定に記載されていないディスク。"
+    },
+    "create": {
+      "vmButton": "VM を作成",
+      "ctButton": "CT を作成",
+      "vmTitle": "仮想マシンの作成",
+      "ctTitle": "コンテナの作成",
+      "submit": "作成",
+      "vmLabel": "VM {{id}} ({{name}}) を作成",
+      "ctLabel": "CT {{id}} ({{name}}) を作成",
+      "noTemplates": "このノードにはコンテナテンプレートがありません。Proxmox のストレージ > CT テンプレートでダウンロードしてください。",
+      "noIso": "インストールメディアなし",
+      "unprivilegedHint": "より安全: コンテナ内の root はノード上の root ではありません。",
+      "loginHint": "root パスワード、SSH 鍵、またはその両方を設定してください。",
+      "problem": {
+        "vmid": "100 以上の ID を選択してください。",
+        "hostname": "ホスト名を入力してください: 英字、数字、ハイフン。",
+        "name": "名前を入力してください: 英字、数字、ハイフン。",
+        "template": "テンプレートを選択してください。",
+        "storage": "ストレージを選択してください。",
+        "disk": "ディスクサイズを入力してください。",
+        "cores": "コア数を入力してください。",
+        "sockets": "ソケット数を入力してください。",
+        "memory": "16 MiB 以上のメモリを入力してください。",
+        "swap": "スワップを MiB で入力してください。なしの場合は 0。",
+        "network": "ブリッジを選択し、静的アドレスの場合は 192.168.0.60/24 のように入力してください。",
+        "login": "ログインできるように root パスワードまたは SSH 鍵を設定してください。",
+        "password": "パスワードは 5 文字以上必要です。"
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "その他"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "名前",
+      "hostname": "ホスト名",
+      "node": "ノード",
+      "targetNode": "移行先ノード",
+      "targetStorage": "移行先ストレージ",
+      "storage": "ストレージ",
+      "template": "テンプレート",
+      "iso": "インストールメディア",
+      "ostype": "ゲスト OS",
+      "rootPassword": "root パスワード",
+      "sshKeys": "SSH 公開鍵",
+      "unprivileged": "非特権コンテナ",
+      "diskGiB": "ディスク (GiB)",
+      "cores": "コア",
+      "sockets": "ソケット",
+      "memoryMiB": "メモリ (MiB)",
+      "swapMiB": "スワップ (MiB)",
+      "bridge": "ネットワークブリッジ",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "静的",
+      "cidr": "アドレス/プレフィックス",
+      "gateway": "ゲートウェイ",
+      "startAfter": "作成後に起動",
+      "pick": "選択してください"
+    },
+    "tabs": {
+      "summary": "サマリー",
+      "hardware": "ハードウェア",
+      "options": "オプション",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "編集",
+    "add": "追加",
+    "remove": "削除",
+    "removed": "{{key}} を削除しました",
+    "pending": "保留中",
+    "pendingHint": "保留中の変更は、ゲストが Proxmox から再起動されたときに適用されます。ゲスト内での再起動では不十分です。",
+    "processors": "プロセッサ",
+    "processorsValue": "{{sockets}} ソケット × {{cores}} コア、{{cpu}}",
+    "allCores": "すべて",
+    "swap": "スワップ",
+    "balloonShort": "最小",
+    "cpuMemory": {
+      "heading": "プロセッサとメモリ",
+      "title": "プロセッサとメモリ"
+    },
+    "cpuType": "CPU 種別",
+    "cpulimit": "CPU 制限",
+    "cpulimitHint": "0 で制限なし。1.5 は 1.5 コア分の時間です。",
+    "balloon": "最小メモリ (MiB)",
+    "balloonHint": "バルーンドライバーにより、ゲストはこの値までメモリを返却します。メモリと同じ値で無効、0 でドライバーを削除します。",
+    "disks": "ディスク",
+    "volumes": "ルートディスクとマウントポイント",
+    "bus": "バス",
+    "slot": "{{key}} になります",
+    "iothread": "IO スレッド",
+    "discard": "Discard",
+    "discardHint": "ゲストがシンストレージ上の未使用ブロックを解放できるようにします。",
+    "ssd": "SSD エミュレーション",
+    "mountPath": "コンテナ内のマウントパス",
+    "backup": "バックアップに含める",
+    "addDisk": {
+      "button": "ディスクを追加",
+      "title": "ディスクの追加",
+      "label": "{{key}} を追加"
+    },
+    "addMount": {
+      "button": "マウントポイントを追加",
+      "title": "マウントポイントの追加"
+    },
+    "resize": {
+      "menu": "サイズ変更",
+      "title": "{{key}} の拡張",
+      "grow": "追加 (GiB)",
+      "result": "{{from}} GiB が {{to}} GiB になります",
+      "noShrink": "ディスクは拡張のみ可能です。起動時に自動で行われない限り、その後ゲスト内でパーティションとファイルシステムを拡張する必要があります。",
+      "submit": "拡張",
+      "label": "{{key}} を {{size}} GiB 拡張"
+    },
+    "move": {
+      "menu": "ストレージへ移動",
+      "title": "{{key}} の移動",
+      "submit": "移動",
+      "deleteSource": "元を削除",
+      "deleteSourceHint": "オフにすると未使用ディスクとして残します。",
+      "label": "{{key}} を {{storage}} へ移動"
+    },
+    "detach": {
+      "menu": "デタッチ",
+      "title": "{{key}} をデタッチしますか?",
+      "description": "ディスクは未使用ディスクとしてストレージに残り、削除または再アタッチできます。"
+    },
+    "unused": {
+      "delete": "削除",
+      "title": "{{volume}} を削除しますか?",
+      "description": "ディスクとその内容をすべて削除します。この操作は元に戻せません。"
+    },
+    "cd": {
+      "heading": "CD/DVD ドライブ",
+      "title": "{{key}} のメディア",
+      "empty": "メディアなし"
+    },
+    "nic": {
+      "heading": "ネットワークアダプタ",
+      "add": "アダプタを追加",
+      "addTitle": "{{key}} の追加",
+      "editTitle": "{{key}} の編集",
+      "none": "ネットワークアダプタはありません。",
+      "model": "モデル",
+      "name": "コンテナ内の名前",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "静的",
+        "none": "なし",
+        "auto": "SLAAC"
+      },
+      "tag": "VLAN タグ",
+      "tagHint": "タグなしの場合は空欄。",
+      "rate": "レート制限 (MB/s)",
+      "rateHint": "制限なしの場合は空欄。",
+      "firewall": "ファイアウォール",
+      "firewallShort": "ファイアウォール",
+      "removeTitle": "{{key}} を削除しますか?",
+      "removeDescription": "ゲストはこのアダプタとそのアドレスを失います。"
+    },
+    "problem": {
+      "cpu": "ソケットとコアを 1 つ以上入力してください。",
+      "cpulimit": "CPU 制限は 0 から 8192 です。",
+      "memory": "16 MiB 以上のメモリを入力してください。",
+      "balloon": "最小メモリはメモリを超えられません。",
+      "swap": "スワップを MiB で入力してください。なしの場合は 0。",
+      "noSlot": "この種類のスロットはすべて使用中です。",
+      "storage": "ストレージを選択してください。",
+      "size": "サイズを GiB 単位の整数で入力してください。",
+      "path": "/data のような絶対パスを入力してください。/ そのものは不可です。",
+      "bridge": "ブリッジを選択してください。",
+      "tag": "VLAN タグは 1 から 4094 です。",
+      "rate": "0 より大きいレートを入力するか、空欄にしてください。",
+      "name": "eth0 のような名前を入力してください。",
+      "ip4": "192.168.0.60/24 のようにアドレスを入力し、有効なゲートウェイを入力してください。",
+      "ip6": "fd00::10/64 のようにアドレスを入力してください。"
+    },
+    "detached": "{{key}} をデタッチしました。未使用ディスクとして残ります",
+    "coresHint": "空欄の場合はノードのすべてのコアを使用します。"
+  },
+  "options": {
+    "general": "全般",
+    "tags": "タグ",
+    "tagsHint": "カンマ区切り。",
+    "onboot": "ノード起動時に起動",
+    "protection": "保護",
+    "protectionHint": "オフにするまで、ゲストとそのディスクの削除をブロックします。",
+    "agent": "QEMU ゲストエージェント",
+    "agentHint": "ゲスト内でエージェントが動作したらオンにします。アドレス取得とクリーンなシャットダウンに使用されます。",
+    "startup": "起動/シャットダウン順序",
+    "startupOrder": "順序",
+    "startupUp": "起動後の遅延 (秒)",
+    "startupDown": "シャットダウンタイムアウト (秒)",
+    "dns": "DNS",
+    "nameserver": "DNS サーバー",
+    "searchdomain": "検索ドメイン",
+    "useHost": "空欄の場合はノードの設定を使用します。",
+    "notes": "メモ",
+    "saved": "オプションを保存しました",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "その他"
+    },
+    "problem": {
+      "name": "名前を入力してください。",
+      "startup": "順序と遅延は整数です。",
+      "tags": "タグには英字、数字、ハイフン、ドット、アンダースコアを使用します。",
+      "nameserver": "スペース区切りで IP アドレスを入力してください。"
+    }
+  },
+  "cloudinit": {
+    "noDrive": "この VM には cloud-init ドライブがありません。追加してから、ここでユーザー、鍵、ネットワークを設定してください。ゲストイメージが cloud-init に対応している必要があります。",
+    "addDrive": "cloud-init ドライブを追加",
+    "driveAdded": "cloud-init ドライブを追加しました",
+    "user": "ユーザー",
+    "username": "ユーザー名",
+    "usernameHint": "空欄の場合はイメージの既定ユーザーを使用します。",
+    "password": "パスワード",
+    "passwordHint": "空欄の場合は現在のものを維持します。Proxmox によりハッシュ化して保存されます。",
+    "network": "ネットワーク",
+    "saved": "cloud-init 設定を保存しました",
+    "regenerate": "イメージを再生成",
+    "regenerated": "cloud-init イメージを再生成しました",
+    "regenerateHint": "設定を {{drive}} に書き込みます。ゲストは次回起動時に読み込みます。"
+  },
+  "storage": {
+    "tabs": {
+      "summary": "サマリー",
+      "iso": "ISO イメージ",
+      "vztmpl": "CT テンプレート",
+      "backup": "バックアップ",
+      "images": "ディスクイメージ"
+    },
+    "content": "内容",
+    "contentTypes": {
+      "images": "VM ディスク",
+      "rootdir": "コンテナディスク",
+      "iso": "ISO イメージ",
+      "vztmpl": "CT テンプレート",
+      "backup": "バックアップ",
+      "snippets": "スニペット",
+      "import": "インポート"
+    },
+    "shared": "共有",
+    "empty": "まだ何もありません。",
+    "owner": "ゲスト {{vmid}}",
+    "protected": "保護",
+    "download": {
+      "button": "URL からダウンロード",
+      "title": {
+        "iso": "ISO イメージを {{storage}} にダウンロード",
+        "vztmpl": "CT テンプレートを {{storage}} にダウンロード"
+      },
+      "url": "URL",
+      "filename": "ファイル名",
+      "algorithm": "チェックサムの種類",
+      "noChecksum": "なし",
+      "checksum": "チェックサム",
+      "verify": "サーバーの証明書を確認",
+      "submit": "ダウンロード",
+      "label": "{{name}} をダウンロード",
+      "problem": {
+        "url": "http または https の URL を入力してください。",
+        "filename": "ファイル名には英字、数字、ドット、ハイフン、アンダースコアを使用します。",
+        "extension": "ISO イメージは .iso または .img、テンプレートは .tar.gz、.tar.xz、.tar.zst で終わります。",
+        "checksum": "チェックサムの種類を選択して 16 進数でチェックサムを入力するか、両方を空欄にしてください。"
+      }
+    },
+    "catalog": {
+      "button": "テンプレート",
+      "title": "{{storage}} 用のコンテナテンプレート",
+      "search": "テンプレートを検索...",
+      "have": "ダウンロード済み",
+      "label": "{{name}} をダウンロード"
+    },
+    "delete": {
+      "title": "{{name}} を削除しますか?",
+      "description": "ストレージからファイルを削除します。この操作は元に戻せません。",
+      "submit": "削除",
+      "done": "{{name}} を削除しました"
+    },
+    "upload": {
+      "button": "アップロード",
+      "cancel": "アップロードをキャンセル",
+      "done": "{{name}} をアップロードしました",
+      "failed": "{{name}} のアップロードに失敗しました: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "サマリー",
+      "network": "ネットワーク",
+      "system": "システム",
+      "services": "サービス",
+      "updates": "アップデート",
+      "disks": "ディスク",
+      "tasks": "タスク",
+      "log": "ログ"
+    },
+    "services": {
+      "start": "起動",
+      "stop": "停止",
+      "restart": "再起動",
+      "reload": "リロード",
+      "label": "{{name}} を{{action}}",
+      "confirm": {
+        "stop": "{{name}} を停止しますか?",
+        "restart": "{{name}} を再起動しますか?",
+        "description": "Proxmox 自身のサービスはノードとその API を動作させています。停止すると、再起動するまでこのツールが切断される可能性があります。"
+      }
+    },
+    "updates": {
+      "refresh": "パッケージリストを更新",
+      "refreshLabel": "{{node}} のパッケージリストを更新",
+      "count_other": "{{count}} 個のパッケージをアップグレードできます",
+      "none": "すべて最新です",
+      "installHint": "アップグレードはノードのターミナルから apt full-upgrade でインストールしてください。Proxmox は API 経由でアップグレードしません。",
+      "views": {
+        "packages": "パッケージ",
+        "repositories": "リポジトリ"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "{{disk}} の SMART",
+      "health": "状態",
+      "usedBy": "{{used}} が使用中",
+      "unused": "未使用",
+      "wearout": "寿命残り {{value}}%",
+      "views": {
+        "disks": "ディスク",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "ディレクトリ",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_other": "{{count}} 個の論理ボリューム",
+        "metadata": "メタデータ {{used}} / {{size}}",
+        "frag": "断片化 {{value}}%",
+        "dedup": "重複排除 {{value}}x",
+        "none": {
+          "lvm": "LVM ボリュームグループはありません。",
+          "lvmthin": "LVM-Thin プールはありません。",
+          "directory": "専用ディスク上のディレクトリストレージはありません。",
+          "zfs": "ZFS プールはありません。"
+        },
+        "create": {
+          "lvm": "LVM ボリュームグループを作成",
+          "lvmthin": "LVM-Thin プールを作成",
+          "directory": "ディレクトリを作成",
+          "zfs": "ZFS プールを作成"
+        },
+        "createSubmit": "作成",
+        "createLabel": "{{node}} に {{name}} を作成",
+        "wipeWarning": "選択したディスクはパーティション分割され、フォーマットされます。空のディスクのみが表示されます。",
+        "name": "名前",
+        "device": "ディスク",
+        "devices": "ディスク",
+        "pickDisk": "ディスクを選択",
+        "noUnused": "未使用のディスクがありません。内容を消去してよい場合は、先にディスクで初期化してください。",
+        "filesystem": "ファイルシステム",
+        "raidlevel": "RAID レベル",
+        "raid": {
+          "single": "シングルディスク",
+          "mirror": "ミラー",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "圧縮",
+        "addStorage": "ストレージとして追加",
+        "addStorageHint": "ディスク、コンテナ、バックアップ用に同じ名前の Proxmox ストレージとして追加します。",
+        "problem": {
+          "name": "名前は英字で始まり、英字、数字、-、_、. を使用します。",
+          "device": "ディスクを選択してください。",
+          "oneDevice": "ディスクを 1 台選択してください。",
+          "tooFew": "この RAID レベルには {{count}} 台以上のディスクが必要です。",
+          "even": "RAID10 には偶数台のディスクが必要です。",
+          "ashift": "ashift は 9 から 16 です。"
+        },
+        "remove": "削除",
+        "removeTitle": "{{name}} を削除しますか?",
+        "removeWarning": "ここにディスクを持つゲストはそれを失います。削除前にデータは移動されません。",
+        "removeLabel": "{{node}} の {{name}} を削除",
+        "cleanupConfig": "ストレージエントリも削除",
+        "cleanupDisks": "ディスクを初期化",
+        "cleanupDisksHint": "ディスクを消去して再利用できるようにします。",
+        "inUse": {
+          "lvm": "まだ論理ボリュームがあります。先に削除してください。このグループにはノード自身のシステムが含まれている可能性があります。",
+          "lvmthin": "まだデータがあります。先にその上のゲストディスクを移動または削除してください。"
+        }
+      },
+      "gpt": "GPT で初期化",
+      "gptTitle": "{{disk}} を GPT で初期化しますか?",
+      "gptDescription": "空の GPT パーティションテーブルをディスクに書き込みます。",
+      "gptLabel": "{{node}} の {{disk}} を初期化",
+      "wipe": "ワイプ",
+      "wipeTitle": "{{disk}} をワイプしますか?",
+      "wipeWarning": "ディスク上のパーティションテーブルと、すべてのファイルシステム、LVM、ZFS の署名を消去します (現在: {{used}})。内容は完全に失われます。",
+      "wipeLabel": "{{node}} の {{disk}} をワイプ",
+      "typePath": "確認のため {{disk}} と入力してください"
+    },
+    "log": {
+      "search": "ログを絞り込む...",
+      "empty": "一致する行はありません。"
+    },
+    "power": {
+      "menu": "ノードの電源",
+      "termixWarning": "Termix がこのノード上で動作している場合、ノードが復帰するまで Termix も停止します。",
+      "typeName": "確認のため {{node}} と入力してください",
+      "reboot": {
+        "menu": "ノードを再起動",
+        "title": "{{node}} を再起動しますか?",
+        "submit": "再起動",
+        "label": "{{node}} を再起動",
+        "warning_other": "稼働中の {{count}} 個のゲストは、起動設定に従って先に停止またはシャットダウンされます。"
+      },
+      "shutdown": {
+        "menu": "ノードをシャットダウン",
+        "title": "{{node}} をシャットダウンしますか?",
+        "submit": "シャットダウン",
+        "label": "{{node}} をシャットダウン",
+        "warning_other": "稼働中の {{count}} 個のゲストも停止し、誰かがノードの電源を入れるまで再起動されません。"
+      }
+    },
+    "shell": "シェル",
+    "shellHint": "Termix でこのホストの SSH ターミナルを開きます。",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "検索ドメイン",
+        "server": "DNS サーバー {{n}}",
+        "editTitle": "{{node}} の DNS",
+        "saved": "DNS を保存しました",
+        "problem": {
+          "search": "example.com のような検索ドメインを入力してください。",
+          "server": "DNS サーバーは IPv4 または IPv6 アドレスです。",
+          "noServer": "DNS サーバーを 1 つ以上入力してください。"
+        }
+      },
+      "time": {
+        "title": "時刻",
+        "zone": "タイムゾーン",
+        "local": "ローカル時刻",
+        "editTitle": "{{node}} のタイムゾーン",
+        "hint": "時刻自体はノード上の NTP (chrony) によって維持されます。",
+        "saved": "タイムゾーンを {{zone}} に設定しました"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "{{node}} の /etc/hosts",
+        "warning": "ノード自身の名前は引き続きそのアドレスに解決される必要があります。そうでないと、クラスタと Web インターフェースが動作しなくなります。",
+        "saved": "/etc/hosts を保存しました"
+      },
+      "certs": {
+        "title": "証明書",
+        "issuer": "発行者: {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "{{date}} まで有効",
+          "expiring": "{{date}} に期限切れ",
+          "expired": "{{date}} に期限切れ済み",
+          "notYet": "まだ有効ではありません"
+        },
+        "upload": "カスタムをアップロード",
+        "uploadTitle": "{{node}} のカスタム証明書",
+        "uploaded": "証明書をアップロードしました",
+        "chain": "証明書チェーン",
+        "chainHint": "PEM: 先にノードの証明書、その後に中間証明書。",
+        "key": "秘密鍵",
+        "keyHint": "PEM、暗号化なし。ノード上の既存の鍵を使う場合は空欄にします。",
+        "fromFile": "ファイルから読み込む",
+        "badCert": "PEM 証明書ではありません。",
+        "badKey": "PEM 秘密鍵ではありません。",
+        "restart": "Web インターフェースを再起動して適用",
+        "restartHint": "pveproxy が再起動し、Termix は数秒間 API を利用できなくなります。",
+        "remove": "カスタムを削除",
+        "removeTitle": "カスタム証明書を削除しますか?",
+        "removeDescription": "ノードは自己署名証明書に戻り、Web インターフェースが再起動します。",
+        "removed": "カスタム証明書を削除しました"
+      }
+    },
+    "repos": {
+      "on": "有効",
+      "off": "無効",
+      "enable": "有効化",
+      "disable": "無効化",
+      "enableTitle": "このリポジトリを有効にしますか?",
+      "enabled": "リポジトリを有効にしました",
+      "disabled": "リポジトリを無効にしました",
+      "add": "追加:",
+      "added": "{{name}} リポジトリを追加しました",
+      "hint": "変更後はパッケージでパッケージリストを更新を実行してください。Enterprise リポジトリにはサブスクリプションが必要です。"
+    },
+    "taskHistory": {
+      "type": "種類 (例: vzdump)",
+      "vmid": "VM/CT ID",
+      "user": "ユーザー",
+      "errorsOnly": "失敗したタスクのみ",
+      "none": "一致するタスクはありません。",
+      "more": "さらに読み込む",
+      "state": {
+        "running": "実行中",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "証明書を発行",
+      "renew": "更新",
+      "orderLabel": "{{node}} の ACME 証明書を発行",
+      "renewLabel": "{{node}} の ACME 証明書を更新",
+      "usesAccount": "アカウント: {{account}}",
+      "none": "なし",
+      "noDomains": "ドメインはまだありません。編集して、このノードが応答する名前を追加してください。",
+      "viaHttp": "HTTP チャレンジ",
+      "viaDns": "{{plugin}} による DNS チャレンジ",
+      "accounts": "アカウント",
+      "plugins": "DNS チャレンジプラグイン",
+      "remove": "削除",
+      "domainsTitle": "{{node}} の ACME ドメイン",
+      "domainsSaved": "ACME ドメインを保存しました",
+      "domain": "ドメイン",
+      "challenge": "チャレンジ",
+      "alias": "エイリアス",
+      "addDomain": "ドメインを追加",
+      "httpHint": "HTTP チャレンジでは、このノードのポート 80 がそのドメインでインターネットから到達可能である必要があります。DNS はそれなしで動作し、ワイルドカードにも対応します。",
+      "hint": "アカウントとプラグインはクラスタ全体で共有され、ドメインはノードごとです。",
+      "problem": {
+        "noDomain": "ドメインを 1 つ以上追加してください。",
+        "tooMany": "ノードの ACME ドメインは最大 6 つです。",
+        "domain": "ドメインは pve.example.com のような完全な名前です。",
+        "wildcard": "ワイルドカードドメインには DNS チャレンジプラグインが必要です。"
+      },
+      "account": {
+        "title": "アカウント",
+        "pick": "アカウントを選択",
+        "add": "アカウントを登録",
+        "addTitle": "ACME アカウントの登録",
+        "register": "登録",
+        "registerLabel": "ACME アカウント {{name}} を登録",
+        "name": "名前",
+        "email": "メール",
+        "directory": "ACME ディレクトリ",
+        "customDirectory": "カスタム URL",
+        "directoryUrl": "ディレクトリ URL",
+        "acceptTos": "利用規約に同意する",
+        "eabKid": "EAB キー ID",
+        "eabHmac": "EAB HMAC キー",
+        "eabHint": "External Account Binding を求める CA の場合のみ。",
+        "none": "ACME アカウントはまだありません。",
+        "needOne": "先に ACME アカウントを登録してください。",
+        "removeTitle": "アカウント {{name}} を無効化しますか?",
+        "removeDescription": "アカウントは CA で無効化され、ここから削除されます。発行済みの証明書は引き続き使用できます。",
+        "removeLabel": "ACME アカウント {{name}} を無効化",
+        "problem": {
+          "name": "名前には英字、数字、-、_、. を使用します。",
+          "email": "メールアドレスを入力してください。",
+          "directory": "ディレクトリは http または https の URL です。",
+          "tos": "登録するには利用規約に同意してください。",
+          "eab": "EAB にはキー ID と HMAC キーの両方が必要です。"
+        }
+      },
+      "plugin": {
+        "add": "プラグインを追加",
+        "addTitle": "DNS チャレンジプラグインの追加",
+        "id": "プラグイン ID",
+        "api": "DNS API",
+        "pickApi": "DNS プロバイダーを選択",
+        "delay": "検証遅延 (秒)",
+        "delayHint": "TXT レコードの伝播を待つ時間。",
+        "noFields": "Proxmox はこのプロバイダーのフィールドを提供していません。読み込まれる変数については acme.sh のドキュメントを参照してください。",
+        "none": "DNS プラグインはありません。HTTP はプラグインなしで動作します。",
+        "disabled": "無効",
+        "removeTitle": "プラグイン {{name}} を削除しますか?",
+        "removeDescription": "これを使用するドメインは検証できなくなります。"
+      }
+    }
+  },
+  "console": {
+    "open": "コンソール",
+    "openHint": "ゲストの Termix ホストを開くか、先に Termix への追加を提案します。",
+    "tabTitle": "Proxmox コンソール",
+    "tabLabel": "{{name}} — コンソール",
+    "pick": "Proxmox ツールで稼働中の VM またはコンテナからコンソールを開いてください。",
+    "connect": "接続",
+    "reconnect": "再接続",
+    "disconnect": "切断",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "全画面",
+    "notRunning": "コンソールを開くにはゲストを起動してください。",
+    "lost": "コンソール接続が失われました。",
+    "ended": "コンソールを閉じました。",
+    "status": {
+      "idle": "未接続",
+      "connecting": "接続中...",
+      "connected": "接続済み",
+      "closed": "切断済み",
+      "error": "接続できませんでした"
+    },
+    "proxmox": "Proxmox コンソール",
+    "proxmoxHint": "ノード経由の Proxmox 自身のコンソール: VM の画面、コンテナのシェル。まだネットワークのないゲスト向け。"
+  },
+  "pool": {
+    "members": "メンバー",
+    "empty": "このプールには何もありません。"
+  },
+  "sdn": {
+    "hint": "SDN ゾーン、VNet、サブネットは今後のリリースでクラスタ管理とともに提供されます。"
+  },
+  "network": {
+    "add": "作成",
+    "apply": "適用",
+    "revert": "元に戻す",
+    "pending": "未適用",
+    "hint": "変更は /etc/network/interfaces.new に保存され、適用時に有効になり、ノードのネットワークが再読み込みされます。",
+    "type": "種類",
+    "name": "名前",
+    "cidr": "IPv4/CIDR",
+    "gateway": "ゲートウェイ (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "ゲートウェイ (IPv6)",
+    "ports": "ブリッジポート",
+    "slaves": "スレーブ",
+    "portsHint": "スペース区切りのインターフェース名。",
+    "bondMode": "モード",
+    "vlanDevice": "VLAN RAW デバイス",
+    "mtu": "MTU",
+    "comments": "コメント",
+    "autostart": "自動起動",
+    "vlanAware": "VLAN 対応",
+    "vlanAwareHint": "このブリッジ上のゲストが VLAN タグを使用できるようにします。",
+    "inactive": "非アクティブ",
+    "create": "作成",
+    "createTitle": "インターフェースの作成",
+    "editTitle": "{{iface}} の編集",
+    "types": {
+      "bridge": "ブリッジ",
+      "bond": "ボンド",
+      "vlan": "VLAN",
+      "eth": "ポート",
+      "OVSBridge": "OVS ブリッジ",
+      "alias": "エイリアス"
+    },
+    "nameHint": {
+      "bridge": "vmbr の後に番号 (例: vmbr1)。",
+      "bond": "bond の後に番号 (例: bond0)。",
+      "vlan": "vmbr0.10 のような device.tag、または RAW デバイスを指定した vlan10。"
+    },
+    "addressWarning": "このインターフェースには Termix がノードに接続するアドレスがあります。誤りがあると、誰かがコンソールでノードを修正するまで Termix が切断される可能性があります。",
+    "removeTitle": "{{iface}} を削除しますか?",
+    "removeDescription": "変更が適用されるとインターフェースは削除されます。",
+    "applyTitle": "{{node}} にネットワークの変更を適用しますか?",
+    "applyDescription": "ノードはネットワークを再読み込みします。新しい設定が誤っていると、ノードと Termix の接続がオフラインになる可能性があります。",
+    "applyLabel": "{{node}} にネットワークを適用",
+    "reverted": "ネットワークの変更を元に戻しました",
+    "problem": {
+      "cidr": "10.10.0.1/24 のようにアドレスを入力してください。",
+      "gateway": "ゲートウェイには IPv4 アドレスと有効なゲートウェイ IP が必要です。",
+      "cidr6": "fd00::1/64 のようにアドレスを入力してください。",
+      "ports": "スペース区切りでインターフェース名を入力してください。",
+      "slaves": "ボンドには 1 つ以上のスレーブが必要です。",
+      "vlanDevice": "vlanN インターフェースの RAW デバイスを指定してください。",
+      "mtu": "MTU は 1280 から 65520 です。",
+      "name": {
+        "bridge": "ブリッジ名は vmbr と番号です。",
+        "bond": "ボンド名は bond と番号です。",
+        "vlan": "VLAN 名は device.tag、または vlan と番号です。"
+      }
+    }
+  },
+  "import": {
+    "open": "Termix にインポート",
+    "title": "ゲストを Termix ホストとしてインポート",
+    "hint": "選択した各 VM またはコンテナは proxmox タグ付きの Termix ホストになります。インポートでは以前インポートしたゲストの名前、アドレス、タグも更新し、Proxmox からなくなったゲストに proxmox-missing タグを付けます。",
+    "loading": "ゲストとそのアドレスを検索中…",
+    "counts": "{{total}} ゲスト、{{imported}} インポート済み",
+    "selectAll": "すべて選択",
+    "selectNone": "選択解除",
+    "none": "このクラスタには VM もコンテナもありません。",
+    "imported": "インポート済み",
+    "noAddress": "アドレスなし",
+    "folder": "フォルダー",
+    "folderDefault": "{{node}} という名前のフォルダー",
+    "folderSearch": "検索または作成、/ でサブフォルダー",
+    "folderCreate": "「{{folder}}」を作成",
+    "folderNone": "フォルダーはまだありません",
+    "connection": "接続方法",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "コンテナランタイム",
+    "runtimeOff": "Docker なし",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "不明な OS"
+    },
+    "sshLogin": "SSH ログイン",
+    "desktopLogin": "RDP と VNC のログイン",
+    "desktopHint": "接続には Remote Desktop プラグインが必要です。",
+    "login": {
+      "nodeCredential": "ノードの認証情報",
+      "nodeUser": "ノードのユーザー名",
+      "username": "ユーザー名のみ",
+      "none": "ログインなし"
+    },
+    "username": "ユーザー名",
+    "submit_other": "{{count}} ゲストをインポート",
+    "refresh": "インポート済みを更新",
+    "done": "作成 {{created}}、更新 {{updated}}、欠落マーク {{markedMissing}}",
+    "lastSync": "最終同期 {{when}}。",
+    "lastSyncFailed": "{{when}} の最終同期に失敗しました: {{error}}",
+    "syncHint": "スケジュールに従って更新するには、ホストの Proxmox 設定でインポートしたゲストを同期するをオンにしてください。",
+    "addTitle": "{{name}} を Termix に追加",
+    "addHint": "このゲストはまだ Termix ホストではありません。追加するとターミナルを開けるようになり、その後コンソールですぐに開けます。",
+    "addSubmit": "追加して接続",
+    "gone": "Proxmox にこのゲストはもうありません。"
+  }
+}

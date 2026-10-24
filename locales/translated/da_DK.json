@@ -1,0 +1,1024 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Administrer Proxmox VE fra Termix: virtuelle maskiner, containere, lager, netværk, backups, firewall, adgang og klyngen."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Åbn i Proxmox"
+  },
+  "permissions": {
+    "view": {
+      "title": "Se Proxmox",
+      "description": "Se noder, gæster, lager, grafer og opgaver på Proxmox-værter, du kan forbinde til."
+    },
+    "operate": {
+      "title": "Betjen Proxmox-gæster",
+      "description": "Start, stop, luk ned, genstart, suspender og genoptag VM'er og containere. Kræver redigeringsadgang til værten."
+    },
+    "console": {
+      "title": "Åbn Proxmox-konsoller",
+      "description": "Åbn skærmen på en VM og en root-shell i en container. Kræver redigeringsadgang til værten."
+    },
+    "configure": {
+      "title": "Konfigurer Proxmox",
+      "description": "Opret, klon, migrer, konverter og slet VM'er og containere. Kræver redigeringsadgang til værten."
+    },
+    "administer": {
+      "title": "Administrer Proxmox",
+      "description": "Administrer brugere, grupper, roller, puljer, 2FA, tokens, realms og klyngen. Kræver redigeringsadgang til værten."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Proxmox-node",
+      "description": "Marker denne vært som en Proxmox VE-node. Den vises derefter i Proxmox-værktøjet under Værktøjer."
+    },
+    "transport": {
+      "label": "Forbind via",
+      "description": "Automatisk bruger API'et over en SSH-tunnel, når et token er gemt, og pvesh over SSH indtil da.",
+      "auto": "Automatisk",
+      "tunnel": "API over SSH-tunnel",
+      "direct": "API direkte",
+      "pvesh": "pvesh over SSH"
+    },
+    "tokenId": {
+      "label": "API-token-ID",
+      "description": "Oprettes i Proxmox under Datacenter, Tilladelser, API-tokens. Ser ud som user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "API-token-hemmelighed",
+      "description": "Vises én gang, når tokenet oprettes. Gemmes krypteret."
+    },
+    "apiHost": {
+      "label": "API-adresse",
+      "description": "Kun ved API direkte. Lad stå tomt for at bruge denne værts adresse."
+    },
+    "apiPort": {
+      "label": "API-port",
+      "description": "8006, medmindre du har ændret den."
+    },
+    "caCert": {
+      "label": "CA-certifikat",
+      "description": "Kun ved API direkte. Nodens CA i PEM fra /etc/pve/pve-root-ca.pem. Lad stå tomt, hvis API'et har et offentligt betroet certifikat.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Importerede gæster",
+    "importSync": {
+      "label": "Hold importerede gæster synkroniseret",
+      "description": "Opdaterer navne, adresser og tags på gæster importeret fra denne node og tagger dem, der er fjernet fra Proxmox, som proxmox-missing."
+    },
+    "importInterval": {
+      "label": "Synkroniser hvert (minutter)",
+      "description": "Mindst 5 minutter."
+    },
+    "importAddNew": {
+      "label": "Tilføj nye gæster ved synkronisering",
+      "description": "Importerer gæster oprettet i Proxmox efter første import med de standarder, der sidst blev brugt i importdialogen."
+    },
+    "importDefaults": {
+      "label": "Importstandarder"
+    },
+    "importState": {
+      "label": "Seneste gæstesynkronisering"
+    },
+    "source": {
+      "label": "Proxmox-gæst"
+    }
+  },
+  "app": {
+    "loading": "Indlæser...",
+    "loadFailed": "Klyngen kunne ikke indlæses",
+    "refreshFailed": "Opdatering mislykkedes: {{message}}",
+    "retry": "Prøv igen",
+    "refresh": "Opdater",
+    "search": "Søg i gæster, noder og lager...",
+    "status": "{{nodes}} noder, {{running}} af {{total}} gæster kører",
+    "pickHost": "Proxmox-vært",
+    "pickResource": "Vælg en node, gæst eller et lager til venstre",
+    "noHosts": "Ingen Proxmox-værter endnu",
+    "noHostsHint": "Åbn en værts indstillinger, slå Proxmox-node til under SSH, og vælg, hvordan der skal forbindes. Noden vises derefter her.",
+    "cancel": "Annuller",
+    "working": "Arbejder...",
+    "save": "Gem",
+    "reset": "Nulstil",
+    "close": "Luk",
+    "yes": "Ja",
+    "no": "Nej",
+    "edit": "Rediger"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix har ikke tillid til nodens certifikat. Indsæt nodens CA fra /etc/pve/pve-root-ca.pem i CA-certifikat i værtens Proxmox-indstillinger, eller vælg API over SSH-tunnel.",
+    "tlsHostname": "Nodens certifikat gælder et andet navn. Sæt API-adresse til et navn eller en adresse, som certifikatet angiver.",
+    "tlsExpired": "Nodens certifikat er udløbet eller endnu ikke gyldigt. Forny det i Proxmox under noden, System, Certifikater.",
+    "notEnabled": "Denne vært er ikke markeret som en Proxmox-node. Slå Proxmox-node til i værtens indstillinger.",
+    "hostAccess": "Du skal have redigeringsadgang til denne vært for at ændre den."
+  },
+  "tree": {
+    "nothingFound": "Intet matcher søgningen.",
+    "expand": "Udvid",
+    "collapse": "Skjul",
+    "datacenter": "Datacenter",
+    "folders": {
+      "lxc": "LXC-container",
+      "qemu": "Virtuel maskine",
+      "node": "Noder",
+      "pool": "Puljer",
+      "sdn": "Netværk",
+      "storage": "Lager"
+    },
+    "views": {
+      "folder": "Mappevisning",
+      "server": "Servervisning"
+    }
+  },
+  "types": {
+    "node": "Node",
+    "qemu": "VM",
+    "lxc": "Container",
+    "storage": "Lager",
+    "pool": "Pulje",
+    "sdn": "SDN-zone"
+  },
+  "states": {
+    "running": "Kører",
+    "stopped": "Stoppet",
+    "paused": "På pause",
+    "suspended": "Suspenderet",
+    "online": "Online",
+    "offline": "Offline",
+    "available": "Tilgængelig",
+    "unknown": "Ukendt"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Hukommelse",
+    "disk": "Disk",
+    "rootDisk": "Rootdisk",
+    "usage": "Forbrug",
+    "cores_one": "{{count}} kerne",
+    "cores_other": "{{count}} kerner",
+    "swap": "Swap"
+  },
+  "summary": {
+    "title": "Oversigt",
+    "node": "Node",
+    "vmid": "ID",
+    "uptime": "Oppetid",
+    "pool": "Pulje",
+    "ha": "HA",
+    "tags": "Tags",
+    "guests": "Gæster",
+    "guestsRunning": "{{running}} af {{total}} kører",
+    "cpuModel": "CPU",
+    "sockets": "sokler",
+    "load": "Gennemsnitlig belastning",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Kerne",
+    "ips": "Adresser"
+  },
+  "charts": {
+    "title": "Grafer",
+    "cpu": "CPU",
+    "load": "Gennemsnitlig belastning",
+    "memory": "Hukommelse",
+    "network": "Netværk",
+    "diskIo": "Disk-I/O",
+    "cpuUsage": "CPU-forbrug",
+    "ioDelay": "IO-forsinkelse",
+    "used": "Brugt",
+    "total": "I alt",
+    "in": "Ind",
+    "out": "Ud",
+    "read": "Læs",
+    "write": "Skriv",
+    "timeframe": {
+      "hour": "Time",
+      "day": "Dag",
+      "week": "Uge",
+      "month": "Måned",
+      "year": "År"
+    },
+    "noData": "Ingen data for denne periode",
+    "serverLoad": "Serverbelastning",
+    "loadAverage": "Gennemsnitlig belastning",
+    "swap": "Swap",
+    "pressureCpu": "CPU-trykstop",
+    "pressureMemory": "Hukommelsestrykstop",
+    "pressureIo": "IO-trykstop",
+    "some": "Noget",
+    "full": "Fuldt",
+    "average": "Gennemsnit",
+    "maximum": "Maksimum"
+  },
+  "tasks": {
+    "title": "Opgaver",
+    "started": "Startet",
+    "node": "Node",
+    "user": "Bruger",
+    "task": "Opgave",
+    "status": "Status",
+    "running": "Kører",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} på {{node}}",
+    "done": "{{label}}: færdig",
+    "failed": "{{label}} mislykkedes: {{reason}}"
+  },
+  "guests": {
+    "more": "Flere handlinger",
+    "isTemplate": "Skabelon",
+    "locked": "Låst: {{lock}}",
+    "power": {
+      "start": "Start",
+      "shutdown": "Luk ned",
+      "stop": "Stop",
+      "reboot": "Genstart",
+      "suspend": "Suspender",
+      "resume": "Genoptag",
+      "reset": "Nulstil",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Stop {{name}} nu?",
+        "reset": "Nulstil {{name}} nu?",
+        "description": "Dette afbryder strømmen, som når stikket trækkes ud. Arbejde, der ikke er gemt i gæsten, går tabt."
+      }
+    },
+    "clone": {
+      "menu": "Klon",
+      "title": "Klon {{name}}",
+      "submit": "Klon",
+      "label": "Klon {{source}} til {{id}}",
+      "full": "Fuld klon",
+      "fullHint": "Kopierer alle diske, så klonen ikke afhænger af originalen.",
+      "linkedHint": "Fra laver en linket klon, der deler skabelonens diske og oprettes på få sekunder.",
+      "sameStorage": "Samme lager som originalen"
+    },
+    "migrate": {
+      "menu": "Migrer",
+      "title": "Migrer {{name}}",
+      "submit": "Migrer",
+      "label": "Migrer {{name}} til {{target}}",
+      "noOtherNodes": "Der er ingen anden online node i denne klynge at flytte den til.",
+      "onlineHint": "VM'en kører og flyttes live uden at stoppe.",
+      "restartHint": "Containeren kører. Den stopper, flyttes og starter igen på målet."
+    },
+    "template": {
+      "menu": "Konverter til skabelon",
+      "confirm": "Konverter {{name}} til en skabelon?",
+      "description": "En skabelon kan ikke startes, kun klones. Dette kan ikke fortrydes.",
+      "submit": "Konverter",
+      "label": "Konverter {{name}} til en skabelon"
+    },
+    "delete": {
+      "menu": "Slet",
+      "title": "Slet {{name}}",
+      "submit": "Slet",
+      "label": "Slet {{name}}",
+      "warning": "Dette sletter gæst {{vmid}} og dens diske. Det kan ikke fortrydes.",
+      "stopFirst": "Stop gæsten, før den slettes.",
+      "typeId": "Skriv {{vmid}} for at bekræfte",
+      "purge": "Fjern fra backupjob, replikering og HA",
+      "purgeHint": "Efterlader ingen job, der peger på en gæst, som ikke findes længere.",
+      "unreferenced": "Slet også ikke-refererede diske",
+      "unreferencedHint": "Diske på aktiverede lagre med dette ID, som konfigurationen ikke angiver."
+    },
+    "create": {
+      "vmButton": "Opret VM",
+      "ctButton": "Opret CT",
+      "vmTitle": "Opret virtuel maskine",
+      "ctTitle": "Opret container",
+      "submit": "Opret",
+      "vmLabel": "Opret VM {{id}} ({{name}})",
+      "ctLabel": "Opret CT {{id}} ({{name}})",
+      "noTemplates": "Ingen containerskabeloner på denne node. Download en i Proxmox under et lager, CT-skabeloner.",
+      "noIso": "Intet installationsmedie",
+      "unprivilegedHint": "Mere sikkert: root i containeren er ikke root på noden.",
+      "loginHint": "Angiv en root-adgangskode, SSH-nøgler eller begge.",
+      "problem": {
+        "vmid": "Vælg et ID på 100 eller mere.",
+        "hostname": "Angiv et værtsnavn: bogstaver, tal og bindestreger.",
+        "name": "Angiv et navn: bogstaver, tal og bindestreger.",
+        "template": "Vælg en skabelon.",
+        "storage": "Vælg et lager.",
+        "disk": "Angiv en diskstørrelse.",
+        "cores": "Angiv antal kerner.",
+        "sockets": "Angiv antal sokler.",
+        "memory": "Angiv mindst 16 MiB hukommelse.",
+        "swap": "Angiv swap i MiB, 0 for ingen.",
+        "network": "Vælg en bro, og angiv en statisk adresse som 192.168.0.60/24.",
+        "login": "Angiv en root-adgangskode eller SSH-nøgler, så du kan logge ind.",
+        "password": "Adgangskoden skal have mindst 5 tegn."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Andet"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Navn",
+      "hostname": "Værtsnavn",
+      "node": "Node",
+      "targetNode": "Målnode",
+      "targetStorage": "Mållager",
+      "storage": "Lager",
+      "template": "Skabelon",
+      "iso": "Installationsmedie",
+      "ostype": "Gæste-OS",
+      "rootPassword": "Root-adgangskode",
+      "sshKeys": "Offentlige SSH-nøgler",
+      "unprivileged": "Ikke-privilegeret container",
+      "diskGiB": "Disk (GiB)",
+      "cores": "Kerner",
+      "sockets": "Sokler",
+      "memoryMiB": "Hukommelse (MiB)",
+      "swapMiB": "Swap (MiB)",
+      "bridge": "Netværksbro",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Statisk",
+      "cidr": "Adresse/præfiks",
+      "gateway": "Gateway",
+      "startAfter": "Start efter oprettelse",
+      "pick": "Vælg en"
+    },
+    "tabs": {
+      "summary": "Oversigt",
+      "hardware": "Hardware",
+      "options": "Indstillinger",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Rediger",
+    "add": "Tilføj",
+    "remove": "Fjern",
+    "removed": "{{key}} fjernet",
+    "pending": "Afventer",
+    "pendingHint": "Ændringer markeret Afventer træder i kraft, når gæsten genstartes fra Proxmox: en genstart inde i gæsten er ikke nok.",
+    "processors": "Processorer",
+    "processorsValue": "{{sockets}} sokkel × {{cores}} kerner, {{cpu}}",
+    "allCores": "Alle",
+    "swap": "Swap",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "Processor og hukommelse",
+      "title": "Processor og hukommelse"
+    },
+    "cpuType": "CPU-type",
+    "cpulimit": "CPU-grænse",
+    "cpulimitHint": "0 for ingen grænse. 1,5 er halvanden kernes tid.",
+    "balloon": "Minimum hukommelse (MiB)",
+    "balloonHint": "Med ballon-driveren giver gæsten hukommelse tilbage ned til denne værdi. Lig med hukommelsen slår den fra, 0 fjerner driveren.",
+    "disks": "Diske",
+    "volumes": "Rootdisk og monteringspunkter",
+    "bus": "Bus",
+    "slot": "Bliver {{key}}",
+    "iothread": "IO-tråd",
+    "discard": "Discard",
+    "discardHint": "Lader gæsten frigive ubrugte blokke på tyndt lager.",
+    "ssd": "SSD-emulering",
+    "mountPath": "Monteringssti i containeren",
+    "backup": "Medtag i backups",
+    "addDisk": {
+      "button": "Tilføj disk",
+      "title": "Tilføj disk",
+      "label": "Tilføj {{key}}"
+    },
+    "addMount": {
+      "button": "Tilføj monteringspunkt",
+      "title": "Tilføj monteringspunkt"
+    },
+    "resize": {
+      "menu": "Ændr størrelse",
+      "title": "Forstør {{key}}",
+      "grow": "Tilføj (GiB)",
+      "result": "{{from}} GiB bliver til {{to}} GiB",
+      "noShrink": "Diske kan kun vokse. Gæstens partition og filsystem skal derefter udvides inde i gæsten, medmindre den gør det ved opstart.",
+      "submit": "Forstør",
+      "label": "Forstør {{key}} med {{size}} GiB"
+    },
+    "move": {
+      "menu": "Flyt til lager",
+      "title": "Flyt {{key}}",
+      "submit": "Flyt",
+      "deleteSource": "Slet originalen",
+      "deleteSourceHint": "Fra beholder den som en ubrugt disk.",
+      "label": "Flyt {{key}} til {{storage}}"
+    },
+    "detach": {
+      "menu": "Frakobl",
+      "title": "Frakobl {{key}}?",
+      "description": "Disken bliver på sit lager som en ubrugt disk og kan slettes eller tilkobles igen."
+    },
+    "unused": {
+      "delete": "Slet",
+      "title": "Slet {{volume}}?",
+      "description": "Dette sletter disken og alt på den. Det kan ikke fortrydes."
+    },
+    "cd": {
+      "heading": "CD/DVD-drev",
+      "title": "Medie i {{key}}",
+      "empty": "Intet medie"
+    },
+    "nic": {
+      "heading": "Netværkskort",
+      "add": "Tilføj netværkskort",
+      "addTitle": "Tilføj {{key}}",
+      "editTitle": "Rediger {{key}}",
+      "none": "Ingen netværkskort.",
+      "model": "Model",
+      "name": "Navn i containeren",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Statisk",
+        "none": "Ingen",
+        "auto": "SLAAC"
+      },
+      "tag": "VLAN-tag",
+      "tagHint": "Tom for utagget.",
+      "rate": "Hastighedsgrænse (MB/s)",
+      "rateHint": "Tom for ingen grænse.",
+      "firewall": "Firewall",
+      "firewallShort": "firewall",
+      "removeTitle": "Fjern {{key}}?",
+      "removeDescription": "Gæsten mister dette netværkskort og dets adresse."
+    },
+    "problem": {
+      "cpu": "Angiv mindst én sokkel og kerne.",
+      "cpulimit": "CPU-grænsen går fra 0 til 8192.",
+      "memory": "Angiv mindst 16 MiB hukommelse.",
+      "balloon": "Minimum hukommelse kan ikke være mere end hukommelsen.",
+      "swap": "Angiv swap i MiB, 0 for ingen.",
+      "noSlot": "Alle pladser af denne type er optaget.",
+      "storage": "Vælg et lager.",
+      "size": "Angiv en størrelse i hele GiB.",
+      "path": "Angiv en absolut sti som /data, ikke / selv.",
+      "bridge": "Vælg en bro.",
+      "tag": "Et VLAN-tag går fra 1 til 4094.",
+      "rate": "Angiv en hastighed over 0, eller lad feltet stå tomt.",
+      "name": "Angiv et navn som eth0.",
+      "ip4": "Angiv adressen som 192.168.0.60/24 og en gyldig gateway.",
+      "ip6": "Angiv adressen som fd00::10/64."
+    },
+    "detached": "{{key}} frakoblet; den forbliver som en ubrugt disk",
+    "coresHint": "Tom bruger alle nodens kerner."
+  },
+  "options": {
+    "general": "Generelt",
+    "tags": "Tags",
+    "tagsHint": "Adskilt med kommaer.",
+    "onboot": "Start, når noden starter",
+    "protection": "Beskyttelse",
+    "protectionHint": "Blokerer sletning af gæsten og dens diske, indtil den slås fra.",
+    "agent": "QEMU-gæsteagent",
+    "agentHint": "Slå til, når agenten kører i gæsten, for at få dens adresser og rene nedlukninger.",
+    "startup": "Start- og nedlukningsrækkefølge",
+    "startupOrder": "Rækkefølge",
+    "startupUp": "Forsinkelse efter start (s)",
+    "startupDown": "Timeout for nedlukning (s)",
+    "dns": "DNS",
+    "nameserver": "DNS-servere",
+    "searchdomain": "Søgedomæne",
+    "useHost": "Tom bruger nodens.",
+    "notes": "Noter",
+    "saved": "Indstillinger gemt",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Andet"
+    },
+    "problem": {
+      "name": "Angiv et navn.",
+      "startup": "Rækkefølge og forsinkelser er heltal.",
+      "tags": "Tags bruger bogstaver, tal, bindestreger, punktummer og understregninger.",
+      "nameserver": "Angiv IP-adresser adskilt med mellemrum."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "Denne VM har intet cloud-init-drev. Tilføj et, og angiv derefter bruger, nøgler og netværk her; gæsteimaget skal understøtte cloud-init.",
+    "addDrive": "Tilføj cloud-init-drev",
+    "driveAdded": "Cloud-init-drev tilføjet",
+    "user": "Bruger",
+    "username": "Brugernavn",
+    "usernameHint": "Tom bruger imagets standardbruger.",
+    "password": "Adgangskode",
+    "passwordHint": "Tom beholder den nuværende. Gemmes hashet af Proxmox.",
+    "network": "Netværk",
+    "saved": "Cloud-init-indstillinger gemt",
+    "regenerate": "Generer image igen",
+    "regenerated": "Cloud-init-image genereret igen",
+    "regenerateHint": "Skriver indstillingerne til {{drive}}. Gæsten læser dem ved næste opstart."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Oversigt",
+      "iso": "ISO-images",
+      "vztmpl": "CT-skabeloner",
+      "backup": "Backups",
+      "images": "Diskimages"
+    },
+    "content": "Indeholder",
+    "contentTypes": {
+      "images": "VM-diske",
+      "rootdir": "Containerdiske",
+      "iso": "ISO-images",
+      "vztmpl": "CT-skabeloner",
+      "backup": "Backups",
+      "snippets": "Snippets",
+      "import": "Import"
+    },
+    "shared": "Delt",
+    "empty": "Intet her endnu.",
+    "owner": "gæst {{vmid}}",
+    "protected": "Beskyttet",
+    "download": {
+      "button": "Download fra URL",
+      "title": {
+        "iso": "Download et ISO-image til {{storage}}",
+        "vztmpl": "Download en CT-skabelon til {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Filnavn",
+      "algorithm": "Kontrolsumtype",
+      "noChecksum": "Ingen",
+      "checksum": "Kontrolsum",
+      "verify": "Kontroller serverens certifikat",
+      "submit": "Download",
+      "label": "Download {{name}}",
+      "problem": {
+        "url": "Angiv en http- eller https-URL.",
+        "filename": "Filnavnet bruger bogstaver, tal, punktummer, bindestreger og understregninger.",
+        "extension": "ISO-images ender på .iso eller .img; skabeloner på .tar.gz, .tar.xz eller .tar.zst.",
+        "checksum": "Vælg en kontrolsumtype, og angiv kontrolsummen i hex, eller lad begge stå tomme."
+      }
+    },
+    "catalog": {
+      "button": "Skabeloner",
+      "title": "Containerskabeloner til {{storage}}",
+      "search": "Søg i skabeloner...",
+      "have": "Downloadet",
+      "label": "Download {{name}}"
+    },
+    "delete": {
+      "title": "Slet {{name}}?",
+      "description": "Dette sletter filen fra lageret. Det kan ikke fortrydes.",
+      "submit": "Slet",
+      "done": "{{name}} slettet"
+    },
+    "upload": {
+      "button": "Upload",
+      "cancel": "Annuller upload",
+      "done": "{{name}} uploadet",
+      "failed": "{{name}} kunne ikke uploades: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Oversigt",
+      "network": "Netværk",
+      "system": "System",
+      "services": "Tjenester",
+      "updates": "Opdateringer",
+      "disks": "Diske",
+      "tasks": "Opgaver",
+      "log": "Log"
+    },
+    "services": {
+      "start": "Start",
+      "stop": "Stop",
+      "restart": "Genstart",
+      "reload": "Genindlæs",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Stop {{name}}?",
+        "restart": "Genstart {{name}}?",
+        "description": "Proxmox' egne tjenester holder noden og dens API kørende; stoppes en, kan dette værktøj miste forbindelsen, indtil den starter igen."
+      }
+    },
+    "updates": {
+      "refresh": "Opdater pakkelister",
+      "refreshLabel": "Opdater pakkelister på {{node}}",
+      "count_one": "{{count}} pakke kan opgraderes",
+      "count_other": "{{count}} pakker kan opgraderes",
+      "none": "Alt er opdateret",
+      "installHint": "Installer opgraderinger fra nodens terminal med apt full-upgrade; Proxmox opgraderer ikke via sit API.",
+      "views": {
+        "packages": "Pakker",
+        "repositories": "Pakkearkiver"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART for {{disk}}",
+      "health": "Helbred",
+      "usedBy": "bruges af {{used}}",
+      "unused": "ubrugt",
+      "wearout": "{{value}}% levetid tilbage",
+      "views": {
+        "disks": "Diske",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Mappe",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "{{count}} logisk volumen",
+        "lvCount_other": "{{count}} logiske volumener",
+        "metadata": "metadata {{used}} / {{size}}",
+        "frag": "{{value}}% fragmenteret",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "Ingen LVM-volumengrupper.",
+          "lvmthin": "Ingen LVM-Thin-puljer.",
+          "directory": "Intet mappelager på en egen disk.",
+          "zfs": "Ingen ZFS-puljer."
+        },
+        "create": {
+          "lvm": "Opret LVM-volumengruppe",
+          "lvmthin": "Opret LVM-Thin-pulje",
+          "directory": "Opret mappe",
+          "zfs": "Opret ZFS-pulje"
+        },
+        "createSubmit": "Opret",
+        "createLabel": "Opret {{name}} på {{node}}",
+        "wipeWarning": "De valgte diske partitioneres og formateres. Kun diske uden indhold tilbydes.",
+        "name": "Navn",
+        "device": "Disk",
+        "devices": "Diske",
+        "pickDisk": "Vælg en disk",
+        "noUnused": "Der er ingen ubrugt disk. Ryd først en under Diske, hvis indholdet kan undværes.",
+        "filesystem": "Filsystem",
+        "raidlevel": "RAID-niveau",
+        "raid": {
+          "single": "Enkelt disk",
+          "mirror": "Spejl",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Komprimering",
+        "addStorage": "Tilføj som lager",
+        "addStorageHint": "Gør det til et Proxmox-lager med samme navn til diske, containere eller backups.",
+        "problem": {
+          "name": "Et navn starter med et bogstav og indeholder bogstaver, tal, -, _ eller .",
+          "device": "Vælg en disk.",
+          "oneDevice": "Vælg én disk.",
+          "tooFew": "Dette RAID-niveau kræver mindst {{count}} diske.",
+          "even": "RAID10 kræver et lige antal diske.",
+          "ashift": "ashift er mellem 9 og 16."
+        },
+        "remove": "Fjern",
+        "removeTitle": "Fjern {{name}}?",
+        "removeWarning": "Gæster med diske på det mister dem. Fjernelse flytter ikke noget væk først.",
+        "removeLabel": "Fjern {{name}} på {{node}}",
+        "cleanupConfig": "Fjern også lagerposten",
+        "cleanupDisks": "Ryd dets diske",
+        "cleanupDisksHint": "Sletter diskene, så de kan bruges igen.",
+        "inUse": {
+          "lvm": "Den har stadig logiske volumener. Fjern dem først; denne gruppe kan indeholde nodens eget system.",
+          "lvmthin": "Den indeholder stadig data. Flyt eller fjern gæstediskene på den først."
+        }
+      },
+      "gpt": "Initialiser GPT",
+      "gptTitle": "Initialiser {{disk}} med GPT?",
+      "gptDescription": "Skriver en tom GPT-partitionstabel til disken.",
+      "gptLabel": "Initialiser {{disk}} på {{node}}",
+      "wipe": "Ryd",
+      "wipeTitle": "Ryd {{disk}}?",
+      "wipeWarning": "Sletter partitionstabellen og alle filsystem-, LVM- og ZFS-signaturer på disken (nu: {{used}}). Indholdet er væk for altid.",
+      "wipeLabel": "Ryd {{disk}} på {{node}}",
+      "typePath": "Skriv {{disk}} for at bekræfte"
+    },
+    "log": {
+      "search": "Filtrer loggen...",
+      "empty": "Ingen linjer matcher."
+    },
+    "power": {
+      "menu": "Nodestrøm",
+      "termixWarning": "Hvis Termix kører på denne node, går den også ned, indtil noden er tilbage.",
+      "typeName": "Skriv {{node}} for at bekræfte",
+      "reboot": {
+        "menu": "Genstart node",
+        "title": "Genstart {{node}}?",
+        "submit": "Genstart",
+        "label": "Genstart {{node}}",
+        "warning_one": "{{count}} kørende gæst stoppes eller lukkes ned først, som dens startindstillinger angiver.",
+        "warning_other": "{{count}} kørende gæster stoppes eller lukkes ned først, som deres startindstillinger angiver."
+      },
+      "shutdown": {
+        "menu": "Luk node ned",
+        "title": "Luk {{node}} ned?",
+        "submit": "Luk ned",
+        "label": "Luk {{node}} ned",
+        "warning_one": "{{count}} kørende gæst går ned sammen med den, og intet starter den igen, før nogen tænder noden.",
+        "warning_other": "{{count}} kørende gæster går ned sammen med den, og intet starter dem igen, før nogen tænder noden."
+      }
+    },
+    "shell": "Shell",
+    "shellHint": "Åbner denne værts SSH-terminal i Termix.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Søgedomæne",
+        "server": "DNS-server {{n}}",
+        "editTitle": "DNS for {{node}}",
+        "saved": "DNS gemt",
+        "problem": {
+          "search": "Angiv et søgedomæne, f.eks. example.com.",
+          "server": "En DNS-server er en IPv4- eller IPv6-adresse.",
+          "noServer": "Angiv mindst én DNS-server."
+        }
+      },
+      "time": {
+        "title": "Tid",
+        "zone": "Tidszone",
+        "local": "Lokal tid",
+        "editTitle": "Tidszone for {{node}}",
+        "hint": "Selve uret holdes af NTP (chrony) på noden.",
+        "saved": "Tidszone sat til {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "/etc/hosts for {{node}}",
+        "warning": "Nodens eget navn skal fortsat opløses til dens adresse, ellers holder klyngen og dens webgrænseflade op med at virke.",
+        "saved": "/etc/hosts gemt"
+      },
+      "certs": {
+        "title": "Certifikater",
+        "issuer": "udstedt af {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Gyldigt til {{date}}",
+          "expiring": "Udløber {{date}}",
+          "expired": "Udløb {{date}}",
+          "notYet": "Endnu ikke gyldigt"
+        },
+        "upload": "Upload brugerdefineret",
+        "uploadTitle": "Brugerdefineret certifikat til {{node}}",
+        "uploaded": "Certifikat uploadet",
+        "chain": "Certifikatkæde",
+        "chainHint": "PEM: nodens certifikat først, derefter de mellemliggende.",
+        "key": "Privat nøgle",
+        "keyHint": "PEM, ukrypteret. Lad stå tomt for at beholde nøglen, der allerede er på noden.",
+        "fromFile": "Læs fra fil",
+        "badCert": "Dette er ikke et PEM-certifikat.",
+        "badKey": "Dette er ikke en privat PEM-nøgle.",
+        "restart": "Genstart webgrænsefladen for at bruge det",
+        "restartHint": "pveproxy genstarter; Termix mister API'et i nogle sekunder.",
+        "remove": "Fjern brugerdefineret",
+        "removeTitle": "Fjern det brugerdefinerede certifikat?",
+        "removeDescription": "Noden går tilbage til sit selvsignerede certifikat, og webgrænsefladen genstarter.",
+        "removed": "Brugerdefineret certifikat fjernet"
+      }
+    },
+    "repos": {
+      "on": "Aktiveret",
+      "off": "Deaktiveret",
+      "enable": "Aktiver",
+      "disable": "Deaktiver",
+      "enableTitle": "Aktiver dette pakkearkiv?",
+      "enabled": "Pakkearkiv aktiveret",
+      "disabled": "Pakkearkiv deaktiveret",
+      "add": "Tilføj:",
+      "added": "Pakkearkivet {{name}} tilføjet",
+      "hint": "Kør Opdater pakkelister under Pakker efter en ændring. Enterprise-pakkearkiverne kræver et abonnement."
+    },
+    "taskHistory": {
+      "type": "Type, f.eks. vzdump",
+      "vmid": "VM/CT-ID",
+      "user": "Bruger",
+      "errorsOnly": "Kun mislykkede opgaver",
+      "none": "Ingen opgaver matcher.",
+      "more": "Indlæs flere",
+      "state": {
+        "running": "Kører",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Bestil certifikat",
+      "renew": "Forny",
+      "orderLabel": "Bestil ACME-certifikat til {{node}}",
+      "renewLabel": "Forny ACME-certifikat til {{node}}",
+      "usesAccount": "Konto: {{account}}",
+      "none": "ingen",
+      "noDomains": "Ingen domæner endnu. Rediger for at tilføje de navne, denne node svarer på.",
+      "viaHttp": "HTTP-udfordring",
+      "viaDns": "DNS-udfordring via {{plugin}}",
+      "accounts": "Konti",
+      "plugins": "DNS-udfordringsplugins",
+      "remove": "Fjern",
+      "domainsTitle": "ACME-domæner for {{node}}",
+      "domainsSaved": "ACME-domæner gemt",
+      "domain": "Domæne",
+      "challenge": "Udfordring",
+      "alias": "Alias",
+      "addDomain": "Tilføj domæne",
+      "httpHint": "HTTP-udfordringen kræver, at port 80 på denne node kan nås fra internettet under domænet. DNS virker uden det og til wildcards.",
+      "hint": "Konti og plugins deles af hele klyngen; domæner er pr. node.",
+      "problem": {
+        "noDomain": "Tilføj mindst ét domæne.",
+        "tooMany": "En node har op til seks ACME-domæner.",
+        "domain": "Et domæne er et fuldt navn som pve.example.com.",
+        "wildcard": "Et wildcard-domæne kræver et DNS-udfordringsplugin."
+      },
+      "account": {
+        "title": "Konto",
+        "pick": "Vælg en konto",
+        "add": "Registrer konto",
+        "addTitle": "Registrer en ACME-konto",
+        "register": "Registrer",
+        "registerLabel": "Registrer ACME-konto {{name}}",
+        "name": "Navn",
+        "email": "E-mail",
+        "directory": "ACME-mappe",
+        "customDirectory": "Brugerdefineret URL",
+        "directoryUrl": "Mappe-URL",
+        "acceptTos": "Accepter tjenestevilkårene",
+        "eabKid": "EAB-nøgle-ID",
+        "eabHmac": "EAB HMAC-nøgle",
+        "eabHint": "Kun til CA'er, der beder om External Account Binding.",
+        "none": "Ingen ACME-konto endnu.",
+        "needOne": "Registrer først en ACME-konto.",
+        "removeTitle": "Deaktiver kontoen {{name}}?",
+        "removeDescription": "Kontoen deaktiveres hos CA'en og fjernes her. Allerede udstedte certifikater virker fortsat.",
+        "removeLabel": "Deaktiver ACME-konto {{name}}",
+        "problem": {
+          "name": "Et navn indeholder bogstaver, tal, -, _ eller .",
+          "email": "Angiv en e-mailadresse.",
+          "directory": "Mappen er en http- eller https-URL.",
+          "tos": "Accepter tjenestevilkårene for at registrere.",
+          "eab": "EAB kræver både nøgle-ID'et og HMAC-nøglen."
+        }
+      },
+      "plugin": {
+        "add": "Tilføj plugin",
+        "addTitle": "Tilføj et DNS-udfordringsplugin",
+        "id": "Plugin-ID",
+        "api": "DNS API",
+        "pickApi": "Vælg en DNS-udbyder",
+        "delay": "Valideringsforsinkelse (s)",
+        "delayHint": "Hvor længe der ventes på, at TXT-posten spredes.",
+        "noFields": "Proxmox angiver ingen felter for denne udbyder; se acme.sh's dokumentation for de variabler, den læser.",
+        "none": "Ingen DNS-plugins. HTTP virker uden.",
+        "disabled": "Deaktiveret",
+        "removeTitle": "Fjern plugin {{name}}?",
+        "removeDescription": "Domæner, der bruger det, kan ikke længere valideres."
+      }
+    }
+  },
+  "console": {
+    "open": "Konsol",
+    "openHint": "Åbner gæstens Termix-vært eller tilbyder først at tilføje den til Termix.",
+    "tabTitle": "Proxmox-konsol",
+    "tabLabel": "{{name}} — Konsol",
+    "pick": "Åbn en konsol fra en kørende VM eller container i Proxmox-værktøjet.",
+    "connect": "Forbind",
+    "reconnect": "Forbind igen",
+    "disconnect": "Afbryd",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Fuld skærm",
+    "notRunning": "Start gæsten for at åbne dens konsol.",
+    "lost": "Konsolforbindelsen blev afbrudt.",
+    "ended": "Konsol lukket.",
+    "status": {
+      "idle": "Ikke forbundet",
+      "connecting": "Forbinder...",
+      "connected": "Forbundet",
+      "closed": "Afbrudt",
+      "error": "Kunne ikke forbinde"
+    },
+    "proxmox": "Proxmox-konsol",
+    "proxmoxHint": "Proxmox' egen konsol via noden: skærmen på en VM, en shell i en container. Til en gæst uden netværk endnu."
+  },
+  "pool": {
+    "members": "Medlemmer",
+    "empty": "Der er intet i denne pulje."
+  },
+  "sdn": {
+    "hint": "SDN-zoner, VNets og subnet kommer med klyngeadministration i en senere version."
+  },
+  "network": {
+    "add": "Opret",
+    "apply": "Anvend",
+    "revert": "Fortryd",
+    "pending": "Ikke anvendt endnu",
+    "hint": "Ændringer gemmes i /etc/network/interfaces.new og træder i kraft ved Anvend, som genindlæser nodens netværk.",
+    "type": "Type",
+    "name": "Navn",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Gateway (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Gateway (IPv6)",
+    "ports": "Broporte",
+    "slaves": "Slaver",
+    "portsHint": "Grænsefladenavne adskilt med mellemrum.",
+    "bondMode": "Tilstand",
+    "vlanDevice": "VLAN-råenhed",
+    "mtu": "MTU",
+    "comments": "Kommentar",
+    "autostart": "Autostart",
+    "vlanAware": "VLAN-bevidst",
+    "vlanAwareHint": "Lader gæster på denne bro bruge VLAN-tags.",
+    "inactive": "Inaktiv",
+    "create": "Opret",
+    "createTitle": "Opret grænseflade",
+    "editTitle": "Rediger {{iface}}",
+    "types": {
+      "bridge": "Bro",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Port",
+      "OVSBridge": "OVS-bro",
+      "alias": "Alias"
+    },
+    "nameHint": {
+      "bridge": "vmbr efterfulgt af et tal, f.eks. vmbr1.",
+      "bond": "bond efterfulgt af et tal, f.eks. bond0.",
+      "vlan": "enhed.tag som vmbr0.10, eller vlan10 med en råenhed."
+    },
+    "addressWarning": "Denne grænseflade bærer den adresse, Termix når noden på. En fejl kan afskære Termix, indtil nogen retter noden ved dens konsol.",
+    "removeTitle": "Fjern {{iface}}?",
+    "removeDescription": "Grænsefladen fjernes, når ændringen anvendes.",
+    "applyTitle": "Anvend netværksændringer på {{node}}?",
+    "applyDescription": "Noden genindlæser sit netværk. Hvis de nye indstillinger er forkerte, kan noden og Termix' forbindelse til den gå offline.",
+    "applyLabel": "Anvend netværk på {{node}}",
+    "reverted": "Netværksændringer fortrudt",
+    "problem": {
+      "cidr": "Angiv adressen som 10.10.0.1/24.",
+      "gateway": "En gateway kræver en IPv4-adresse og en gyldig gateway-IP.",
+      "cidr6": "Angiv adressen som fd00::1/64.",
+      "ports": "Angiv grænsefladenavne adskilt med mellemrum.",
+      "slaves": "En bond kræver mindst én slave.",
+      "vlanDevice": "Angiv råenheden for en vlanN-grænseflade.",
+      "mtu": "MTU går fra 1280 til 65520.",
+      "name": {
+        "bridge": "En bro hedder vmbr og et tal.",
+        "bond": "En bond hedder bond og et tal.",
+        "vlan": "Et VLAN hedder enhed.tag eller vlan og et tal."
+      }
+    }
+  },
+  "import": {
+    "open": "Importer til Termix",
+    "title": "Importer gæster som Termix-værter",
+    "hint": "Hver valgt VM eller container bliver en Termix-vært med tagget proxmox. Import opdaterer også navne, adresser og tags på tidligere importerede gæster og tagger dem, der er væk fra Proxmox, som proxmox-missing.",
+    "loading": "Søger efter gæster og deres adresser…",
+    "counts": "{{total}} gæster, {{imported}} allerede importeret",
+    "selectAll": "Vælg alle",
+    "selectNone": "Vælg ingen",
+    "none": "Denne klynge har ingen VM'er eller containere.",
+    "imported": "Importeret",
+    "noAddress": "ingen adresse",
+    "folder": "Mappe",
+    "folderDefault": "Mappe med navnet {{node}}",
+    "folderSearch": "Søg eller opret, / for en undermappe",
+    "folderCreate": "Opret \"{{folder}}\"",
+    "folderNone": "Ingen mapper endnu",
+    "connection": "Forbind med",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Container-runtime",
+    "runtimeOff": "Ingen Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "Ukendt OS"
+    },
+    "sshLogin": "SSH-login",
+    "desktopLogin": "RDP- og VNC-login",
+    "desktopHint": "Kræver Remote Desktop-pluginet for at forbinde.",
+    "login": {
+      "nodeCredential": "Nodens legitimationsoplysninger",
+      "nodeUser": "Nodens brugernavn",
+      "username": "Kun brugernavn",
+      "none": "Intet login"
+    },
+    "username": "Brugernavn",
+    "submit_one": "Importer {{count}} gæst",
+    "submit_other": "Importer {{count}} gæster",
+    "refresh": "Opdater importerede",
+    "done": "Oprettet {{created}}, opdateret {{updated}}, markeret som manglende {{markedMissing}}",
+    "lastSync": "Seneste synkronisering {{when}}.",
+    "lastSyncFailed": "Seneste synkronisering {{when}} mislykkedes: {{error}}",
+    "syncHint": "Slå Hold importerede gæster synkroniseret til i værtens Proxmox-indstillinger for at opdatere dem efter en tidsplan.",
+    "addTitle": "Tilføj {{name}} til Termix",
+    "addHint": "Denne gæst er endnu ikke en Termix-vært. Tilføj den for at åbne dens terminal, så åbner Konsol den med det samme.",
+    "addSubmit": "Tilføj og forbind",
+    "gone": "Proxmox viser ikke længere denne gæst."
+  }
+}

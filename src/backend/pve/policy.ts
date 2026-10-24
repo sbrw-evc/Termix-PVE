@@ -18,6 +18,11 @@ export interface PveRule {
   /** Segments: a literal, ":name" for any one segment, "{a|b}" for one of these. */
   pattern: string;
   permission: PvePermission;
+  /**
+   * When set, the only parameter names the call may send, and the only keys
+   * its "delete" may list. For paths that also change things we don't offer.
+   */
+  params?: RegExp;
 }
 
 const GUEST = "nodes/:node/{qemu|lxc}/:vmid";
@@ -152,6 +157,139 @@ export const RULES: PveRule[] = [
   { method: "GET", pattern: "nodes/:node/disks/smart", permission: "view" },
   { method: "POST", pattern: "nodes/:node/status", permission: "administer" },
 
+  // Node system: DNS, /etc/hosts, time zone, certificates, apt repositories,
+  // storage on its disks and its task history. Changes need administer.
+  { method: "GET", pattern: "nodes/:node/dns", permission: "view" },
+  { method: "PUT", pattern: "nodes/:node/dns", permission: "administer" },
+  { method: "GET", pattern: "nodes/:node/hosts", permission: "view" },
+  { method: "POST", pattern: "nodes/:node/hosts", permission: "administer" },
+  { method: "GET", pattern: "nodes/:node/time", permission: "view" },
+  { method: "PUT", pattern: "nodes/:node/time", permission: "administer" },
+  {
+    method: "GET",
+    pattern: "nodes/:node/certificates/info",
+    permission: "view",
+  },
+  {
+    method: "GET",
+    pattern: "nodes/:node/apt/repositories",
+    permission: "view",
+  },
+  {
+    method: "POST",
+    pattern: "nodes/:node/apt/repositories",
+    permission: "administer",
+  },
+  {
+    method: "PUT",
+    pattern: "nodes/:node/apt/repositories",
+    permission: "administer",
+  },
+  {
+    method: "GET",
+    pattern: "nodes/:node/disks/{lvm|lvmthin|directory|zfs}",
+    permission: "view",
+  },
+  { method: "GET", pattern: "nodes/:node/disks/zfs/:pool", permission: "view" },
+  { method: "GET", pattern: "nodes/:node/tasks", permission: "view" },
+
+  // Storage on the node's disks. Creating and wiping erase disks.
+  {
+    method: "POST",
+    pattern: "nodes/:node/disks/{lvm|lvmthin|directory|zfs}",
+    permission: "administer",
+  },
+  {
+    method: "DELETE",
+    pattern: "nodes/:node/disks/{lvm|lvmthin|directory|zfs}/:name",
+    permission: "administer",
+  },
+  {
+    method: "POST",
+    pattern: "nodes/:node/disks/initgpt",
+    permission: "administer",
+  },
+  {
+    method: "PUT",
+    pattern: "nodes/:node/disks/wipedisk",
+    permission: "administer",
+  },
+
+  // Certificates: a custom one, or one ordered through ACME. The node's
+  // config is reachable only for its ACME account and domains.
+  {
+    method: "POST",
+    pattern: "nodes/:node/certificates/custom",
+    permission: "administer",
+  },
+  {
+    method: "DELETE",
+    pattern: "nodes/:node/certificates/custom",
+    permission: "administer",
+  },
+  {
+    method: "POST",
+    pattern: "nodes/:node/certificates/acme/certificate",
+    permission: "administer",
+  },
+  {
+    method: "PUT",
+    pattern: "nodes/:node/certificates/acme/certificate",
+    permission: "administer",
+  },
+  {
+    method: "DELETE",
+    pattern: "nodes/:node/certificates/acme/certificate",
+    permission: "administer",
+  },
+  { method: "GET", pattern: "nodes/:node/config", permission: "view" },
+  {
+    method: "PUT",
+    pattern: "nodes/:node/config",
+    permission: "administer",
+    params: /^(acme|acmedomain\d|digest|delete)$/,
+  },
+  {
+    method: "GET",
+    pattern: "cluster/acme/{directories|tos|meta|challenge-schema}",
+    permission: "view",
+  },
+  // Accounts carry a contact address and plugins the DNS provider's keys.
+  { method: "GET", pattern: "cluster/acme/account", permission: "administer" },
+  {
+    method: "GET",
+    pattern: "cluster/acme/account/:name",
+    permission: "administer",
+  },
+  { method: "POST", pattern: "cluster/acme/account", permission: "administer" },
+  {
+    method: "PUT",
+    pattern: "cluster/acme/account/:name",
+    permission: "administer",
+  },
+  {
+    method: "DELETE",
+    pattern: "cluster/acme/account/:name",
+    permission: "administer",
+  },
+  { method: "GET", pattern: "cluster/acme/plugins", permission: "administer" },
+  {
+    method: "GET",
+    pattern: "cluster/acme/plugins/:id",
+    permission: "administer",
+  },
+  { method: "POST", pattern: "cluster/acme/plugins", permission: "administer" },
+  {
+    method: "PUT",
+    pattern: "cluster/acme/plugins/:id",
+    permission: "administer",
+  },
+  {
+    method: "DELETE",
+    pattern: "cluster/acme/plugins/:id",
+    permission: "administer",
+  },
+
   // Node network. Changes go to interfaces.new until applied.
   { method: "GET", pattern: "nodes/:node/network/:iface", permission: "view" },
   { method: "POST", pattern: "nodes/:node/network", permission: "administer" },
@@ -194,6 +332,28 @@ export function findRule(
     if (parts.every((part, i) => segmentMatches(part, path[i]))) return rule;
   }
   return null;
+}
+
+/**
+ * Whether a call's parameters fit its rule. A rule without `params` takes
+ * any; otherwise every name, and every key a "delete" lists, must match.
+ */
+export function paramsAllowed(
+  rule: PveRule,
+  params: Record<string, unknown> = {},
+): boolean {
+  if (!rule.params) return true;
+  const allowed = rule.params;
+  return Object.entries(params).every(([key, value]) => {
+    if (!allowed.test(key)) return false;
+    if (key !== "delete") return true;
+    return String(value ?? "")
+      .split(/[,;\s]+/)
+      .filter(Boolean)
+      .every(
+        (name) => name !== "delete" && name !== "digest" && allowed.test(name),
+      );
+  });
 }
 
 /** The share level the caller needs on the Termix host for a permission. */

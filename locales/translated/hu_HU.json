@@ -1,0 +1,1024 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Proxmox VE kezelése a Termixből: virtuális gépek, konténerek, tárolók, hálózat, mentések, tűzfal, hozzáférés és a fürt."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Megnyitás Proxmoxban"
+  },
+  "permissions": {
+    "view": {
+      "title": "Proxmox megtekintése",
+      "description": "Csomópontok, vendégek, tárolók, grafikonok és feladatok megtekintése azokon a Proxmox hosztokon, amelyekhez csatlakozhat."
+    },
+    "operate": {
+      "title": "Proxmox vendégek kezelése",
+      "description": "VM-ek és konténerek indítása, leállítása, kikapcsolása, újraindítása, felfüggesztése és folytatása. A hoszt szerkesztési jogát igényli."
+    },
+    "console": {
+      "title": "Proxmox konzolok megnyitása",
+      "description": "Egy VM képernyőjének és egy konténer root shelljének megnyitása. A hoszt szerkesztési jogát igényli."
+    },
+    "configure": {
+      "title": "Proxmox konfigurálása",
+      "description": "VM-ek és konténerek létrehozása, klónozása, migrálása, átalakítása és törlése. A hoszt szerkesztési jogát igényli."
+    },
+    "administer": {
+      "title": "Proxmox adminisztrálása",
+      "description": "Felhasználók, csoportok, szerepkörök, készletek, 2FA, tokenek, tartományok és a fürt kezelése. A hoszt szerkesztési jogát igényli."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Proxmox csomópont",
+      "description": "A hoszt megjelölése Proxmox VE csomópontként. Ezután megjelenik a Proxmox eszközben az Eszközök alatt."
+    },
+    "transport": {
+      "label": "Csatlakozás módja",
+      "description": "Az Automatikus a token mentése után SSH-alagúton keresztül az API-t használja, addig pedig a pvesh-t SSH-n keresztül.",
+      "auto": "Automatikus",
+      "tunnel": "API SSH-alagúton",
+      "direct": "API közvetlenül",
+      "pvesh": "pvesh SSH-n keresztül"
+    },
+    "tokenId": {
+      "label": "API token azonosító",
+      "description": "A Proxmoxban hozható létre: Adatközpont, Jogosultságok, API tokenek. Formátuma: user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "API token titok",
+      "description": "Csak egyszer jelenik meg a token létrehozásakor. Titkosítva tárolódik."
+    },
+    "apiHost": {
+      "label": "API cím",
+      "description": "Csak közvetlen API esetén. Hagyja üresen a hoszt címének használatához."
+    },
+    "apiPort": {
+      "label": "API port",
+      "description": "8006, hacsak nem módosította."
+    },
+    "caCert": {
+      "label": "CA tanúsítvány",
+      "description": "Csak közvetlen API esetén. A csomópont CA-ja PEM formátumban, a /etc/pve/pve-root-ca.pem fájlból. Hagyja üresen, ha az API nyilvánosan megbízható tanúsítvánnyal rendelkezik.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Importált vendégek",
+    "importSync": {
+      "label": "Importált vendégek szinkronban tartása",
+      "description": "Frissíti az erről a csomópontról importált vendégek nevét, címét és címkéit, a Proxmoxból eltávolítottakat pedig proxmox-missing címkével jelöli."
+    },
+    "importInterval": {
+      "label": "Szinkronizálás gyakorisága (perc)",
+      "description": "Legalább 5 perc."
+    },
+    "importAddNew": {
+      "label": "Új vendégek hozzáadása szinkronizáláskor",
+      "description": "Importálja az első importálás után a Proxmoxban létrehozott vendégeket, az importálási párbeszédablakban legutóbb használt alapértékekkel."
+    },
+    "importDefaults": {
+      "label": "Importálási alapértékek"
+    },
+    "importState": {
+      "label": "Utolsó vendégszinkronizálás"
+    },
+    "source": {
+      "label": "Proxmox vendég"
+    }
+  },
+  "app": {
+    "loading": "Betöltés...",
+    "loadFailed": "A fürt nem tölthető be",
+    "refreshFailed": "A frissítés sikertelen: {{message}}",
+    "retry": "Újra",
+    "refresh": "Frissítés",
+    "search": "Vendégek, csomópontok és tárolók keresése...",
+    "status": "{{nodes}} csomópont, {{total}} vendégből {{running}} fut",
+    "pickHost": "Proxmox hoszt",
+    "pickResource": "Válasszon csomópontot, vendéget vagy tárolót a bal oldalon",
+    "noHosts": "Még nincsenek Proxmox hosztok",
+    "noHostsHint": "Nyissa meg egy hoszt beállításait, kapcsolja be a Proxmox csomópont opciót az SSH alatt, és válassza ki a csatlakozás módját. A csomópont ezután itt jelenik meg.",
+    "cancel": "Mégse",
+    "working": "Folyamatban...",
+    "save": "Mentés",
+    "reset": "Visszaállítás",
+    "close": "Bezárás",
+    "yes": "Igen",
+    "no": "Nem",
+    "edit": "Szerkesztés"
+  },
+  "errors": {
+    "tlsUntrusted": "A Termix nem bízik a csomópont tanúsítványában. A hoszt Proxmox beállításaiban illessze be a csomópont CA-ját a /etc/pve/pve-root-ca.pem fájlból a CA tanúsítvány mezőbe, vagy válassza az API SSH-alagúton lehetőséget.",
+    "tlsHostname": "A csomópont tanúsítványa más névre szól. Állítsa az API címet a tanúsítványban szereplő névre vagy címre.",
+    "tlsExpired": "A csomópont tanúsítványa lejárt vagy még nem érvényes. Újítsa meg a Proxmoxban: csomópont, Rendszer, Tanúsítványok.",
+    "notEnabled": "Ez a hoszt nincs Proxmox csomópontként megjelölve. Kapcsolja be a Proxmox csomópont opciót a hoszt beállításaiban.",
+    "hostAccess": "A hoszt módosításához szerkesztési jog szükséges."
+  },
+  "tree": {
+    "nothingFound": "Nincs a keresésnek megfelelő találat.",
+    "expand": "Kibontás",
+    "collapse": "Összecsukás",
+    "datacenter": "Adatközpont",
+    "folders": {
+      "lxc": "LXC konténer",
+      "qemu": "Virtuális gép",
+      "node": "Csomópontok",
+      "pool": "Készletek",
+      "sdn": "Hálózat",
+      "storage": "Tároló"
+    },
+    "views": {
+      "folder": "Mappanézet",
+      "server": "Szervernézet"
+    }
+  },
+  "types": {
+    "node": "Csomópont",
+    "qemu": "VM",
+    "lxc": "Konténer",
+    "storage": "Tároló",
+    "pool": "Készlet",
+    "sdn": "SDN zóna"
+  },
+  "states": {
+    "running": "Fut",
+    "stopped": "Leállítva",
+    "paused": "Szüneteltetve",
+    "suspended": "Felfüggesztve",
+    "online": "Online",
+    "offline": "Offline",
+    "available": "Elérhető",
+    "unknown": "Ismeretlen"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Memória",
+    "disk": "Lemez",
+    "rootDisk": "Root lemez",
+    "usage": "Használat",
+    "cores_one": "{{count}} mag",
+    "cores_other": "{{count}} mag",
+    "swap": "Swap"
+  },
+  "summary": {
+    "title": "Összegzés",
+    "node": "Csomópont",
+    "vmid": "ID",
+    "uptime": "Üzemidő",
+    "pool": "Készlet",
+    "ha": "HA",
+    "tags": "Címkék",
+    "guests": "Vendégek",
+    "guestsRunning": "{{total}} közül {{running}} fut",
+    "cpuModel": "CPU",
+    "sockets": "foglalat",
+    "load": "Átlagos terhelés",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Kernel",
+    "ips": "Címek"
+  },
+  "charts": {
+    "title": "Grafikonok",
+    "cpu": "CPU",
+    "load": "Átlagos terhelés",
+    "memory": "Memória",
+    "network": "Hálózat",
+    "diskIo": "Lemez I/O",
+    "cpuUsage": "CPU-használat",
+    "ioDelay": "IO késleltetés",
+    "used": "Használt",
+    "total": "Összes",
+    "in": "Be",
+    "out": "Ki",
+    "read": "Olvasás",
+    "write": "Írás",
+    "timeframe": {
+      "hour": "Óra",
+      "day": "Nap",
+      "week": "Hét",
+      "month": "Hónap",
+      "year": "Év"
+    },
+    "noData": "Nincs adat erre az időszakra",
+    "serverLoad": "Szerverterhelés",
+    "loadAverage": "Átlagos terhelés",
+    "swap": "Swap",
+    "pressureCpu": "CPU-nyomás miatti várakozás",
+    "pressureMemory": "Memórianyomás miatti várakozás",
+    "pressureIo": "IO-nyomás miatti várakozás",
+    "some": "Részleges",
+    "full": "Teljes",
+    "average": "Átlag",
+    "maximum": "Maximum"
+  },
+  "tasks": {
+    "title": "Feladatok",
+    "started": "Indítva",
+    "node": "Csomópont",
+    "user": "Felhasználó",
+    "task": "Feladat",
+    "status": "Állapot",
+    "running": "Fut",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} itt: {{node}}",
+    "done": "{{label}}: kész",
+    "failed": "{{label}} sikertelen: {{reason}}"
+  },
+  "guests": {
+    "more": "További műveletek",
+    "isTemplate": "Sablon",
+    "locked": "Zárolva: {{lock}}",
+    "power": {
+      "start": "Indítás",
+      "shutdown": "Leállítás",
+      "stop": "Kikapcsolás",
+      "reboot": "Újraindítás",
+      "suspend": "Felfüggesztés",
+      "resume": "Folytatás",
+      "reset": "Alaphelyzet",
+      "label": "{{action}}: {{name}}",
+      "confirm": {
+        "stop": "Azonnal kikapcsolja: {{name}}?",
+        "reset": "Azonnal alaphelyzetbe állítja: {{name}}?",
+        "description": "Ez úgy szakítja meg az áramellátást, mintha kihúzná a csatlakozót. A vendégben nem mentett munka elvész."
+      }
+    },
+    "clone": {
+      "menu": "Klónozás",
+      "title": "{{name}} klónozása",
+      "submit": "Klónozás",
+      "label": "{{source}} klónozása ide: {{id}}",
+      "full": "Teljes klón",
+      "fullHint": "Minden lemezt átmásol, így a klón nem függ az eredetitől.",
+      "linkedHint": "Kikapcsolva csatolt klón készül, amely a sablon lemezeit használja, és másodpercek alatt elkészül.",
+      "sameStorage": "Az eredetivel azonos tároló"
+    },
+    "migrate": {
+      "menu": "Migrálás",
+      "title": "{{name}} migrálása",
+      "submit": "Migrálás",
+      "label": "{{name}} migrálása ide: {{target}}",
+      "noOtherNodes": "Ebben a fürtben nincs másik online csomópont, ahová áthelyezhető lenne.",
+      "onlineHint": "A VM fut, és élőben, leállítás nélkül költözik.",
+      "restartHint": "A konténer fut. Leáll, átköltözik, majd újraindul a célon."
+    },
+    "template": {
+      "menu": "Átalakítás sablonná",
+      "confirm": "Sablonná alakítja ezt: {{name}}?",
+      "description": "Egy sablon nem indítható, csak klónozható. Ez nem vonható vissza.",
+      "submit": "Átalakítás",
+      "label": "{{name}} átalakítása sablonná"
+    },
+    "delete": {
+      "menu": "Törlés",
+      "title": "{{name}} törlése",
+      "submit": "Törlés",
+      "label": "{{name}} törlése",
+      "warning": "Ez törli a(z) {{vmid}} vendéget és lemezeit. Nem vonható vissza.",
+      "stopFirst": "Törlés előtt kapcsolja ki a vendéget.",
+      "typeId": "A megerősítéshez írja be: {{vmid}}",
+      "purge": "Eltávolítás a mentési feladatokból, replikációból és HA-ból",
+      "purgeHint": "Nem marad olyan feladat, amely egy már nem létező vendégre mutat.",
+      "unreferenced": "A nem hivatkozott lemezek törlése is",
+      "unreferencedHint": "Az engedélyezett tárolókon lévő, ezzel az ID-vel rendelkező lemezek, amelyeket a konfiguráció nem sorol fel."
+    },
+    "create": {
+      "vmButton": "VM létrehozása",
+      "ctButton": "CT létrehozása",
+      "vmTitle": "Virtuális gép létrehozása",
+      "ctTitle": "Konténer létrehozása",
+      "submit": "Létrehozás",
+      "vmLabel": "VM {{id}} létrehozása ({{name}})",
+      "ctLabel": "CT {{id}} létrehozása ({{name}})",
+      "noTemplates": "Ezen a csomóponton nincsenek konténersablonok. Töltsön le egyet a Proxmoxban egy tároló alatt: CT sablonok.",
+      "noIso": "Nincs telepítő adathordozó",
+      "unprivilegedHint": "Biztonságosabb: a konténerben lévő root nem root a csomóponton.",
+      "loginHint": "Adjon meg root jelszót, SSH kulcsokat vagy mindkettőt.",
+      "problem": {
+        "vmid": "Válasszon 100 vagy nagyobb ID-t.",
+        "hostname": "Adjon meg egy hosztnevet: betűk, számjegyek és kötőjelek.",
+        "name": "Adjon meg egy nevet: betűk, számjegyek és kötőjelek.",
+        "template": "Válasszon sablont.",
+        "storage": "Válasszon tárolót.",
+        "disk": "Adja meg a lemez méretét.",
+        "cores": "Adja meg a magok számát.",
+        "sockets": "Adja meg a foglalatok számát.",
+        "memory": "Adjon meg legalább 16 MiB memóriát.",
+        "swap": "Adja meg a swapot MiB-ban, 0, ha nincs.",
+        "network": "Válasszon hidat, és statikus cím esetén adja meg így: 192.168.0.60/24.",
+        "login": "Adjon meg root jelszót vagy SSH kulcsokat, hogy be tudjon jelentkezni.",
+        "password": "A jelszónak legalább 5 karakterből kell állnia."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Egyéb"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Név",
+      "hostname": "Hosztnév",
+      "node": "Csomópont",
+      "targetNode": "Cél csomópont",
+      "targetStorage": "Cél tároló",
+      "storage": "Tároló",
+      "template": "Sablon",
+      "iso": "Telepítő adathordozó",
+      "ostype": "Vendég OS",
+      "rootPassword": "Root jelszó",
+      "sshKeys": "Nyilvános SSH kulcsok",
+      "unprivileged": "Nem privilegizált konténer",
+      "diskGiB": "Lemez (GiB)",
+      "cores": "Magok",
+      "sockets": "Foglalatok",
+      "memoryMiB": "Memória (MiB)",
+      "swapMiB": "Swap (MiB)",
+      "bridge": "Hálózati híd",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Statikus",
+      "cidr": "Cím/előtag",
+      "gateway": "Átjáró",
+      "startAfter": "Indítás létrehozás után",
+      "pick": "Válasszon"
+    },
+    "tabs": {
+      "summary": "Összegzés",
+      "hardware": "Hardver",
+      "options": "Beállítások",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Szerkesztés",
+    "add": "Hozzáadás",
+    "remove": "Eltávolítás",
+    "removed": "{{key}} eltávolítva",
+    "pending": "Függőben",
+    "pendingHint": "A Függőben jelölt módosítások akkor lépnek életbe, amikor a vendéget a Proxmoxból indítják újra: a vendégen belüli újraindítás nem elég.",
+    "processors": "Processzorok",
+    "processorsValue": "{{sockets}} foglalat × {{cores}} mag, {{cpu}}",
+    "allCores": "Összes",
+    "swap": "Swap",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "Processzor és memória",
+      "title": "Processzor és memória"
+    },
+    "cpuType": "CPU típus",
+    "cpulimit": "CPU korlát",
+    "cpulimitHint": "0 esetén nincs korlát. Az 1.5 másfél magnyi időt jelent.",
+    "balloon": "Minimális memória (MiB)",
+    "balloonHint": "A balloon illesztőprogrammal a vendég eddig az értékig ad vissza memóriát. A memóriával egyenlő érték kikapcsolja, a 0 eltávolítja az illesztőprogramot.",
+    "disks": "Lemezek",
+    "volumes": "Root lemez és csatolási pontok",
+    "bus": "Busz",
+    "slot": "Ez lesz: {{key}}",
+    "iothread": "IO szál",
+    "discard": "Discard",
+    "discardHint": "Lehetővé teszi, hogy a vendég felszabadítsa a nem használt blokkokat a vékony tárolón.",
+    "ssd": "SSD emuláció",
+    "mountPath": "Csatolási útvonal a konténerben",
+    "backup": "Belefoglalás a mentésekbe",
+    "addDisk": {
+      "button": "Lemez hozzáadása",
+      "title": "Lemez hozzáadása",
+      "label": "{{key}} hozzáadása"
+    },
+    "addMount": {
+      "button": "Csatolási pont hozzáadása",
+      "title": "Csatolási pont hozzáadása"
+    },
+    "resize": {
+      "menu": "Átméretezés",
+      "title": "{{key}} bővítése",
+      "grow": "Hozzáadás (GiB)",
+      "result": "{{from}} GiB-ból {{to}} GiB lesz",
+      "noShrink": "A lemezek csak bővíthetők. A vendég partícióját és fájlrendszerét ezután a vendégen belül kell bővíteni, hacsak ezt indításkor maga meg nem teszi.",
+      "submit": "Bővítés",
+      "label": "{{key}} bővítése {{size}} GiB-tal"
+    },
+    "move": {
+      "menu": "Áthelyezés tárolóra",
+      "title": "{{key}} áthelyezése",
+      "submit": "Áthelyezés",
+      "deleteSource": "Az eredeti törlése",
+      "deleteSourceHint": "Kikapcsolva nem használt lemezként megmarad.",
+      "label": "{{key}} áthelyezése ide: {{storage}}"
+    },
+    "detach": {
+      "menu": "Leválasztás",
+      "title": "Leválasztja ezt: {{key}}?",
+      "description": "A lemez nem használt lemezként a tárolóján marad, és törölhető vagy újra csatolható."
+    },
+    "unused": {
+      "delete": "Törlés",
+      "title": "Törli ezt: {{volume}}?",
+      "description": "Ez törli a lemezt és mindent, ami rajta van. Nem vonható vissza."
+    },
+    "cd": {
+      "heading": "CD/DVD meghajtók",
+      "title": "Adathordozó itt: {{key}}",
+      "empty": "Nincs adathordozó"
+    },
+    "nic": {
+      "heading": "Hálózati adapterek",
+      "add": "Adapter hozzáadása",
+      "addTitle": "{{key}} hozzáadása",
+      "editTitle": "{{key}} szerkesztése",
+      "none": "Nincsenek hálózati adapterek.",
+      "model": "Modell",
+      "name": "Név a konténerben",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Statikus",
+        "none": "Nincs",
+        "auto": "SLAAC"
+      },
+      "tag": "VLAN címke",
+      "tagHint": "Üresen címke nélküli.",
+      "rate": "Sebességkorlát (MB/s)",
+      "rateHint": "Üresen nincs korlát.",
+      "firewall": "Tűzfal",
+      "firewallShort": "tűzfal",
+      "removeTitle": "Eltávolítja ezt: {{key}}?",
+      "removeDescription": "A vendég elveszíti ezt az adaptert és a címét."
+    },
+    "problem": {
+      "cpu": "Adjon meg legalább egy foglalatot és magot.",
+      "cpulimit": "A CPU korlát 0 és 8192 között lehet.",
+      "memory": "Adjon meg legalább 16 MiB memóriát.",
+      "balloon": "A minimális memória nem lehet több a memóriánál.",
+      "swap": "Adja meg a swapot MiB-ban, 0, ha nincs.",
+      "noSlot": "Minden ilyen típusú foglalat foglalt.",
+      "storage": "Válasszon tárolót.",
+      "size": "Adja meg a méretet egész GiB-ban.",
+      "path": "Adjon meg abszolút útvonalat, például /data, de ne magát a / útvonalat.",
+      "bridge": "Válasszon hidat.",
+      "tag": "A VLAN címke 1 és 4094 között lehet.",
+      "rate": "Adjon meg 0-nál nagyobb sebességet, vagy hagyja üresen.",
+      "name": "Adjon meg egy nevet, például eth0.",
+      "ip4": "Adja meg a címet így: 192.168.0.60/24, és egy érvényes átjárót.",
+      "ip6": "Adja meg a címet így: fd00::10/64."
+    },
+    "detached": "{{key}} leválasztva; nem használt lemezként megmarad",
+    "coresHint": "Üresen a csomópont összes magját használja."
+  },
+  "options": {
+    "general": "Általános",
+    "tags": "Címkék",
+    "tagsHint": "Vesszővel elválasztva.",
+    "onboot": "Indítás a csomópont indulásakor",
+    "protection": "Védelem",
+    "protectionHint": "Megakadályozza a vendég és lemezei törlését, amíg ki nem kapcsolja.",
+    "agent": "QEMU vendégügynök",
+    "agentHint": "Kapcsolja be, ha az ügynök fut a vendégben – a címeihez és a tiszta leállításhoz.",
+    "startup": "Indítási és leállítási sorrend",
+    "startupOrder": "Sorrend",
+    "startupUp": "Késleltetés indítás után (mp)",
+    "startupDown": "Leállítási időkorlát (mp)",
+    "dns": "DNS",
+    "nameserver": "DNS szerverek",
+    "searchdomain": "Keresési tartomány",
+    "useHost": "Üresen a csomópontét használja.",
+    "notes": "Jegyzetek",
+    "saved": "Beállítások mentve",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Egyéb"
+    },
+    "problem": {
+      "name": "Adjon meg egy nevet.",
+      "startup": "A sorrend és a késleltetések egész számok.",
+      "tags": "A címkék betűket, számjegyeket, kötőjeleket, pontokat és aláhúzásjeleket tartalmazhatnak.",
+      "nameserver": "Adjon meg szóközzel elválasztott IP-címeket."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "Ennek a VM-nek nincs cloud-init meghajtója. Adjon hozzá egyet, majd itt állítsa be a felhasználót, a kulcsokat és a hálózatot; a vendég lemezképének támogatnia kell a cloud-initet.",
+    "addDrive": "Cloud-init meghajtó hozzáadása",
+    "driveAdded": "Cloud-init meghajtó hozzáadva",
+    "user": "Felhasználó",
+    "username": "Felhasználónév",
+    "usernameHint": "Üresen a lemezkép alapértelmezett felhasználóját használja.",
+    "password": "Jelszó",
+    "passwordHint": "Üresen megtartja a jelenlegit. A Proxmox hash-elve tárolja.",
+    "network": "Hálózat",
+    "saved": "Cloud-init beállítások mentve",
+    "regenerate": "Lemezkép újragenerálása",
+    "regenerated": "Cloud-init lemezkép újragenerálva",
+    "regenerateHint": "A beállításokat ide írja: {{drive}}. A vendég a következő indításkor olvassa be őket."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Összegzés",
+      "iso": "ISO képfájlok",
+      "vztmpl": "CT sablonok",
+      "backup": "Mentések",
+      "images": "Lemezképek"
+    },
+    "content": "Tartalom",
+    "contentTypes": {
+      "images": "VM lemezek",
+      "rootdir": "Konténerlemezek",
+      "iso": "ISO képfájlok",
+      "vztmpl": "CT sablonok",
+      "backup": "Mentések",
+      "snippets": "Kódrészletek",
+      "import": "Importálás"
+    },
+    "shared": "Megosztott",
+    "empty": "Itt még nincs semmi.",
+    "owner": "{{vmid}} vendég",
+    "protected": "Védett",
+    "download": {
+      "button": "Letöltés URL-ről",
+      "title": {
+        "iso": "ISO képfájl letöltése ide: {{storage}}",
+        "vztmpl": "CT sablon letöltése ide: {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Fájlnév",
+      "algorithm": "Ellenőrzőösszeg típusa",
+      "noChecksum": "Nincs",
+      "checksum": "Ellenőrzőösszeg",
+      "verify": "A szerver tanúsítványának ellenőrzése",
+      "submit": "Letöltés",
+      "label": "{{name}} letöltése",
+      "problem": {
+        "url": "Adjon meg egy http vagy https URL-t.",
+        "filename": "A fájlnév betűket, számjegyeket, pontokat, kötőjeleket és aláhúzásjeleket tartalmazhat.",
+        "extension": "Az ISO képfájlok .iso vagy .img, a sablonok .tar.gz, .tar.xz vagy .tar.zst kiterjesztésűek.",
+        "checksum": "Válassza ki az ellenőrzőösszeg típusát, és adja meg hexadecimálisan, vagy hagyja mindkettőt üresen."
+      }
+    },
+    "catalog": {
+      "button": "Sablonok",
+      "title": "Konténersablonok ehhez: {{storage}}",
+      "search": "Sablonok keresése...",
+      "have": "Letöltve",
+      "label": "{{name}} letöltése"
+    },
+    "delete": {
+      "title": "Törli ezt: {{name}}?",
+      "description": "Ez törli a fájlt a tárolóról. Nem vonható vissza.",
+      "submit": "Törlés",
+      "done": "{{name}} törölve"
+    },
+    "upload": {
+      "button": "Feltöltés",
+      "cancel": "Feltöltés megszakítása",
+      "done": "{{name}} feltöltve",
+      "failed": "{{name}} feltöltése sikertelen: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Összegzés",
+      "network": "Hálózat",
+      "system": "Rendszer",
+      "services": "Szolgáltatások",
+      "updates": "Frissítések",
+      "disks": "Lemezek",
+      "tasks": "Feladatok",
+      "log": "Napló"
+    },
+    "services": {
+      "start": "Indítás",
+      "stop": "Leállítás",
+      "restart": "Újraindítás",
+      "reload": "Újratöltés",
+      "label": "{{action}}: {{name}}",
+      "confirm": {
+        "stop": "Leállítja ezt: {{name}}?",
+        "restart": "Újraindítja ezt: {{name}}?",
+        "description": "A Proxmox saját szolgáltatásai tartják működésben a csomópontot és az API-ját; egy leállítása elvághatja ezt az eszközt, amíg újra el nem indul."
+      }
+    },
+    "updates": {
+      "refresh": "Csomaglisták frissítése",
+      "refreshLabel": "Csomaglisták frissítése itt: {{node}}",
+      "count_one": "{{count}} csomag frissíthető",
+      "count_other": "{{count}} csomag frissíthető",
+      "none": "Minden naprakész",
+      "installHint": "A frissítéseket a csomópont termináljából telepítse az apt full-upgrade paranccsal; a Proxmox nem frissít az API-ján keresztül.",
+      "views": {
+        "packages": "Csomagok",
+        "repositories": "Tárolók"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART: {{disk}}",
+      "health": "Állapot",
+      "usedBy": "használja: {{used}}",
+      "unused": "nem használt",
+      "wearout": "{{value}}% élettartam van hátra",
+      "views": {
+        "disks": "Lemezek",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Könyvtár",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "{{count}} logikai kötet",
+        "lvCount_other": "{{count}} logikai kötet",
+        "metadata": "metaadatok {{used}} / {{size}}",
+        "frag": "{{value}}% töredezett",
+        "dedup": "dedup {{value}}x",
+        "none": {
+          "lvm": "Nincsenek LVM kötetcsoportok.",
+          "lvmthin": "Nincsenek LVM-Thin készletek.",
+          "directory": "Nincs saját lemezen lévő könyvtártároló.",
+          "zfs": "Nincsenek ZFS készletek."
+        },
+        "create": {
+          "lvm": "LVM kötetcsoport létrehozása",
+          "lvmthin": "LVM-Thin készlet létrehozása",
+          "directory": "Könyvtár létrehozása",
+          "zfs": "ZFS készlet létrehozása"
+        },
+        "createSubmit": "Létrehozás",
+        "createLabel": "{{name}} létrehozása itt: {{node}}",
+        "wipeWarning": "A kiválasztott lemezek particionálva és formázva lesznek. Csak üres lemezek választhatók.",
+        "name": "Név",
+        "device": "Lemez",
+        "devices": "Lemezek",
+        "pickDisk": "Válasszon lemezt",
+        "noUnused": "Nincs nem használt lemez. Előbb töröljön egyet a Lemezek alatt, ha a rajta lévő tartalomra nincs szükség.",
+        "filesystem": "Fájlrendszer",
+        "raidlevel": "RAID szint",
+        "raid": {
+          "single": "Egyetlen lemez",
+          "mirror": "Tükör",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Tömörítés",
+        "addStorage": "Hozzáadás tárolóként",
+        "addStorageHint": "Azonos nevű Proxmox tárolót hoz létre lemezekhez, konténerekhez vagy mentésekhez.",
+        "problem": {
+          "name": "A név betűvel kezdődik, és betűket, számjegyeket, -, _ vagy . karaktert tartalmaz.",
+          "device": "Válasszon lemezt.",
+          "oneDevice": "Válasszon egy lemezt.",
+          "tooFew": "Ehhez a RAID szinthez legalább {{count}} lemez szükséges.",
+          "even": "A RAID10 páros számú lemezt igényel.",
+          "ashift": "Az ashift értéke 9 és 16 között van."
+        },
+        "remove": "Eltávolítás",
+        "removeTitle": "Eltávolítja ezt: {{name}}?",
+        "removeWarning": "A rajta lemezzel rendelkező vendégek elveszítik azokat. Az eltávolítás előtte semmit sem helyez át róla.",
+        "removeLabel": "{{name}} eltávolítása itt: {{node}}",
+        "cleanupConfig": "A tárolóbejegyzés eltávolítása is",
+        "cleanupDisks": "Lemezeinek törlése",
+        "cleanupDisksHint": "Letörli a lemezeket, hogy újra használhatók legyenek.",
+        "inUse": {
+          "lvm": "Még vannak rajta logikai kötetek. Először távolítsa el őket; ez a csoport a csomópont saját rendszerét is tartalmazhatja.",
+          "lvmthin": "Még adatokat tartalmaz. Először helyezze át vagy távolítsa el a rajta lévő vendéglemezeket."
+        }
+      },
+      "gpt": "GPT inicializálása",
+      "gptTitle": "Inicializálja ezt GPT-vel: {{disk}}?",
+      "gptDescription": "Üres GPT partíciós táblát ír a lemezre.",
+      "gptLabel": "{{disk}} inicializálása itt: {{node}}",
+      "wipe": "Törlés",
+      "wipeTitle": "Letörli ezt: {{disk}}?",
+      "wipeWarning": "Törli a partíciós táblát és minden fájlrendszer-, LVM- és ZFS-aláírást a lemezről (jelenleg: {{used}}). A rajta lévő tartalom végleg elvész.",
+      "wipeLabel": "{{disk}} törlése itt: {{node}}",
+      "typePath": "A megerősítéshez írja be: {{disk}}"
+    },
+    "log": {
+      "search": "Napló szűrése...",
+      "empty": "Nincs egyező sor."
+    },
+    "power": {
+      "menu": "Csomópont tápellátása",
+      "termixWarning": "Ha a Termix ezen a csomóponton fut, az is leáll, amíg a csomópont vissza nem tér.",
+      "typeName": "A megerősítéshez írja be: {{node}}",
+      "reboot": {
+        "menu": "Csomópont újraindítása",
+        "title": "Újraindítja ezt: {{node}}?",
+        "submit": "Újraindítás",
+        "label": "{{node}} újraindítása",
+        "warning_one": "{{count}} futó vendég előbb kikapcsol vagy leáll, az indítási beállításai szerint.",
+        "warning_other": "{{count}} futó vendég előbb kikapcsol vagy leáll, az indítási beállításaik szerint."
+      },
+      "shutdown": {
+        "menu": "Csomópont leállítása",
+        "title": "Leállítja ezt: {{node}}?",
+        "submit": "Leállítás",
+        "label": "{{node}} leállítása",
+        "warning_one": "{{count}} futó vendég vele együtt leáll, és semmi sem indítja újra, amíg valaki be nem kapcsolja a csomópontot.",
+        "warning_other": "{{count}} futó vendég vele együtt leáll, és semmi sem indítja újra őket, amíg valaki be nem kapcsolja a csomópontot."
+      }
+    },
+    "shell": "Shell",
+    "shellHint": "Megnyitja a hoszt SSH termináljét a Termixben.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Keresési tartomány",
+        "server": "{{n}}. DNS szerver",
+        "editTitle": "{{node}} DNS-e",
+        "saved": "DNS mentve",
+        "problem": {
+          "search": "Adjon meg egy keresési tartományt, például example.com.",
+          "server": "A DNS szerver egy IPv4 vagy IPv6 cím.",
+          "noServer": "Adjon meg legalább egy DNS szervert."
+        }
+      },
+      "time": {
+        "title": "Idő",
+        "zone": "Időzóna",
+        "local": "Helyi idő",
+        "editTitle": "{{node}} időzónája",
+        "hint": "Magát az órát az NTP (chrony) tartja pontosan a csomóponton.",
+        "saved": "Időzóna beállítva: {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosztok",
+        "editTitle": "{{node}} /etc/hosts fájlja",
+        "warning": "A csomópont saját nevének továbbra is a címére kell feloldódnia, különben a fürt és a webes felülete leáll.",
+        "saved": "/etc/hosts mentve"
+      },
+      "certs": {
+        "title": "Tanúsítványok",
+        "issuer": "kibocsátó: {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Érvényes eddig: {{date}}",
+          "expiring": "Lejár: {{date}}",
+          "expired": "Lejárt: {{date}}",
+          "notYet": "Még nem érvényes"
+        },
+        "upload": "Egyéni feltöltése",
+        "uploadTitle": "Egyéni tanúsítvány ehhez: {{node}}",
+        "uploaded": "Tanúsítvány feltöltve",
+        "chain": "Tanúsítványlánc",
+        "chainHint": "PEM: előbb a csomópont tanúsítványa, majd a köztes tanúsítványok.",
+        "key": "Privát kulcs",
+        "keyHint": "PEM, titkosítás nélkül. Hagyja üresen a csomóponton már meglévő kulcs megtartásához.",
+        "fromFile": "Beolvasás fájlból",
+        "badCert": "Ez nem PEM tanúsítvány.",
+        "badKey": "Ez nem PEM privát kulcs.",
+        "restart": "A webes felület újraindítása a használatához",
+        "restartHint": "A pveproxy újraindul; a Termix néhány másodpercre elveszíti az API-t.",
+        "remove": "Egyéni eltávolítása",
+        "removeTitle": "Eltávolítja az egyéni tanúsítványt?",
+        "removeDescription": "A csomópont visszatér az önaláírt tanúsítványához, és a webes felület újraindul.",
+        "removed": "Egyéni tanúsítvány eltávolítva"
+      }
+    },
+    "repos": {
+      "on": "Engedélyezve",
+      "off": "Letiltva",
+      "enable": "Engedélyezés",
+      "disable": "Letiltás",
+      "enableTitle": "Engedélyezi ezt a tárolót?",
+      "enabled": "Tároló engedélyezve",
+      "disabled": "Tároló letiltva",
+      "add": "Hozzáadás:",
+      "added": "{{name}} tároló hozzáadva",
+      "hint": "Módosítás után futtassa a Csomaglisták frissítése műveletet a Csomagok alatt. Az Enterprise tárolókhoz előfizetés szükséges."
+    },
+    "taskHistory": {
+      "type": "Típus, például vzdump",
+      "vmid": "VM/CT ID",
+      "user": "Felhasználó",
+      "errorsOnly": "Csak sikertelen feladatok",
+      "none": "Nincs egyező feladat.",
+      "more": "Továbbiak betöltése",
+      "state": {
+        "running": "Fut",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Tanúsítvány igénylése",
+      "renew": "Megújítás",
+      "orderLabel": "ACME tanúsítvány igénylése ehhez: {{node}}",
+      "renewLabel": "ACME tanúsítvány megújítása ehhez: {{node}}",
+      "usesAccount": "Fiók: {{account}}",
+      "none": "nincs",
+      "noDomains": "Még nincsenek tartományok. Szerkessze a csomópont által kiszolgált nevek hozzáadásához.",
+      "viaHttp": "HTTP kihívás",
+      "viaDns": "DNS kihívás ezen keresztül: {{plugin}}",
+      "accounts": "Fiókok",
+      "plugins": "DNS kihívás bővítmények",
+      "remove": "Eltávolítás",
+      "domainsTitle": "{{node}} ACME tartományai",
+      "domainsSaved": "ACME tartományok mentve",
+      "domain": "Tartomány",
+      "challenge": "Kihívás",
+      "alias": "Alias",
+      "addDomain": "Tartomány hozzáadása",
+      "httpHint": "A HTTP kihíváshoz a csomópont 80-as portjának elérhetőnek kell lennie az internetről a tartomány alatt. A DNS enélkül is működik, és helyettesítő karakteres tartományokhoz is.",
+      "hint": "A fiókok és bővítmények az egész fürtben közösek; a tartományok csomópontonként adhatók meg.",
+      "problem": {
+        "noDomain": "Adjon hozzá legalább egy tartományt.",
+        "tooMany": "Egy csomópontnak legfeljebb hat ACME tartománya lehet.",
+        "domain": "A tartomány egy teljes név, például pve.example.com.",
+        "wildcard": "A helyettesítő karakteres tartományhoz DNS kihívás bővítmény szükséges."
+      },
+      "account": {
+        "title": "Fiók",
+        "pick": "Válasszon fiókot",
+        "add": "Fiók regisztrálása",
+        "addTitle": "ACME fiók regisztrálása",
+        "register": "Regisztrálás",
+        "registerLabel": "{{name}} ACME fiók regisztrálása",
+        "name": "Név",
+        "email": "E-mail",
+        "directory": "ACME könyvtár",
+        "customDirectory": "Egyéni URL",
+        "directoryUrl": "Könyvtár URL",
+        "acceptTos": "A szolgáltatási feltételek elfogadása",
+        "eabKid": "EAB kulcsazonosító",
+        "eabHmac": "EAB HMAC kulcs",
+        "eabHint": "Csak az External Account Bindingot kérő CA-khoz.",
+        "none": "Még nincs ACME fiók.",
+        "needOne": "Előbb regisztráljon egy ACME fiókot.",
+        "removeTitle": "Deaktiválja a(z) {{name}} fiókot?",
+        "removeDescription": "A fiók a CA-nál deaktiválódik, és innen eltávolításra kerül. A már kiadott tanúsítványok továbbra is működnek.",
+        "removeLabel": "{{name}} ACME fiók deaktiválása",
+        "problem": {
+          "name": "A név betűket, számjegyeket, -, _ vagy . karaktert tartalmaz.",
+          "email": "Adjon meg egy e-mail-címet.",
+          "directory": "A könyvtár egy http vagy https URL.",
+          "tos": "A regisztrációhoz fogadja el a szolgáltatási feltételeket.",
+          "eab": "Az EAB-hoz a kulcsazonosító és a HMAC kulcs is szükséges."
+        }
+      },
+      "plugin": {
+        "add": "Bővítmény hozzáadása",
+        "addTitle": "DNS kihívás bővítmény hozzáadása",
+        "id": "Bővítmény ID",
+        "api": "DNS API",
+        "pickApi": "Válasszon DNS szolgáltatót",
+        "delay": "Ellenőrzési késleltetés (mp)",
+        "delayHint": "Mennyi ideig kell várni a TXT rekord terjedésére.",
+        "noFields": "A Proxmox nem sorol fel mezőket ehhez a szolgáltatóhoz; az általa olvasott változókat az acme.sh dokumentációjában találja.",
+        "none": "Nincsenek DNS bővítmények. A HTTP nélkülük is működik.",
+        "disabled": "Letiltva",
+        "removeTitle": "Eltávolítja a(z) {{name}} bővítményt?",
+        "removeDescription": "Az ezt használó tartományok többé nem ellenőrizhetők."
+      }
+    }
+  },
+  "console": {
+    "open": "Konzol",
+    "openHint": "Megnyitja a vendég Termix hosztját, vagy felajánlja, hogy előbb adja hozzá a Termixhez.",
+    "tabTitle": "Proxmox konzol",
+    "tabLabel": "{{name}} — Konzol",
+    "pick": "Nyisson konzolt egy futó VM-ről vagy konténerről a Proxmox eszközben.",
+    "connect": "Csatlakozás",
+    "reconnect": "Újracsatlakozás",
+    "disconnect": "Kapcsolat bontása",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Teljes képernyő",
+    "notRunning": "A konzol megnyitásához indítsa el a vendéget.",
+    "lost": "A konzolkapcsolat megszakadt.",
+    "ended": "Konzol bezárva.",
+    "status": {
+      "idle": "Nincs csatlakoztatva",
+      "connecting": "Csatlakozás...",
+      "connected": "Csatlakoztatva",
+      "closed": "Kapcsolat bontva",
+      "error": "Nem sikerült csatlakozni"
+    },
+    "proxmox": "Proxmox konzol",
+    "proxmoxHint": "A Proxmox saját konzolja a csomóponton keresztül: egy VM képernyője, egy konténer shellje. Olyan vendéghez, amelynek még nincs hálózata."
+  },
+  "pool": {
+    "members": "Tagok",
+    "empty": "Ebben a készletben nincs semmi."
+  },
+  "sdn": {
+    "hint": "Az SDN zónák, VNetek és alhálózatok a fürtkezeléssel együtt egy későbbi kiadásban érkeznek."
+  },
+  "network": {
+    "add": "Létrehozás",
+    "apply": "Alkalmazás",
+    "revert": "Visszavonás",
+    "pending": "Még nincs alkalmazva",
+    "hint": "A módosítások a /etc/network/interfaces.new fájlba kerülnek, és az Alkalmazás után lépnek életbe, amely újratölti a csomópont hálózatát.",
+    "type": "Típus",
+    "name": "Név",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Átjáró (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Átjáró (IPv6)",
+    "ports": "Hídportok",
+    "slaves": "Alárendelt eszközök",
+    "portsHint": "Interfésznevek szóközzel elválasztva.",
+    "bondMode": "Mód",
+    "vlanDevice": "VLAN nyers eszköz",
+    "mtu": "MTU",
+    "comments": "Megjegyzés",
+    "autostart": "Automatikus indítás",
+    "vlanAware": "VLAN-tudatos",
+    "vlanAwareHint": "Lehetővé teszi, hogy a hídon lévő vendégek VLAN címkéket használjanak.",
+    "inactive": "Inaktív",
+    "create": "Létrehozás",
+    "createTitle": "Interfész létrehozása",
+    "editTitle": "{{iface}} szerkesztése",
+    "types": {
+      "bridge": "Híd",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Port",
+      "OVSBridge": "OVS híd",
+      "alias": "Alias"
+    },
+    "nameHint": {
+      "bridge": "vmbr, majd egy szám, például vmbr1.",
+      "bond": "bond, majd egy szám, például bond0.",
+      "vlan": "eszköz.címke, például vmbr0.10, vagy vlan10 nyers eszközzel."
+    },
+    "addressWarning": "Ez az interfész hordozza azt a címet, amelyen a Termix eléri a csomópontot. Egy hiba elvághatja a Termixet, amíg valaki ki nem javítja a csomópontot a konzolján.",
+    "removeTitle": "Eltávolítja ezt: {{iface}}?",
+    "removeDescription": "Az interfész a módosítás alkalmazásakor törlődik.",
+    "applyTitle": "Alkalmazza a hálózati módosításokat itt: {{node}}?",
+    "applyDescription": "A csomópont újratölti a hálózatát. Ha az új beállítások hibásak, a csomópont és a Termix kapcsolata offline állapotba kerülhet.",
+    "applyLabel": "Hálózat alkalmazása itt: {{node}}",
+    "reverted": "Hálózati módosítások visszavonva",
+    "problem": {
+      "cidr": "Adja meg a címet így: 10.10.0.1/24.",
+      "gateway": "Az átjáróhoz IPv4 cím és érvényes átjáró IP-cím szükséges.",
+      "cidr6": "Adja meg a címet így: fd00::1/64.",
+      "ports": "Adjon meg szóközzel elválasztott interfészneveket.",
+      "slaves": "Egy bondhoz legalább egy alárendelt eszköz szükséges.",
+      "vlanDevice": "Adja meg a nyers eszközt a vlanN interfészhez.",
+      "mtu": "Az MTU 1280 és 65520 között lehet.",
+      "name": {
+        "bridge": "A híd neve vmbr és egy szám.",
+        "bond": "A bond neve bond és egy szám.",
+        "vlan": "A VLAN neve eszköz.címke vagy vlan és egy szám."
+      }
+    }
+  },
+  "import": {
+    "open": "Importálás a Termixbe",
+    "title": "Vendégek importálása Termix hosztokként",
+    "hint": "Minden kiválasztott VM vagy konténer Termix hoszt lesz proxmox címkével. Az importálás frissíti a korábban importált vendégek nevét, címét és címkéit is, a Proxmoxból eltűnteket pedig proxmox-missing címkével jelöli.",
+    "loading": "Vendégek és címeik keresése…",
+    "counts": "{{total}} vendég, {{imported}} már importálva",
+    "selectAll": "Összes kijelölése",
+    "selectNone": "Kijelölés törlése",
+    "none": "Ebben a fürtben nincsenek VM-ek vagy konténerek.",
+    "imported": "Importálva",
+    "noAddress": "nincs cím",
+    "folder": "Mappa",
+    "folderDefault": "{{node}} nevű mappa",
+    "folderSearch": "Keresés vagy létrehozás, / almappához",
+    "folderCreate": "\"{{folder}}\" létrehozása",
+    "folderNone": "Még nincsenek mappák",
+    "connection": "Csatlakozás ezzel",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Konténer-futtatókörnyezet",
+    "runtimeOff": "Nincs Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "Ismeretlen OS"
+    },
+    "sshLogin": "SSH bejelentkezés",
+    "desktopLogin": "RDP és VNC bejelentkezés",
+    "desktopHint": "A csatlakozáshoz a Remote Desktop bővítmény szükséges.",
+    "login": {
+      "nodeCredential": "A csomópont hitelesítő adata",
+      "nodeUser": "A csomópont felhasználóneve",
+      "username": "Csak felhasználónév",
+      "none": "Nincs bejelentkezés"
+    },
+    "username": "Felhasználónév",
+    "submit_one": "{{count}} vendég importálása",
+    "submit_other": "{{count}} vendég importálása",
+    "refresh": "Importáltak frissítése",
+    "done": "Létrehozva: {{created}}, frissítve: {{updated}}, hiányzónak jelölve: {{markedMissing}}",
+    "lastSync": "Utolsó szinkronizálás: {{when}}.",
+    "lastSyncFailed": "Az utolsó szinkronizálás ({{when}}) sikertelen: {{error}}",
+    "syncHint": "Kapcsolja be az Importált vendégek szinkronban tartása opciót a hoszt Proxmox beállításaiban az ütemezett frissítéshez.",
+    "addTitle": "{{name}} hozzáadása a Termixhez",
+    "addHint": "Ez a vendég még nem Termix hoszt. Adja hozzá a termináljának megnyitásához, ezután a Konzol azonnal megnyitja.",
+    "addSubmit": "Hozzáadás és csatlakozás",
+    "gone": "A Proxmox már nem listázza ezt a vendéget."
+  }
+}

@@ -1,0 +1,1024 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Proxmox VE'yi Termix'ten yönetin: sanal makineler, konteynerler, depolama, ağ, yedekler, güvenlik duvarı, erişim ve küme."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Proxmox'ta aç"
+  },
+  "permissions": {
+    "view": {
+      "title": "Proxmox'u görüntüle",
+      "description": "Bağlanabildiğiniz Proxmox ana bilgisayarlarındaki düğümleri, misafirleri, depolamayı, grafikleri ve görevleri görün."
+    },
+    "operate": {
+      "title": "Proxmox misafirlerini çalıştır",
+      "description": "VM ve konteynerleri başlatın, durdurun, kapatın, yeniden başlatın, askıya alın ve sürdürün. Ana bilgisayarda düzenleme erişimi gerekir."
+    },
+    "console": {
+      "title": "Proxmox konsollarını aç",
+      "description": "Bir VM'nin ekranını ve bir konteynerde root kabuğunu açın. Ana bilgisayarda düzenleme erişimi gerekir."
+    },
+    "configure": {
+      "title": "Proxmox'u yapılandır",
+      "description": "VM ve konteynerleri oluşturun, klonlayın, taşıyın, dönüştürün ve silin. Ana bilgisayarda düzenleme erişimi gerekir."
+    },
+    "administer": {
+      "title": "Proxmox'u yönet",
+      "description": "Kullanıcıları, grupları, rolleri, havuzları, 2FA'yı, belirteçleri, alanları ve kümeyi yönetin. Ana bilgisayarda düzenleme erişimi gerekir."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Proxmox düğümü",
+      "description": "Bu ana bilgisayarı Proxmox VE düğümü olarak işaretleyin. Ardından Araçlar altındaki Proxmox aracında görünür."
+    },
+    "transport": {
+      "label": "Bağlantı yolu",
+      "description": "Otomatik, bir belirteç kaydedildiğinde SSH tüneli üzerinden API'yi, o zamana kadar SSH üzerinden pvesh'i kullanır.",
+      "auto": "Otomatik",
+      "tunnel": "SSH tüneli üzerinden API",
+      "direct": "Doğrudan API",
+      "pvesh": "SSH üzerinden pvesh"
+    },
+    "tokenId": {
+      "label": "API belirteci kimliği",
+      "description": "Proxmox'ta Veri Merkezi, İzinler, API Belirteçleri altında oluşturulur. user@realm!name biçimindedir.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "API belirteci gizli anahtarı",
+      "description": "Belirteç oluşturulduğunda bir kez gösterilir. Şifreli olarak saklanır."
+    },
+    "apiHost": {
+      "label": "API adresi",
+      "description": "Yalnızca doğrudan API için. Bu ana bilgisayarın adresini kullanmak için boş bırakın."
+    },
+    "apiPort": {
+      "label": "API bağlantı noktası",
+      "description": "Değiştirmediyseniz 8006."
+    },
+    "caCert": {
+      "label": "CA sertifikası",
+      "description": "Yalnızca doğrudan API için. Düğümün PEM biçimindeki CA'sı, /etc/pve/pve-root-ca.pem dosyasından. API'nin genel olarak güvenilen bir sertifikası varsa boş bırakın.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "İçe aktarılan misafirler",
+    "importSync": {
+      "label": "İçe aktarılan misafirleri eşitle",
+      "description": "Bu düğümden içe aktarılan misafirlerin adlarını, adreslerini ve etiketlerini günceller; Proxmox'tan kaldırılanları proxmox-missing olarak etiketler."
+    },
+    "importInterval": {
+      "label": "Eşitleme aralığı (dakika)",
+      "description": "En az 5 dakika."
+    },
+    "importAddNew": {
+      "label": "Eşitlemede yeni misafirleri ekle",
+      "description": "İlk içe aktarmadan sonra Proxmox'ta oluşturulan misafirleri, içe aktarma iletişim kutusunda son kullanılan varsayılanlarla içe aktarır."
+    },
+    "importDefaults": {
+      "label": "İçe aktarma varsayılanları"
+    },
+    "importState": {
+      "label": "Son misafir eşitlemesi"
+    },
+    "source": {
+      "label": "Proxmox misafiri"
+    }
+  },
+  "app": {
+    "loading": "Yükleniyor...",
+    "loadFailed": "Küme yüklenemedi",
+    "refreshFailed": "Yenileme başarısız: {{message}}",
+    "retry": "Yeniden dene",
+    "refresh": "Yenile",
+    "search": "Misafir, düğüm ve depolama ara...",
+    "status": "{{nodes}} düğüm, {{total}} misafirden {{running}} tanesi çalışıyor",
+    "pickHost": "Proxmox ana bilgisayarı",
+    "pickResource": "Soldan bir düğüm, misafir veya depolama seçin",
+    "noHosts": "Henüz Proxmox ana bilgisayarı yok",
+    "noHostsHint": "Bir ana bilgisayarın ayarlarını açın, SSH altında Proxmox düğümü seçeneğini açın ve bağlantı yolunu seçin. Düğüm ardından burada görünür.",
+    "cancel": "İptal",
+    "working": "İşleniyor...",
+    "save": "Kaydet",
+    "reset": "Sıfırla",
+    "close": "Kapat",
+    "yes": "Evet",
+    "no": "Hayır",
+    "edit": "Düzenle"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix düğümün sertifikasına güvenmiyor. Ana bilgisayarın Proxmox ayarlarında düğümün /etc/pve/pve-root-ca.pem dosyasındaki CA'sını CA sertifikası alanına yapıştırın veya SSH tüneli üzerinden API seçin.",
+    "tlsHostname": "Düğümün sertifikası başka bir ad için. API adresini sertifikada listelenen bir ad veya adres olarak ayarlayın.",
+    "tlsExpired": "Düğümün sertifikasının süresi dolmuş veya henüz geçerli değil. Proxmox'ta düğüm, Sistem, Sertifikalar altında yenileyin.",
+    "notEnabled": "Bu ana bilgisayar Proxmox düğümü olarak işaretlenmemiş. Ana bilgisayarın ayarlarında Proxmox düğümü seçeneğini açın.",
+    "hostAccess": "Bu ana bilgisayarı değiştirmek için düzenleme erişimi gerekir."
+  },
+  "tree": {
+    "nothingFound": "Aramayla eşleşen bir şey yok.",
+    "expand": "Genişlet",
+    "collapse": "Daralt",
+    "datacenter": "Veri Merkezi",
+    "folders": {
+      "lxc": "LXC Konteyner",
+      "qemu": "Sanal Makine",
+      "node": "Düğümler",
+      "pool": "Havuzlar",
+      "sdn": "Ağ",
+      "storage": "Depolama"
+    },
+    "views": {
+      "folder": "Klasör görünümü",
+      "server": "Sunucu görünümü"
+    }
+  },
+  "types": {
+    "node": "Düğüm",
+    "qemu": "VM",
+    "lxc": "Konteyner",
+    "storage": "Depolama",
+    "pool": "Havuz",
+    "sdn": "SDN bölgesi"
+  },
+  "states": {
+    "running": "Çalışıyor",
+    "stopped": "Durduruldu",
+    "paused": "Duraklatıldı",
+    "suspended": "Askıya alındı",
+    "online": "Çevrimiçi",
+    "offline": "Çevrimdışı",
+    "available": "Kullanılabilir",
+    "unknown": "Bilinmiyor"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Bellek",
+    "disk": "Disk",
+    "rootDisk": "Kök disk",
+    "usage": "Kullanım",
+    "cores_one": "{{count}} çekirdek",
+    "cores_other": "{{count}} çekirdek",
+    "swap": "Takas"
+  },
+  "summary": {
+    "title": "Özet",
+    "node": "Düğüm",
+    "vmid": "ID",
+    "uptime": "Çalışma süresi",
+    "pool": "Havuz",
+    "ha": "HA",
+    "tags": "Etiketler",
+    "guests": "Misafirler",
+    "guestsRunning": "{{total}} misafirden {{running}} tanesi çalışıyor",
+    "cpuModel": "CPU",
+    "sockets": "soket",
+    "load": "Yük ortalaması",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Çekirdek",
+    "ips": "Adresler"
+  },
+  "charts": {
+    "title": "Grafikler",
+    "cpu": "CPU",
+    "load": "Yük ortalaması",
+    "memory": "Bellek",
+    "network": "Ağ",
+    "diskIo": "Disk G/Ç",
+    "cpuUsage": "CPU kullanımı",
+    "ioDelay": "G/Ç gecikmesi",
+    "used": "Kullanılan",
+    "total": "Toplam",
+    "in": "Gelen",
+    "out": "Giden",
+    "read": "Okuma",
+    "write": "Yazma",
+    "timeframe": {
+      "hour": "Saat",
+      "day": "Gün",
+      "week": "Hafta",
+      "month": "Ay",
+      "year": "Yıl"
+    },
+    "noData": "Bu dönem için veri yok",
+    "serverLoad": "Sunucu yükü",
+    "loadAverage": "Yük ortalaması",
+    "swap": "Takas",
+    "pressureCpu": "CPU baskı bekleme",
+    "pressureMemory": "Bellek baskı bekleme",
+    "pressureIo": "G/Ç baskı bekleme",
+    "some": "Bazı",
+    "full": "Tam",
+    "average": "Ortalama",
+    "maximum": "Maksimum"
+  },
+  "tasks": {
+    "title": "Görevler",
+    "started": "Başlangıç",
+    "node": "Düğüm",
+    "user": "Kullanıcı",
+    "task": "Görev",
+    "status": "Durum",
+    "running": "Çalışıyor",
+    "ok": "Tamam",
+    "logTitle": "{{node}} üzerinde {{type}} {{id}}",
+    "done": "{{label}}: tamamlandı",
+    "failed": "{{label}} başarısız: {{reason}}"
+  },
+  "guests": {
+    "more": "Diğer işlemler",
+    "isTemplate": "Şablon",
+    "locked": "Kilitli: {{lock}}",
+    "power": {
+      "start": "Başlat",
+      "shutdown": "Kapat",
+      "stop": "Durdur",
+      "reboot": "Yeniden başlat",
+      "suspend": "Askıya al",
+      "resume": "Sürdür",
+      "reset": "Sıfırla",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "{{name}} şimdi durdurulsun mu?",
+        "reset": "{{name}} şimdi sıfırlansın mı?",
+        "description": "Bu, fişi çekmek gibi gücü keser. Misafirde kaydedilmemiş çalışmalar kaybolur."
+      }
+    },
+    "clone": {
+      "menu": "Klonla",
+      "title": "{{name}} klonla",
+      "submit": "Klonla",
+      "label": "{{source}} öğesini {{id}} olarak klonla",
+      "full": "Tam klon",
+      "fullHint": "Her diski kopyalar, böylece klon orijinale bağlı kalmaz.",
+      "linkedHint": "Kapalıyken şablonun disklerini paylaşan ve saniyeler içinde oluşturulan bağlantılı bir klon yapar.",
+      "sameStorage": "Orijinalle aynı depolama"
+    },
+    "migrate": {
+      "menu": "Taşı",
+      "title": "{{name}} taşı",
+      "submit": "Taşı",
+      "label": "{{name}} öğesini {{target}} düğümüne taşı",
+      "noOtherNodes": "Bu kümede taşınabilecek başka çevrimiçi düğüm yok.",
+      "onlineHint": "VM çalışıyor ve durmadan canlı olarak taşınır.",
+      "restartHint": "Konteyner çalışıyor. Durur, taşınır ve hedefte yeniden başlar."
+    },
+    "template": {
+      "menu": "Şablona dönüştür",
+      "confirm": "{{name}} şablona dönüştürülsün mü?",
+      "description": "Şablon başlatılamaz, yalnızca klonlanabilir. Bu işlem geri alınamaz.",
+      "submit": "Dönüştür",
+      "label": "{{name}} öğesini şablona dönüştür"
+    },
+    "delete": {
+      "menu": "Sil",
+      "title": "{{name}} sil",
+      "submit": "Sil",
+      "label": "{{name}} sil",
+      "warning": "Bu, {{vmid}} misafirini ve disklerini siler. Geri alınamaz.",
+      "stopFirst": "Silmeden önce misafiri durdurun.",
+      "typeId": "Onaylamak için {{vmid}} yazın",
+      "purge": "Yedekleme işlerinden, çoğaltmadan ve HA'dan kaldır",
+      "purgeHint": "Artık olmayan bir misafiri gösteren iş bırakmaz.",
+      "unreferenced": "Başvurulmayan diskleri de sil",
+      "unreferencedHint": "Etkin depolamalarda bu ID'ye sahip olup yapılandırmada listelenmeyen diskler."
+    },
+    "create": {
+      "vmButton": "VM oluştur",
+      "ctButton": "CT oluştur",
+      "vmTitle": "Sanal makine oluştur",
+      "ctTitle": "Konteyner oluştur",
+      "submit": "Oluştur",
+      "vmLabel": "VM {{id}} ({{name}}) oluştur",
+      "ctLabel": "CT {{id}} ({{name}}) oluştur",
+      "noTemplates": "Bu düğümde konteyner şablonu yok. Proxmox'ta bir depolama altında, CT Şablonları'ndan bir tane indirin.",
+      "noIso": "Kurulum ortamı yok",
+      "unprivilegedHint": "Daha güvenli: konteynerdeki root, düğümde root değildir.",
+      "loginHint": "Bir root parolası, SSH anahtarları veya her ikisini ayarlayın.",
+      "problem": {
+        "vmid": "100 veya daha büyük bir ID seçin.",
+        "hostname": "Bir ana bilgisayar adı girin: harfler, rakamlar ve tireler.",
+        "name": "Bir ad girin: harfler, rakamlar ve tireler.",
+        "template": "Bir şablon seçin.",
+        "storage": "Bir depolama seçin.",
+        "disk": "Bir disk boyutu girin.",
+        "cores": "Çekirdek sayısını girin.",
+        "sockets": "Soket sayısını girin.",
+        "memory": "En az 16 MiB bellek girin.",
+        "swap": "Takası MiB olarak girin, yoksa 0.",
+        "network": "Bir köprü seçin ve statik adres için 192.168.0.60/24 gibi girin.",
+        "login": "Oturum açabilmek için bir root parolası veya SSH anahtarları ayarlayın.",
+        "password": "Parola en az 5 karakter olmalıdır."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Diğer"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Ad",
+      "hostname": "Ana bilgisayar adı",
+      "node": "Düğüm",
+      "targetNode": "Hedef düğüm",
+      "targetStorage": "Hedef depolama",
+      "storage": "Depolama",
+      "template": "Şablon",
+      "iso": "Kurulum ortamı",
+      "ostype": "Misafir işletim sistemi",
+      "rootPassword": "Root parolası",
+      "sshKeys": "SSH ortak anahtarları",
+      "unprivileged": "Ayrıcalıksız konteyner",
+      "diskGiB": "Disk (GiB)",
+      "cores": "Çekirdekler",
+      "sockets": "Soketler",
+      "memoryMiB": "Bellek (MiB)",
+      "swapMiB": "Takas (MiB)",
+      "bridge": "Ağ köprüsü",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Statik",
+      "cidr": "Adres/önek",
+      "gateway": "Ağ geçidi",
+      "startAfter": "Oluşturduktan sonra başlat",
+      "pick": "Birini seçin"
+    },
+    "tabs": {
+      "summary": "Özet",
+      "hardware": "Donanım",
+      "options": "Seçenekler",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Düzenle",
+    "add": "Ekle",
+    "remove": "Kaldır",
+    "removed": "{{key}} kaldırıldı",
+    "pending": "Beklemede",
+    "pendingHint": "Beklemede olarak işaretlenen değişiklikler misafir Proxmox'tan yeniden başlatıldığında uygulanır: misafirin içinden yeniden başlatmak yeterli değildir.",
+    "processors": "İşlemciler",
+    "processorsValue": "{{sockets}} soket × {{cores}} çekirdek, {{cpu}}",
+    "allCores": "Tümü",
+    "swap": "Takas",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "İşlemci ve bellek",
+      "title": "İşlemci ve bellek"
+    },
+    "cpuType": "CPU türü",
+    "cpulimit": "CPU sınırı",
+    "cpulimitHint": "Sınırsız için 0. 1.5, bir buçuk çekirdeklik süredir.",
+    "balloon": "En az bellek (MiB)",
+    "balloonHint": "Balon sürücüsüyle misafir belleği bu değere kadar geri verir. Bellekle eşit olması onu kapatır, 0 sürücüyü kaldırır.",
+    "disks": "Diskler",
+    "volumes": "Kök disk ve bağlama noktaları",
+    "bus": "Veri yolu",
+    "slot": "{{key}} olacak",
+    "iothread": "G/Ç iş parçacığı",
+    "discard": "Discard",
+    "discardHint": "Misafirin ince depolamada kullanılmayan blokları serbest bırakmasını sağlar.",
+    "ssd": "SSD öykünmesi",
+    "mountPath": "Konteynerdeki bağlama yolu",
+    "backup": "Yedeklere dahil et",
+    "addDisk": {
+      "button": "Disk ekle",
+      "title": "Disk ekle",
+      "label": "{{key}} ekle"
+    },
+    "addMount": {
+      "button": "Bağlama noktası ekle",
+      "title": "Bağlama noktası ekle"
+    },
+    "resize": {
+      "menu": "Yeniden boyutlandır",
+      "title": "{{key}} büyüt",
+      "grow": "Ekle (GiB)",
+      "result": "{{from}} GiB, {{to}} GiB olur",
+      "noShrink": "Diskler yalnızca büyüyebilir. Misafir bunu açılışta yapmıyorsa, misafirin bölümü ve dosya sistemi sonrasında misafirin içinden büyütülmelidir.",
+      "submit": "Büyüt",
+      "label": "{{key}} öğesini {{size}} GiB büyüt"
+    },
+    "move": {
+      "menu": "Depolamaya taşı",
+      "title": "{{key}} taşı",
+      "submit": "Taşı",
+      "deleteSource": "Orijinali sil",
+      "deleteSourceHint": "Kapalıyken kullanılmayan disk olarak tutar.",
+      "label": "{{key}} öğesini {{storage}} depolamasına taşı"
+    },
+    "detach": {
+      "menu": "Ayır",
+      "title": "{{key}} ayrılsın mı?",
+      "description": "Disk, depolamasında kullanılmayan disk olarak kalır; silinebilir veya yeniden bağlanabilir."
+    },
+    "unused": {
+      "delete": "Sil",
+      "title": "{{volume}} silinsin mi?",
+      "description": "Bu, diski ve üzerindeki her şeyi siler. Geri alınamaz."
+    },
+    "cd": {
+      "heading": "CD/DVD sürücüleri",
+      "title": "{{key}} içindeki ortam",
+      "empty": "Ortam yok"
+    },
+    "nic": {
+      "heading": "Ağ bağdaştırıcıları",
+      "add": "Bağdaştırıcı ekle",
+      "addTitle": "{{key}} ekle",
+      "editTitle": "{{key}} düzenle",
+      "none": "Ağ bağdaştırıcısı yok.",
+      "model": "Model",
+      "name": "Konteynerdeki ad",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Statik",
+        "none": "Yok",
+        "auto": "SLAAC"
+      },
+      "tag": "VLAN etiketi",
+      "tagHint": "Etiketsiz için boş.",
+      "rate": "Hız sınırı (MB/s)",
+      "rateHint": "Sınırsız için boş.",
+      "firewall": "Güvenlik duvarı",
+      "firewallShort": "güvenlik duvarı",
+      "removeTitle": "{{key}} kaldırılsın mı?",
+      "removeDescription": "Misafir bu bağdaştırıcıyı ve adresini kaybeder."
+    },
+    "problem": {
+      "cpu": "En az bir soket ve çekirdek girin.",
+      "cpulimit": "CPU sınırı 0 ile 8192 arasındadır.",
+      "memory": "En az 16 MiB bellek girin.",
+      "balloon": "En az bellek, bellekten fazla olamaz.",
+      "swap": "Takası MiB olarak girin, yoksa 0.",
+      "noSlot": "Bu türdeki tüm yuvalar dolu.",
+      "storage": "Bir depolama seçin.",
+      "size": "Tam GiB cinsinden bir boyut girin.",
+      "path": "/data gibi mutlak bir yol girin, / değil.",
+      "bridge": "Bir köprü seçin.",
+      "tag": "VLAN etiketi 1 ile 4094 arasındadır.",
+      "rate": "0'dan büyük bir hız girin veya boş bırakın.",
+      "name": "eth0 gibi bir ad girin.",
+      "ip4": "Adresi 192.168.0.60/24 gibi ve geçerli bir ağ geçidi girin.",
+      "ip6": "Adresi fd00::10/64 gibi girin."
+    },
+    "detached": "{{key}} ayrıldı; kullanılmayan disk olarak kalır",
+    "coresHint": "Boş bırakılırsa düğümün tüm çekirdekleri kullanılır."
+  },
+  "options": {
+    "general": "Genel",
+    "tags": "Etiketler",
+    "tagsHint": "Virgülle ayrılmış.",
+    "onboot": "Düğüm açılınca başlat",
+    "protection": "Koruma",
+    "protectionHint": "Kapatılana kadar misafirin ve disklerinin silinmesini engeller.",
+    "agent": "QEMU misafir aracısı",
+    "agentHint": "Aracı misafirde çalışınca açın; adresleri ve temiz kapatma için.",
+    "startup": "Başlatma ve kapatma sırası",
+    "startupOrder": "Sıra",
+    "startupUp": "Başlatma sonrası gecikme (sn)",
+    "startupDown": "Kapatma zaman aşımı (sn)",
+    "dns": "DNS",
+    "nameserver": "DNS sunucuları",
+    "searchdomain": "Arama etki alanı",
+    "useHost": "Boş bırakılırsa düğümünkü kullanılır.",
+    "notes": "Notlar",
+    "saved": "Seçenekler kaydedildi",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Diğer"
+    },
+    "problem": {
+      "name": "Bir ad girin.",
+      "startup": "Sıra ve gecikmeler tam sayıdır.",
+      "tags": "Etiketler harf, rakam, tire, nokta ve alt çizgi içerir.",
+      "nameserver": "Boşlukla ayrılmış IP adresleri girin."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "Bu VM'nin cloud-init sürücüsü yok. Bir tane ekleyin, ardından kullanıcıyı, anahtarları ve ağı burada ayarlayın; misafir imajı cloud-init'i desteklemelidir.",
+    "addDrive": "Cloud-init sürücüsü ekle",
+    "driveAdded": "Cloud-init sürücüsü eklendi",
+    "user": "Kullanıcı",
+    "username": "Kullanıcı adı",
+    "usernameHint": "Boş bırakılırsa imajın varsayılan kullanıcısı kullanılır.",
+    "password": "Parola",
+    "passwordHint": "Boş bırakılırsa mevcut parola korunur. Proxmox tarafından karma olarak saklanır.",
+    "network": "Ağ",
+    "saved": "Cloud-init ayarları kaydedildi",
+    "regenerate": "İmajı yeniden oluştur",
+    "regenerated": "Cloud-init imajı yeniden oluşturuldu",
+    "regenerateHint": "Ayarları {{drive}} sürücüsüne yazar. Misafir bunları bir sonraki açılışta okur."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Özet",
+      "iso": "ISO imajları",
+      "vztmpl": "CT şablonları",
+      "backup": "Yedekler",
+      "images": "Disk imajları"
+    },
+    "content": "İçerik",
+    "contentTypes": {
+      "images": "VM diskleri",
+      "rootdir": "Konteyner diskleri",
+      "iso": "ISO imajları",
+      "vztmpl": "CT şablonları",
+      "backup": "Yedekler",
+      "snippets": "Parçacıklar",
+      "import": "İçe aktarma"
+    },
+    "shared": "Paylaşımlı",
+    "empty": "Henüz burada bir şey yok.",
+    "owner": "misafir {{vmid}}",
+    "protected": "Korumalı",
+    "download": {
+      "button": "URL'den indir",
+      "title": {
+        "iso": "{{storage}} depolamasına ISO imajı indir",
+        "vztmpl": "{{storage}} depolamasına CT şablonu indir"
+      },
+      "url": "URL",
+      "filename": "Dosya adı",
+      "algorithm": "Sağlama toplamı türü",
+      "noChecksum": "Yok",
+      "checksum": "Sağlama toplamı",
+      "verify": "Sunucunun sertifikasını denetle",
+      "submit": "İndir",
+      "label": "{{name}} indir",
+      "problem": {
+        "url": "Bir http veya https URL girin.",
+        "filename": "Dosya adı harf, rakam, nokta, tire ve alt çizgi içerir.",
+        "extension": "ISO imajları .iso veya .img ile; şablonlar .tar.gz, .tar.xz veya .tar.zst ile biter.",
+        "checksum": "Bir sağlama toplamı türü seçip sağlama toplamını hex olarak girin veya ikisini de boş bırakın."
+      }
+    },
+    "catalog": {
+      "button": "Şablonlar",
+      "title": "{{storage}} için konteyner şablonları",
+      "search": "Şablon ara...",
+      "have": "İndirildi",
+      "label": "{{name}} indir"
+    },
+    "delete": {
+      "title": "{{name}} silinsin mi?",
+      "description": "Bu, dosyayı depolamadan siler. Geri alınamaz.",
+      "submit": "Sil",
+      "done": "{{name}} silindi"
+    },
+    "upload": {
+      "button": "Yükle",
+      "cancel": "Yüklemeyi iptal et",
+      "done": "{{name}} yüklendi",
+      "failed": "{{name}} yüklenemedi: {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Özet",
+      "network": "Ağ",
+      "system": "Sistem",
+      "services": "Hizmetler",
+      "updates": "Güncellemeler",
+      "disks": "Diskler",
+      "tasks": "Görevler",
+      "log": "Günlük"
+    },
+    "services": {
+      "start": "Başlat",
+      "stop": "Durdur",
+      "restart": "Yeniden başlat",
+      "reload": "Yeniden yükle",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "{{name}} durdurulsun mu?",
+        "restart": "{{name}} yeniden başlatılsın mı?",
+        "description": "Proxmox'un kendi hizmetleri düğümü ve API'sini çalışır tutar; birini durdurmak, yeniden başlayana kadar bu aracın bağlantısını kesebilir."
+      }
+    },
+    "updates": {
+      "refresh": "Paket listelerini yenile",
+      "refreshLabel": "{{node}} üzerinde paket listelerini yenile",
+      "count_one": "{{count}} paket yükseltilebilir",
+      "count_other": "{{count}} paket yükseltilebilir",
+      "none": "Her şey güncel",
+      "installHint": "Yükseltmeleri düğümün terminalinden apt full-upgrade ile kurun; Proxmox API'si üzerinden yükseltme yapmaz.",
+      "views": {
+        "packages": "Paketler",
+        "repositories": "Depolar"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "{{disk}} için SMART",
+      "health": "Sağlık",
+      "usedBy": "{{used}} tarafından kullanılıyor",
+      "unused": "kullanılmıyor",
+      "wearout": "%{{value}} ömür kaldı",
+      "views": {
+        "disks": "Diskler",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Dizin",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "{{count}} mantıksal birim",
+        "lvCount_other": "{{count}} mantıksal birim",
+        "metadata": "meta veri {{used}} / {{size}}",
+        "frag": "%{{value}} parçalanmış",
+        "dedup": "tekilleştirme {{value}}x",
+        "none": {
+          "lvm": "LVM birim grubu yok.",
+          "lvmthin": "LVM-Thin havuzu yok.",
+          "directory": "Kendine ait bir diskte dizin depolaması yok.",
+          "zfs": "ZFS havuzu yok."
+        },
+        "create": {
+          "lvm": "LVM birim grubu oluştur",
+          "lvmthin": "LVM-Thin havuzu oluştur",
+          "directory": "Dizin oluştur",
+          "zfs": "ZFS havuzu oluştur"
+        },
+        "createSubmit": "Oluştur",
+        "createLabel": "{{node}} üzerinde {{name}} oluştur",
+        "wipeWarning": "Seçilen diskler bölümlenir ve biçimlendirilir. Yalnızca üzerinde hiçbir şey olmayan diskler sunulur.",
+        "name": "Ad",
+        "device": "Disk",
+        "devices": "Diskler",
+        "pickDisk": "Bir disk seçin",
+        "noUnused": "Kullanılmayan disk yok. Üzerindekiler gidebilirse önce Diskler altında birini silin.",
+        "filesystem": "Dosya sistemi",
+        "raidlevel": "RAID seviyesi",
+        "raid": {
+          "single": "Tek disk",
+          "mirror": "Ayna",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Sıkıştırma",
+        "addStorage": "Depolama olarak ekle",
+        "addStorageHint": "Diskler, konteynerler veya yedekler için aynı adda bir Proxmox depolaması yapar.",
+        "problem": {
+          "name": "Ad bir harfle başlar ve harf, rakam, -, _ veya . içerir",
+          "device": "Bir disk seçin.",
+          "oneDevice": "Tek bir disk seçin.",
+          "tooFew": "Bu RAID seviyesi en az {{count}} disk gerektirir.",
+          "even": "RAID10 çift sayıda disk gerektirir.",
+          "ashift": "ashift 9 ile 16 arasındadır."
+        },
+        "remove": "Kaldır",
+        "removeTitle": "{{name}} kaldırılsın mı?",
+        "removeWarning": "Üzerinde diski olan misafirler bu diskleri kaybeder. Kaldırma işlemi önce hiçbir şeyi taşımaz.",
+        "removeLabel": "{{node}} üzerindeki {{name}} öğesini kaldır",
+        "cleanupConfig": "Depolama girdisini de kaldır",
+        "cleanupDisks": "Disklerini sil",
+        "cleanupDisksHint": "Diskleri yeniden kullanılabilmeleri için siler.",
+        "inUse": {
+          "lvm": "Hâlâ mantıksal birimleri var. Önce onları kaldırın; bu grup düğümün kendi sistemini barındırıyor olabilir.",
+          "lvmthin": "Hâlâ veri barındırıyor. Önce üzerindeki misafir disklerini taşıyın veya kaldırın."
+        }
+      },
+      "gpt": "GPT ile başlat",
+      "gptTitle": "{{disk}} GPT ile başlatılsın mı?",
+      "gptDescription": "Diske boş bir GPT bölüm tablosu yazar.",
+      "gptLabel": "{{node}} üzerinde {{disk}} başlat",
+      "wipe": "Sil",
+      "wipeTitle": "{{disk}} silinsin mi?",
+      "wipeWarning": "Diskteki bölüm tablosunu ve tüm dosya sistemi, LVM ve ZFS imzalarını siler (şu an: {{used}}). Üzerindekiler kalıcı olarak gider.",
+      "wipeLabel": "{{node}} üzerinde {{disk}} sil",
+      "typePath": "Onaylamak için {{disk}} yazın"
+    },
+    "log": {
+      "search": "Günlüğü filtrele...",
+      "empty": "Eşleşen satır yok."
+    },
+    "power": {
+      "menu": "Düğüm gücü",
+      "termixWarning": "Termix bu düğümde çalışıyorsa, düğüm geri gelene kadar o da kapanır.",
+      "typeName": "Onaylamak için {{node}} yazın",
+      "reboot": {
+        "menu": "Düğümü yeniden başlat",
+        "title": "{{node}} yeniden başlatılsın mı?",
+        "submit": "Yeniden başlat",
+        "label": "{{node}} yeniden başlat",
+        "warning_one": "Çalışan {{count}} misafir, başlatma ayarlarına göre önce durur veya kapanır.",
+        "warning_other": "Çalışan {{count}} misafir, başlatma ayarlarına göre önce durur veya kapanır."
+      },
+      "shutdown": {
+        "menu": "Düğümü kapat",
+        "title": "{{node}} kapatılsın mı?",
+        "submit": "Kapat",
+        "label": "{{node}} kapat",
+        "warning_one": "Çalışan {{count}} misafir de onunla birlikte kapanır ve biri düğümü açana kadar hiçbir şey onu yeniden başlatmaz.",
+        "warning_other": "Çalışan {{count}} misafir de onunla birlikte kapanır ve biri düğümü açana kadar hiçbir şey onları yeniden başlatmaz."
+      }
+    },
+    "shell": "Kabuk",
+    "shellHint": "Bu ana bilgisayarın SSH terminalini Termix'te açar.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Arama etki alanı",
+        "server": "DNS sunucusu {{n}}",
+        "editTitle": "{{node}} DNS ayarları",
+        "saved": "DNS kaydedildi",
+        "problem": {
+          "search": "example.com gibi bir arama etki alanı girin.",
+          "server": "DNS sunucusu bir IPv4 veya IPv6 adresidir.",
+          "noServer": "En az bir DNS sunucusu girin."
+        }
+      },
+      "time": {
+        "title": "Saat",
+        "zone": "Saat dilimi",
+        "local": "Yerel saat",
+        "editTitle": "{{node}} saat dilimi",
+        "hint": "Saatin kendisi düğümde NTP (chrony) tarafından tutulur.",
+        "saved": "Saat dilimi {{zone}} olarak ayarlandı"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "{{node}} /etc/hosts dosyası",
+        "warning": "Düğümün kendi adı adresine çözülmeye devam etmelidir; aksi halde küme ve web arayüzü çalışmayı durdurur.",
+        "saved": "/etc/hosts kaydedildi"
+      },
+      "certs": {
+        "title": "Sertifikalar",
+        "issuer": "veren: {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "{{date}} tarihine kadar geçerli",
+          "expiring": "{{date}} tarihinde sona eriyor",
+          "expired": "{{date}} tarihinde sona erdi",
+          "notYet": "Henüz geçerli değil"
+        },
+        "upload": "Özel yükle",
+        "uploadTitle": "{{node}} için özel sertifika",
+        "uploaded": "Sertifika yüklendi",
+        "chain": "Sertifika zinciri",
+        "chainHint": "PEM: önce düğümün sertifikası, ardından ara sertifikalar.",
+        "key": "Özel anahtar",
+        "keyHint": "PEM, şifresiz. Düğümdeki mevcut anahtarı korumak için boş bırakın.",
+        "fromFile": "Dosyadan oku",
+        "badCert": "Bu bir PEM sertifikası değil.",
+        "badKey": "Bu bir PEM özel anahtarı değil.",
+        "restart": "Kullanmak için web arayüzünü yeniden başlat",
+        "restartHint": "pveproxy yeniden başlar; Termix birkaç saniye API'ye erişemez.",
+        "remove": "Özeli kaldır",
+        "removeTitle": "Özel sertifika kaldırılsın mı?",
+        "removeDescription": "Düğüm kendinden imzalı sertifikasına döner ve web arayüzü yeniden başlar.",
+        "removed": "Özel sertifika kaldırıldı"
+      }
+    },
+    "repos": {
+      "on": "Etkin",
+      "off": "Devre dışı",
+      "enable": "Etkinleştir",
+      "disable": "Devre dışı bırak",
+      "enableTitle": "Bu depo etkinleştirilsin mi?",
+      "enabled": "Depo etkinleştirildi",
+      "disabled": "Depo devre dışı bırakıldı",
+      "add": "Ekle:",
+      "added": "{{name}} deposu eklendi",
+      "hint": "Bir değişiklikten sonra Paketler altında Paket listelerini yenile'yi çalıştırın. Enterprise depoları abonelik gerektirir."
+    },
+    "taskHistory": {
+      "type": "Tür, ör. vzdump",
+      "vmid": "VM/CT ID",
+      "user": "Kullanıcı",
+      "errorsOnly": "Yalnızca başarısız görevler",
+      "none": "Eşleşen görev yok.",
+      "more": "Daha fazla yükle",
+      "state": {
+        "running": "Çalışıyor",
+        "ok": "Tamam"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Sertifika sipariş et",
+      "renew": "Yenile",
+      "orderLabel": "{{node}} için ACME sertifikası sipariş et",
+      "renewLabel": "{{node}} için ACME sertifikasını yenile",
+      "usesAccount": "Hesap: {{account}}",
+      "none": "yok",
+      "noDomains": "Henüz etki alanı yok. Bu düğümün yanıt verdiği adları eklemek için düzenleyin.",
+      "viaHttp": "HTTP sınaması",
+      "viaDns": "{{plugin}} üzerinden DNS sınaması",
+      "accounts": "Hesaplar",
+      "plugins": "DNS sınama eklentileri",
+      "remove": "Kaldır",
+      "domainsTitle": "{{node}} ACME etki alanları",
+      "domainsSaved": "ACME etki alanları kaydedildi",
+      "domain": "Etki alanı",
+      "challenge": "Sınama",
+      "alias": "Takma ad",
+      "addDomain": "Etki alanı ekle",
+      "httpHint": "HTTP sınaması, bu düğümün 80 numaralı bağlantı noktasının etki alanı altında internetten erişilebilir olmasını gerektirir. DNS bu olmadan ve joker karakterler için de çalışır.",
+      "hint": "Hesaplar ve eklentiler tüm kümede paylaşılır; etki alanları düğüme özeldir.",
+      "problem": {
+        "noDomain": "En az bir etki alanı ekleyin.",
+        "tooMany": "Bir düğümün en fazla altı ACME etki alanı olabilir.",
+        "domain": "Etki alanı, pve.example.com gibi tam bir addır.",
+        "wildcard": "Joker karakterli etki alanı bir DNS sınama eklentisi gerektirir."
+      },
+      "account": {
+        "title": "Hesap",
+        "pick": "Bir hesap seçin",
+        "add": "Hesap kaydet",
+        "addTitle": "ACME hesabı kaydet",
+        "register": "Kaydet",
+        "registerLabel": "{{name}} ACME hesabını kaydet",
+        "name": "Ad",
+        "email": "E-posta",
+        "directory": "ACME dizini",
+        "customDirectory": "Özel URL",
+        "directoryUrl": "Dizin URL'si",
+        "acceptTos": "Hizmet koşullarını kabul et",
+        "eabKid": "EAB anahtar kimliği",
+        "eabHmac": "EAB HMAC anahtarı",
+        "eabHint": "Yalnızca External Account Binding isteyen CA'lar için.",
+        "none": "Henüz ACME hesabı yok.",
+        "needOne": "Önce bir ACME hesabı kaydedin.",
+        "removeTitle": "{{name}} hesabı devre dışı bırakılsın mı?",
+        "removeDescription": "Hesap CA'da devre dışı bırakılır ve buradan kaldırılır. Önceden verilmiş sertifikalar çalışmaya devam eder.",
+        "removeLabel": "{{name}} ACME hesabını devre dışı bırak",
+        "problem": {
+          "name": "Ad harf, rakam, -, _ veya . içerir",
+          "email": "Bir e-posta adresi girin.",
+          "directory": "Dizin bir http veya https URL'sidir.",
+          "tos": "Kaydolmak için hizmet koşullarını kabul edin.",
+          "eab": "EAB hem anahtar kimliğini hem de HMAC anahtarını gerektirir."
+        }
+      },
+      "plugin": {
+        "add": "Eklenti ekle",
+        "addTitle": "DNS sınama eklentisi ekle",
+        "id": "Eklenti kimliği",
+        "api": "DNS API",
+        "pickApi": "Bir DNS sağlayıcısı seçin",
+        "delay": "Doğrulama gecikmesi (sn)",
+        "delayHint": "TXT kaydının yayılması için ne kadar bekleneceği.",
+        "noFields": "Proxmox bu sağlayıcı için alan listelemiyor; okuduğu değişkenler için acme.sh belgelerine bakın.",
+        "none": "DNS eklentisi yok. HTTP eklentisiz çalışır.",
+        "disabled": "Devre dışı",
+        "removeTitle": "{{name}} eklentisi kaldırılsın mı?",
+        "removeDescription": "Onu kullanan etki alanları artık doğrulanamaz."
+      }
+    }
+  },
+  "console": {
+    "open": "Konsol",
+    "openHint": "Misafirin Termix ana bilgisayarını açar veya önce onu Termix'e eklemeyi önerir.",
+    "tabTitle": "Proxmox konsolu",
+    "tabLabel": "{{name}} — Konsol",
+    "pick": "Proxmox aracında çalışan bir VM veya konteynerden konsol açın.",
+    "connect": "Bağlan",
+    "reconnect": "Yeniden bağlan",
+    "disconnect": "Bağlantıyı kes",
+    "ctrlAltDel": "Ctrl+Alt+Del",
+    "fullscreen": "Tam ekran",
+    "notRunning": "Konsolunu açmak için misafiri başlatın.",
+    "lost": "Konsol bağlantısı koptu.",
+    "ended": "Konsol kapatıldı.",
+    "status": {
+      "idle": "Bağlı değil",
+      "connecting": "Bağlanıyor...",
+      "connected": "Bağlandı",
+      "closed": "Bağlantı kesildi",
+      "error": "Bağlanılamadı"
+    },
+    "proxmox": "Proxmox konsolu",
+    "proxmoxHint": "Düğüm üzerinden Proxmox'un kendi konsolu: bir VM'nin ekranı, bir konteynerde kabuk. Henüz ağı olmayan misafirler için."
+  },
+  "pool": {
+    "members": "Üyeler",
+    "empty": "Bu havuzda hiçbir şey yok."
+  },
+  "sdn": {
+    "hint": "SDN bölgeleri, VNet'ler ve alt ağlar sonraki bir sürümde küme yönetimiyle gelecek."
+  },
+  "network": {
+    "add": "Oluştur",
+    "apply": "Uygula",
+    "revert": "Geri al",
+    "pending": "Henüz uygulanmadı",
+    "hint": "Değişiklikler /etc/network/interfaces.new dosyasına kaydedilir ve düğümün ağını yeniden yükleyen Uygula ile etkinleşir.",
+    "type": "Tür",
+    "name": "Ad",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Ağ geçidi (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Ağ geçidi (IPv6)",
+    "ports": "Köprü bağlantı noktaları",
+    "slaves": "Bağımlılar",
+    "portsHint": "Boşlukla ayrılmış arayüz adları.",
+    "bondMode": "Mod",
+    "vlanDevice": "VLAN ham aygıtı",
+    "mtu": "MTU",
+    "comments": "Yorum",
+    "autostart": "Otomatik başlat",
+    "vlanAware": "VLAN farkında",
+    "vlanAwareHint": "Bu köprüdeki misafirlerin VLAN etiketleri kullanmasını sağlar.",
+    "inactive": "Etkin değil",
+    "create": "Oluştur",
+    "createTitle": "Arayüz oluştur",
+    "editTitle": "{{iface}} düzenle",
+    "types": {
+      "bridge": "Köprü",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Bağlantı noktası",
+      "OVSBridge": "OVS köprüsü",
+      "alias": "Takma ad"
+    },
+    "nameHint": {
+      "bridge": "vmbr ve ardından bir sayı, ör. vmbr1.",
+      "bond": "bond ve ardından bir sayı, ör. bond0.",
+      "vlan": "vmbr0.10 gibi aygıt.etiket veya ham aygıtla vlan10."
+    },
+    "addressWarning": "Bu arayüz, Termix'in düğüme ulaştığı adresi taşıyor. Bir hata, biri düğümü konsolundan düzeltene kadar Termix'in bağlantısını kesebilir.",
+    "removeTitle": "{{iface}} kaldırılsın mı?",
+    "removeDescription": "Arayüz, değişiklik uygulandığında kaldırılır.",
+    "applyTitle": "{{node}} üzerinde ağ değişiklikleri uygulansın mı?",
+    "applyDescription": "Düğüm ağını yeniden yükler. Yeni ayarlar yanlışsa düğüm ve Termix'in ona bağlantısı çevrimdışı olabilir.",
+    "applyLabel": "{{node}} üzerinde ağı uygula",
+    "reverted": "Ağ değişiklikleri geri alındı",
+    "problem": {
+      "cidr": "Adresi 10.10.0.1/24 gibi girin.",
+      "gateway": "Ağ geçidi bir IPv4 adresi ve geçerli bir ağ geçidi IP'si gerektirir.",
+      "cidr6": "Adresi fd00::1/64 gibi girin.",
+      "ports": "Boşlukla ayrılmış arayüz adları girin.",
+      "slaves": "Bond en az bir bağımlı gerektirir.",
+      "vlanDevice": "vlanN arayüzü için ham aygıtı adlandırın.",
+      "mtu": "MTU 1280 ile 65520 arasındadır.",
+      "name": {
+        "bridge": "Köprü, vmbr ve bir sayı ile adlandırılır.",
+        "bond": "Bond, bond ve bir sayı ile adlandırılır.",
+        "vlan": "VLAN, aygıt.etiket veya vlan ve bir sayı ile adlandırılır."
+      }
+    }
+  },
+  "import": {
+    "open": "Termix'e aktar",
+    "title": "Misafirleri Termix ana bilgisayarı olarak içe aktar",
+    "hint": "Seçilen her VM veya konteyner, proxmox etiketli bir Termix ana bilgisayarı olur. İçe aktarma ayrıca önceden aktarılan misafirlerin adlarını, adreslerini ve etiketlerini yeniler; Proxmox'tan kaybolanları proxmox-missing olarak etiketler.",
+    "loading": "Misafirler ve adresleri aranıyor…",
+    "counts": "{{total}} misafir, {{imported}} tanesi zaten aktarıldı",
+    "selectAll": "Tümünü seç",
+    "selectNone": "Hiçbirini seçme",
+    "none": "Bu kümede VM veya konteyner yok.",
+    "imported": "Aktarıldı",
+    "noAddress": "adres yok",
+    "folder": "Klasör",
+    "folderDefault": "{{node}} adlı klasör",
+    "folderSearch": "Ara veya oluştur, alt klasör için /",
+    "folderCreate": "\"{{folder}}\" oluştur",
+    "folderNone": "Henüz klasör yok",
+    "connection": "Bağlantı türü",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Konteyner çalışma zamanı",
+    "runtimeOff": "Docker yok",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "Bilinmeyen işletim sistemi"
+    },
+    "sshLogin": "SSH oturum açma",
+    "desktopLogin": "RDP ve VNC oturum açma",
+    "desktopHint": "Bağlanmak için Uzak Masaüstü eklentisi gerekir.",
+    "login": {
+      "nodeCredential": "Düğümün kimlik bilgisi",
+      "nodeUser": "Düğümün kullanıcı adı",
+      "username": "Yalnızca kullanıcı adı",
+      "none": "Oturum açma yok"
+    },
+    "username": "Kullanıcı adı",
+    "submit_one": "{{count}} misafiri içe aktar",
+    "submit_other": "{{count}} misafiri içe aktar",
+    "refresh": "Aktarılanları yenile",
+    "done": "Oluşturulan {{created}}, güncellenen {{updated}}, eksik olarak işaretlenen {{markedMissing}}",
+    "lastSync": "Son eşitleme {{when}}.",
+    "lastSyncFailed": "{{when}} tarihli son eşitleme başarısız: {{error}}",
+    "syncHint": "Düzenli olarak yenilemek için ana bilgisayarın Proxmox ayarlarında İçe aktarılan misafirleri eşitle seçeneğini açın.",
+    "addTitle": "{{name}} öğesini Termix'e ekle",
+    "addHint": "Bu misafir henüz bir Termix ana bilgisayarı değil. Terminalini açmak için ekleyin; ardından Konsol onu hemen açar.",
+    "addSubmit": "Ekle ve bağlan",
+    "gone": "Proxmox artık bu misafiri listelemiyor."
+  }
+}

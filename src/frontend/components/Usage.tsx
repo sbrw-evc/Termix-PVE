@@ -12,7 +12,9 @@ export function Usage({
   return (
     <div className="flex flex-col gap-1 border border-border p-2.5">
       <div className="flex items-baseline justify-between text-xs">
-        <span className="text-muted-foreground">{label}</span>
+        <span className="shrink-0 whitespace-nowrap text-muted-foreground">
+          {label}
+        </span>
         <span className="font-medium tabular-nums">
           {value === null ? "-" : `${value.toFixed(1)}%`}
         </span>
@@ -39,7 +41,9 @@ export function Fact({
 }) {
   return (
     <div className="flex justify-between gap-4 border-b border-border/60 py-1.5 text-xs">
-      <span className="text-muted-foreground">{label}</span>
+      <span className="shrink-0 whitespace-nowrap text-muted-foreground">
+        {label}
+      </span>
       <span className="min-w-0 truncate text-right">{children}</span>
     </div>
   );

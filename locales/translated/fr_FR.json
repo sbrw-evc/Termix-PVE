@@ -1,0 +1,1030 @@
+{
+  "plugin": {
+    "name": "Proxmox VE",
+    "description": "Gérez Proxmox VE depuis Termix : machines virtuelles, conteneurs, stockage, réseau, sauvegardes, pare-feu, accès et cluster."
+  },
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Ouvrir dans Proxmox"
+  },
+  "permissions": {
+    "view": {
+      "title": "Voir Proxmox",
+      "description": "Voir les nœuds, invités, stockages, graphiques et tâches des hôtes Proxmox auxquels vous pouvez vous connecter."
+    },
+    "operate": {
+      "title": "Piloter les invités Proxmox",
+      "description": "Démarrer, arrêter, éteindre, redémarrer, suspendre et reprendre des VM et des conteneurs. Nécessite le droit de modifier l'hôte."
+    },
+    "console": {
+      "title": "Ouvrir les consoles Proxmox",
+      "description": "Ouvrir l'écran d'une VM et un shell root dans un conteneur. Nécessite le droit de modifier l'hôte."
+    },
+    "configure": {
+      "title": "Configurer Proxmox",
+      "description": "Créer, cloner, migrer, convertir et supprimer des VM et des conteneurs. Nécessite le droit de modifier l'hôte."
+    },
+    "administer": {
+      "title": "Administrer Proxmox",
+      "description": "Gérer les utilisateurs, groupes, rôles, pools, 2FA, jetons, domaines et le cluster. Nécessite le droit de modifier l'hôte."
+    }
+  },
+  "settings": {
+    "enable": {
+      "label": "Nœud Proxmox",
+      "description": "Marque cet hôte comme nœud Proxmox VE. Il apparaît alors dans l'outil Proxmox sous Outils."
+    },
+    "transport": {
+      "label": "Se connecter via",
+      "description": "Le mode automatique utilise l'API via un tunnel SSH une fois un jeton enregistré, et pvesh via SSH en attendant.",
+      "auto": "Automatique",
+      "tunnel": "API via tunnel SSH",
+      "direct": "API en direct",
+      "pvesh": "pvesh via SSH"
+    },
+    "tokenId": {
+      "label": "ID du jeton API",
+      "description": "Créé dans Proxmox sous Centre de données, Permissions, Jetons API. Ressemble à user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "Secret du jeton API",
+      "description": "Affiché une seule fois à la création du jeton. Stocké chiffré."
+    },
+    "apiHost": {
+      "label": "Adresse de l'API",
+      "description": "Uniquement pour l'API en direct. Laissez vide pour utiliser l'adresse de cet hôte."
+    },
+    "apiPort": {
+      "label": "Port de l'API",
+      "description": "8006, sauf si vous l'avez modifié."
+    },
+    "caCert": {
+      "label": "Certificat de la CA",
+      "description": "Uniquement pour l'API en direct. La CA du nœud au format PEM, depuis /etc/pve/pve-root-ca.pem. Laissez vide si l'API a un certificat reconnu publiquement.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    },
+    "importGroup": "Invités importés",
+    "importSync": {
+      "label": "Garder les invités importés synchronisés",
+      "description": "Met à jour les noms, adresses et tags des invités importés depuis ce nœud, et marque ceux supprimés de Proxmox avec le tag proxmox-missing."
+    },
+    "importInterval": {
+      "label": "Synchroniser toutes les (minutes)",
+      "description": "Au moins 5 minutes."
+    },
+    "importAddNew": {
+      "label": "Ajouter les nouveaux invités à la synchronisation",
+      "description": "Importe les invités créés dans Proxmox après le premier import, avec les derniers paramètres utilisés dans la boîte de dialogue d'import."
+    },
+    "importDefaults": {
+      "label": "Paramètres d'import par défaut"
+    },
+    "importState": {
+      "label": "Dernière synchronisation des invités"
+    },
+    "source": {
+      "label": "Invité Proxmox"
+    }
+  },
+  "app": {
+    "loading": "Chargement...",
+    "loadFailed": "Impossible de charger le cluster",
+    "refreshFailed": "Échec de l'actualisation : {{message}}",
+    "retry": "Réessayer",
+    "refresh": "Actualiser",
+    "search": "Rechercher des invités, nœuds et stockages...",
+    "status": "{{nodes}} nœuds, {{running}} invités sur {{total}} en cours d'exécution",
+    "pickHost": "Hôte Proxmox",
+    "pickResource": "Choisissez un nœud, un invité ou un stockage à gauche",
+    "noHosts": "Aucun hôte Proxmox pour l'instant",
+    "noHostsHint": "Ouvrez les paramètres d'un hôte, activez Nœud Proxmox sous SSH et choisissez le mode de connexion. Le nœud apparaît alors ici.",
+    "cancel": "Annuler",
+    "working": "En cours...",
+    "save": "Enregistrer",
+    "reset": "Réinitialiser",
+    "close": "Fermer",
+    "yes": "Oui",
+    "no": "Non",
+    "edit": "Modifier"
+  },
+  "errors": {
+    "tlsUntrusted": "Termix ne fait pas confiance au certificat du nœud. Dans les paramètres Proxmox de l'hôte, collez la CA du nœud depuis /etc/pve/pve-root-ca.pem dans Certificat de la CA, ou choisissez API via tunnel SSH.",
+    "tlsHostname": "Le certificat du nœud est émis pour un autre nom. Définissez l'adresse de l'API sur un nom ou une adresse figurant dans le certificat.",
+    "tlsExpired": "Le certificat du nœud a expiré ou n'est pas encore valide. Renouvelez-le dans Proxmox sous le nœud, Système, Certificats.",
+    "notEnabled": "Cet hôte n'est pas marqué comme nœud Proxmox. Activez Nœud Proxmox dans les paramètres de l'hôte.",
+    "hostAccess": "Vous devez avoir le droit de modifier cet hôte pour le changer."
+  },
+  "tree": {
+    "nothingFound": "Aucun résultat pour cette recherche.",
+    "expand": "Développer",
+    "collapse": "Réduire",
+    "datacenter": "Centre de données",
+    "folders": {
+      "lxc": "Conteneur LXC",
+      "qemu": "Machine virtuelle",
+      "node": "Nœuds",
+      "pool": "Pools",
+      "sdn": "Réseau",
+      "storage": "Stockage"
+    },
+    "views": {
+      "folder": "Vue par dossiers",
+      "server": "Vue serveur"
+    }
+  },
+  "types": {
+    "node": "Nœud",
+    "qemu": "VM",
+    "lxc": "Conteneur",
+    "storage": "Stockage",
+    "pool": "Pool",
+    "sdn": "Zone SDN"
+  },
+  "states": {
+    "running": "En cours d'exécution",
+    "stopped": "Arrêté",
+    "paused": "En pause",
+    "suspended": "Suspendu",
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "available": "Disponible",
+    "unknown": "Inconnu"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Mémoire",
+    "disk": "Disque",
+    "rootDisk": "Disque racine",
+    "usage": "Utilisation",
+    "cores_one": "{{count}} cœur",
+    "cores_many": "{{count}} cœurs",
+    "cores_other": "{{count}} cœurs",
+    "swap": "Swap"
+  },
+  "summary": {
+    "title": "Résumé",
+    "node": "Nœud",
+    "vmid": "ID",
+    "uptime": "Temps de fonctionnement",
+    "pool": "Pool",
+    "ha": "HA",
+    "tags": "Tags",
+    "guests": "Invités",
+    "guestsRunning": "{{running}} sur {{total}} en cours d'exécution",
+    "cpuModel": "CPU",
+    "sockets": "sockets",
+    "load": "Charge moyenne",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Noyau",
+    "ips": "Adresses"
+  },
+  "charts": {
+    "title": "Graphiques",
+    "cpu": "CPU",
+    "load": "Charge moyenne",
+    "memory": "Mémoire",
+    "network": "Réseau",
+    "diskIo": "E/S disque",
+    "cpuUsage": "Utilisation CPU",
+    "ioDelay": "Délai E/S",
+    "used": "Utilisé",
+    "total": "Total",
+    "in": "Entrant",
+    "out": "Sortant",
+    "read": "Lecture",
+    "write": "Écriture",
+    "timeframe": {
+      "hour": "Heure",
+      "day": "Jour",
+      "week": "Semaine",
+      "month": "Mois",
+      "year": "Année"
+    },
+    "noData": "Aucune donnée pour cette période",
+    "serverLoad": "Charge du serveur",
+    "loadAverage": "Charge moyenne",
+    "swap": "Swap",
+    "pressureCpu": "Blocage par pression CPU",
+    "pressureMemory": "Blocage par pression mémoire",
+    "pressureIo": "Blocage par pression E/S",
+    "some": "Partiel",
+    "full": "Complet",
+    "average": "Moyenne",
+    "maximum": "Maximum"
+  },
+  "tasks": {
+    "title": "Tâches",
+    "started": "Démarrée",
+    "node": "Nœud",
+    "user": "Utilisateur",
+    "task": "Tâche",
+    "status": "Statut",
+    "running": "En cours",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} sur {{node}}",
+    "done": "{{label}} : terminé",
+    "failed": "{{label}} a échoué : {{reason}}"
+  },
+  "guests": {
+    "more": "Plus d'actions",
+    "isTemplate": "Modèle",
+    "locked": "Verrouillé : {{lock}}",
+    "power": {
+      "start": "Démarrer",
+      "shutdown": "Éteindre",
+      "stop": "Arrêter",
+      "reboot": "Redémarrer",
+      "suspend": "Suspendre",
+      "resume": "Reprendre",
+      "reset": "Réinitialiser",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Arrêter {{name}} maintenant ?",
+        "reset": "Réinitialiser {{name}} maintenant ?",
+        "description": "Cela coupe l'alimentation comme si on débranchait la prise. Le travail non enregistré dans l'invité est perdu."
+      }
+    },
+    "clone": {
+      "menu": "Cloner",
+      "title": "Cloner {{name}}",
+      "submit": "Cloner",
+      "label": "Cloner {{source}} vers {{id}}",
+      "full": "Clone complet",
+      "fullHint": "Copie chaque disque, le clone ne dépend donc pas de l'original.",
+      "linkedHint": "Désactivé, crée un clone lié qui partage les disques du modèle et se crée en quelques secondes.",
+      "sameStorage": "Même stockage que l'original"
+    },
+    "migrate": {
+      "menu": "Migrer",
+      "title": "Migrer {{name}}",
+      "submit": "Migrer",
+      "label": "Migrer {{name}} vers {{target}}",
+      "noOtherNodes": "Aucun autre nœud en ligne dans ce cluster vers lequel le déplacer.",
+      "onlineHint": "La VM est en cours d'exécution et migre à chaud, sans s'arrêter.",
+      "restartHint": "Le conteneur est en cours d'exécution. Il s'arrête, est déplacé puis redémarre sur la cible."
+    },
+    "template": {
+      "menu": "Convertir en modèle",
+      "confirm": "Convertir {{name}} en modèle ?",
+      "description": "Un modèle ne peut pas être démarré, seulement cloné. Cette action est irréversible.",
+      "submit": "Convertir",
+      "label": "Convertir {{name}} en modèle"
+    },
+    "delete": {
+      "menu": "Supprimer",
+      "title": "Supprimer {{name}}",
+      "submit": "Supprimer",
+      "label": "Supprimer {{name}}",
+      "warning": "Cela supprime l'invité {{vmid}} et ses disques. Cette action est irréversible.",
+      "stopFirst": "Arrêtez l'invité avant de le supprimer.",
+      "typeId": "Saisissez {{vmid}} pour confirmer",
+      "purge": "Retirer des tâches de sauvegarde, de la réplication et de la HA",
+      "purgeHint": "Ne laisse aucune tâche pointer vers un invité qui n'existe plus.",
+      "unreferenced": "Supprimer aussi les disques non référencés",
+      "unreferencedHint": "Disques avec cet ID sur les stockages activés que la configuration ne liste pas."
+    },
+    "create": {
+      "vmButton": "Créer une VM",
+      "ctButton": "Créer un CT",
+      "vmTitle": "Créer une machine virtuelle",
+      "ctTitle": "Créer un conteneur",
+      "submit": "Créer",
+      "vmLabel": "Créer la VM {{id}} ({{name}})",
+      "ctLabel": "Créer le CT {{id}} ({{name}})",
+      "noTemplates": "Aucun modèle de conteneur sur ce nœud. Téléchargez-en un dans Proxmox sous un stockage, Modèles de CT.",
+      "noIso": "Aucun média d'installation",
+      "unprivilegedHint": "Plus sûr : root dans le conteneur n'est pas root sur le nœud.",
+      "loginHint": "Définissez un mot de passe root, des clés SSH, ou les deux.",
+      "problem": {
+        "vmid": "Choisissez un ID supérieur ou égal à 100.",
+        "hostname": "Saisissez un nom d'hôte : lettres, chiffres et tirets.",
+        "name": "Saisissez un nom : lettres, chiffres et tirets.",
+        "template": "Choisissez un modèle.",
+        "storage": "Choisissez un stockage.",
+        "disk": "Saisissez une taille de disque.",
+        "cores": "Saisissez le nombre de cœurs.",
+        "sockets": "Saisissez le nombre de sockets.",
+        "memory": "Saisissez au moins 16 MiB de mémoire.",
+        "swap": "Saisissez le swap en MiB, 0 pour aucun.",
+        "network": "Choisissez un pont et, pour une adresse statique, saisissez-la sous la forme 192.168.0.60/24.",
+        "login": "Définissez un mot de passe root ou des clés SSH pour pouvoir vous connecter.",
+        "password": "Le mot de passe doit comporter au moins 5 caractères."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Autre"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Nom",
+      "hostname": "Nom d'hôte",
+      "node": "Nœud",
+      "targetNode": "Nœud cible",
+      "targetStorage": "Stockage cible",
+      "storage": "Stockage",
+      "template": "Modèle",
+      "iso": "Média d'installation",
+      "ostype": "OS invité",
+      "rootPassword": "Mot de passe root",
+      "sshKeys": "Clés publiques SSH",
+      "unprivileged": "Conteneur non privilégié",
+      "diskGiB": "Disque (GiB)",
+      "cores": "Cœurs",
+      "sockets": "Sockets",
+      "memoryMiB": "Mémoire (MiB)",
+      "swapMiB": "Swap (MiB)",
+      "bridge": "Pont réseau",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Statique",
+      "cidr": "Adresse/préfixe",
+      "gateway": "Passerelle",
+      "startAfter": "Démarrer après la création",
+      "pick": "Choisissez"
+    },
+    "tabs": {
+      "summary": "Résumé",
+      "hardware": "Matériel",
+      "options": "Options",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "remove": "Retirer",
+    "removed": "{{key}} retiré",
+    "pending": "En attente",
+    "pendingHint": "Les modifications marquées En attente s'appliquent quand l'invité redémarre depuis Proxmox : un redémarrage à l'intérieur de l'invité ne suffit pas.",
+    "processors": "Processeurs",
+    "processorsValue": "{{sockets}} socket × {{cores}} cœurs, {{cpu}}",
+    "allCores": "Tous",
+    "swap": "Swap",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "Processeur et mémoire",
+      "title": "Processeur et mémoire"
+    },
+    "cpuType": "Type de CPU",
+    "cpulimit": "Limite CPU",
+    "cpulimitHint": "0 pour aucune limite. 1.5 correspond au temps d'un cœur et demi.",
+    "balloon": "Mémoire minimale (MiB)",
+    "balloonHint": "Avec le pilote ballon, l'invité rend de la mémoire jusqu'à cette valeur. Égale à la mémoire, elle le désactive ; 0 retire le pilote.",
+    "disks": "Disques",
+    "volumes": "Disque racine et points de montage",
+    "bus": "Bus",
+    "slot": "Sera {{key}}",
+    "iothread": "IO thread",
+    "discard": "Discard",
+    "discardHint": "Permet à l'invité de libérer les blocs inutilisés sur un stockage à provisionnement fin.",
+    "ssd": "Émulation SSD",
+    "mountPath": "Chemin de montage dans le conteneur",
+    "backup": "Inclure dans les sauvegardes",
+    "addDisk": {
+      "button": "Ajouter un disque",
+      "title": "Ajouter un disque",
+      "label": "Ajouter {{key}}"
+    },
+    "addMount": {
+      "button": "Ajouter un point de montage",
+      "title": "Ajouter un point de montage"
+    },
+    "resize": {
+      "menu": "Redimensionner",
+      "title": "Agrandir {{key}}",
+      "grow": "Ajouter (GiB)",
+      "result": "{{from}} GiB deviennent {{to}} GiB",
+      "noShrink": "Les disques ne peuvent qu'être agrandis. La partition et le système de fichiers de l'invité doivent ensuite être agrandis dans l'invité, sauf s'il le fait au démarrage.",
+      "submit": "Agrandir",
+      "label": "Agrandir {{key}} de {{size}} GiB"
+    },
+    "move": {
+      "menu": "Déplacer vers un stockage",
+      "title": "Déplacer {{key}}",
+      "submit": "Déplacer",
+      "deleteSource": "Supprimer l'original",
+      "deleteSourceHint": "Désactivé, il est conservé comme disque inutilisé.",
+      "label": "Déplacer {{key}} vers {{storage}}"
+    },
+    "detach": {
+      "menu": "Détacher",
+      "title": "Détacher {{key}} ?",
+      "description": "Le disque reste sur son stockage comme disque inutilisé et peut être supprimé ou rattaché."
+    },
+    "unused": {
+      "delete": "Supprimer",
+      "title": "Supprimer {{volume}} ?",
+      "description": "Cela supprime le disque et tout son contenu. Cette action est irréversible."
+    },
+    "cd": {
+      "heading": "Lecteurs CD/DVD",
+      "title": "Média dans {{key}}",
+      "empty": "Aucun média"
+    },
+    "nic": {
+      "heading": "Cartes réseau",
+      "add": "Ajouter une carte",
+      "addTitle": "Ajouter {{key}}",
+      "editTitle": "Modifier {{key}}",
+      "none": "Aucune carte réseau.",
+      "model": "Modèle",
+      "name": "Nom dans le conteneur",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Statique",
+        "none": "Aucune",
+        "auto": "SLAAC"
+      },
+      "tag": "Tag VLAN",
+      "tagHint": "Vide pour non tagué.",
+      "rate": "Limite de débit (MB/s)",
+      "rateHint": "Vide pour aucune limite.",
+      "firewall": "Pare-feu",
+      "firewallShort": "pare-feu",
+      "removeTitle": "Retirer {{key}} ?",
+      "removeDescription": "L'invité perd cette carte et son adresse."
+    },
+    "problem": {
+      "cpu": "Saisissez au moins un socket et un cœur.",
+      "cpulimit": "La limite CPU va de 0 à 8192.",
+      "memory": "Saisissez au moins 16 MiB de mémoire.",
+      "balloon": "La mémoire minimale ne peut pas dépasser la mémoire.",
+      "swap": "Saisissez le swap en MiB, 0 pour aucun.",
+      "noSlot": "Tous les emplacements de ce type sont occupés.",
+      "storage": "Choisissez un stockage.",
+      "size": "Saisissez une taille en GiB entiers.",
+      "path": "Saisissez un chemin absolu comme /data, mais pas / lui-même.",
+      "bridge": "Choisissez un pont.",
+      "tag": "Un tag VLAN va de 1 à 4094.",
+      "rate": "Saisissez un débit supérieur à 0, ou laissez vide.",
+      "name": "Saisissez un nom comme eth0.",
+      "ip4": "Saisissez l'adresse sous la forme 192.168.0.60/24 et une passerelle valide.",
+      "ip6": "Saisissez l'adresse sous la forme fd00::10/64."
+    },
+    "detached": "{{key}} détaché ; il reste comme disque inutilisé",
+    "coresHint": "Vide utilise tous les cœurs du nœud."
+  },
+  "options": {
+    "general": "Général",
+    "tags": "Tags",
+    "tagsHint": "Séparés par des virgules.",
+    "onboot": "Démarrer au démarrage du nœud",
+    "protection": "Protection",
+    "protectionHint": "Empêche la suppression de l'invité et de ses disques tant qu'elle est activée.",
+    "agent": "Agent invité QEMU",
+    "agentHint": "Activez-le une fois l'agent lancé dans l'invité, pour obtenir ses adresses et des arrêts propres.",
+    "startup": "Ordre de démarrage et d'arrêt",
+    "startupOrder": "Ordre",
+    "startupUp": "Délai après démarrage (s)",
+    "startupDown": "Délai d'arrêt (s)",
+    "dns": "DNS",
+    "nameserver": "Serveurs DNS",
+    "searchdomain": "Domaine de recherche",
+    "useHost": "Vide utilise ceux du nœud.",
+    "notes": "Notes",
+    "saved": "Options enregistrées",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Autre"
+    },
+    "problem": {
+      "name": "Saisissez un nom.",
+      "startup": "L'ordre et les délais sont des nombres entiers.",
+      "tags": "Les tags utilisent des lettres, chiffres, tirets, points et tirets bas.",
+      "nameserver": "Saisissez des adresses IP séparées par des espaces."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "Cette VM n'a pas de lecteur cloud-init. Ajoutez-en un, puis définissez ici l'utilisateur, les clés et le réseau ; l'image de l'invité doit prendre en charge cloud-init.",
+    "addDrive": "Ajouter un lecteur cloud-init",
+    "driveAdded": "Lecteur cloud-init ajouté",
+    "user": "Utilisateur",
+    "username": "Nom d'utilisateur",
+    "usernameHint": "Vide utilise l'utilisateur par défaut de l'image.",
+    "password": "Mot de passe",
+    "passwordHint": "Vide conserve l'actuel. Stocké sous forme hachée par Proxmox.",
+    "network": "Réseau",
+    "saved": "Paramètres cloud-init enregistrés",
+    "regenerate": "Régénérer l'image",
+    "regenerated": "Image cloud-init régénérée",
+    "regenerateHint": "Écrit les paramètres dans {{drive}}. L'invité les lit à son prochain démarrage."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Résumé",
+      "iso": "Images ISO",
+      "vztmpl": "Modèles de CT",
+      "backup": "Sauvegardes",
+      "images": "Images disque"
+    },
+    "content": "Contenu",
+    "contentTypes": {
+      "images": "Disques de VM",
+      "rootdir": "Disques de conteneur",
+      "iso": "Images ISO",
+      "vztmpl": "Modèles de CT",
+      "backup": "Sauvegardes",
+      "snippets": "Snippets",
+      "import": "Import"
+    },
+    "shared": "Partagé",
+    "empty": "Rien ici pour l'instant.",
+    "owner": "invité {{vmid}}",
+    "protected": "Protégé",
+    "download": {
+      "button": "Télécharger depuis une URL",
+      "title": {
+        "iso": "Télécharger une image ISO vers {{storage}}",
+        "vztmpl": "Télécharger un modèle de CT vers {{storage}}"
+      },
+      "url": "URL",
+      "filename": "Nom du fichier",
+      "algorithm": "Type de somme de contrôle",
+      "noChecksum": "Aucune",
+      "checksum": "Somme de contrôle",
+      "verify": "Vérifier le certificat du serveur",
+      "submit": "Télécharger",
+      "label": "Télécharger {{name}}",
+      "problem": {
+        "url": "Saisissez une URL http ou https.",
+        "filename": "Le nom du fichier utilise des lettres, chiffres, points, tirets et tirets bas.",
+        "extension": "Les images ISO se terminent par .iso ou .img ; les modèles par .tar.gz, .tar.xz ou .tar.zst.",
+        "checksum": "Choisissez un type de somme de contrôle et saisissez-la en hexadécimal, ou laissez les deux vides."
+      }
+    },
+    "catalog": {
+      "button": "Modèles",
+      "title": "Modèles de conteneur pour {{storage}}",
+      "search": "Rechercher des modèles...",
+      "have": "Téléchargé",
+      "label": "Télécharger {{name}}"
+    },
+    "delete": {
+      "title": "Supprimer {{name}} ?",
+      "description": "Cela supprime le fichier du stockage. Cette action est irréversible.",
+      "submit": "Supprimer",
+      "done": "{{name}} supprimé"
+    },
+    "upload": {
+      "button": "Téléverser",
+      "cancel": "Annuler le téléversement",
+      "done": "{{name}} téléversé",
+      "failed": "Échec du téléversement de {{name}} : {{error}}"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Résumé",
+      "network": "Réseau",
+      "system": "Système",
+      "services": "Services",
+      "updates": "Mises à jour",
+      "disks": "Disques",
+      "tasks": "Tâches",
+      "log": "Journal"
+    },
+    "services": {
+      "start": "Démarrer",
+      "stop": "Arrêter",
+      "restart": "Redémarrer",
+      "reload": "Recharger",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Arrêter {{name}} ?",
+        "restart": "Redémarrer {{name}} ?",
+        "description": "Les services propres à Proxmox font fonctionner le nœud et son API ; en arrêter un peut couper cet outil jusqu'à son redémarrage."
+      }
+    },
+    "updates": {
+      "refresh": "Actualiser les listes de paquets",
+      "refreshLabel": "Actualiser les listes de paquets sur {{node}}",
+      "count_one": "{{count}} paquet peut être mis à niveau",
+      "count_many": "{{count}} paquets peuvent être mis à niveau",
+      "count_other": "{{count}} paquets peuvent être mis à niveau",
+      "none": "Tout est à jour",
+      "installHint": "Installez les mises à niveau depuis le terminal du nœud avec apt full-upgrade ; Proxmox ne met pas à niveau via son API.",
+      "views": {
+        "packages": "Paquets",
+        "repositories": "Dépôts"
+      }
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART de {{disk}}",
+      "health": "Santé",
+      "usedBy": "utilisé par {{used}}",
+      "unused": "inutilisé",
+      "wearout": "{{value}} % de durée de vie restante",
+      "views": {
+        "disks": "Disques",
+        "lvm": "LVM",
+        "lvmthin": "LVM-Thin",
+        "directory": "Répertoire",
+        "zfs": "ZFS"
+      },
+      "storage": {
+        "lvCount_one": "{{count}} volume logique",
+        "lvCount_many": "{{count}} volumes logiques",
+        "lvCount_other": "{{count}} volumes logiques",
+        "metadata": "métadonnées {{used}} / {{size}}",
+        "frag": "{{value}} % fragmenté",
+        "dedup": "dédup {{value}}x",
+        "none": {
+          "lvm": "Aucun groupe de volumes LVM.",
+          "lvmthin": "Aucun pool LVM-Thin.",
+          "directory": "Aucun stockage de type répertoire sur un disque dédié.",
+          "zfs": "Aucun pool ZFS."
+        },
+        "create": {
+          "lvm": "Créer un groupe de volumes LVM",
+          "lvmthin": "Créer un pool LVM-Thin",
+          "directory": "Créer un répertoire",
+          "zfs": "Créer un pool ZFS"
+        },
+        "createSubmit": "Créer",
+        "createLabel": "Créer {{name}} sur {{node}}",
+        "wipeWarning": "Les disques choisis sont partitionnés et formatés. Seuls les disques vides sont proposés.",
+        "name": "Nom",
+        "device": "Disque",
+        "devices": "Disques",
+        "pickDisk": "Choisissez un disque",
+        "noUnused": "Aucun disque inutilisé. Effacez-en un d'abord sous Disques, si son contenu peut être supprimé.",
+        "filesystem": "Système de fichiers",
+        "raidlevel": "Niveau RAID",
+        "raid": {
+          "single": "Disque unique",
+          "mirror": "Miroir",
+          "raid10": "RAID10",
+          "raidz": "RAIDZ",
+          "raidz2": "RAIDZ2",
+          "raidz3": "RAIDZ3"
+        },
+        "compression": "Compression",
+        "addStorage": "Ajouter comme stockage",
+        "addStorageHint": "En fait un stockage Proxmox du même nom, pour des disques, des conteneurs ou des sauvegardes.",
+        "problem": {
+          "name": "Un nom commence par une lettre et contient des lettres, chiffres, -, _ ou .",
+          "device": "Choisissez un disque.",
+          "oneDevice": "Choisissez un seul disque.",
+          "tooFew": "Ce niveau RAID nécessite au moins {{count}} disques.",
+          "even": "RAID10 nécessite un nombre pair de disques.",
+          "ashift": "ashift est compris entre 9 et 16."
+        },
+        "remove": "Retirer",
+        "removeTitle": "Retirer {{name}} ?",
+        "removeWarning": "Les invités ayant des disques dessus les perdent. Le retrait ne déplace rien au préalable.",
+        "removeLabel": "Retirer {{name}} sur {{node}}",
+        "cleanupConfig": "Retirer aussi l'entrée de stockage",
+        "cleanupDisks": "Effacer ses disques",
+        "cleanupDisksHint": "Efface les disques pour pouvoir les réutiliser.",
+        "inUse": {
+          "lvm": "Il contient encore des volumes logiques. Supprimez-les d'abord ; ce groupe peut héberger le système du nœud lui-même.",
+          "lvmthin": "Il contient encore des données. Déplacez ou supprimez d'abord les disques des invités qui s'y trouvent."
+        }
+      },
+      "gpt": "Initialiser en GPT",
+      "gptTitle": "Initialiser {{disk}} en GPT ?",
+      "gptDescription": "Écrit une table de partitions GPT vide sur le disque.",
+      "gptLabel": "Initialiser {{disk}} sur {{node}}",
+      "wipe": "Effacer",
+      "wipeTitle": "Effacer {{disk}} ?",
+      "wipeWarning": "Efface la table de partitions et toutes les signatures de système de fichiers, LVM et ZFS du disque (actuellement : {{used}}). Son contenu est perdu définitivement.",
+      "wipeLabel": "Effacer {{disk}} sur {{node}}",
+      "typePath": "Saisissez {{disk}} pour confirmer"
+    },
+    "log": {
+      "search": "Filtrer le journal...",
+      "empty": "Aucune ligne ne correspond."
+    },
+    "power": {
+      "menu": "Alimentation du nœud",
+      "termixWarning": "Si Termix tourne sur ce nœud, il s'arrête aussi jusqu'au retour du nœud.",
+      "typeName": "Saisissez {{node}} pour confirmer",
+      "reboot": {
+        "menu": "Redémarrer le nœud",
+        "title": "Redémarrer {{node}} ?",
+        "submit": "Redémarrer",
+        "label": "Redémarrer {{node}}",
+        "warning_one": "{{count}} invité en cours d'exécution s'arrête ou s'éteint d'abord, selon ses paramètres de démarrage.",
+        "warning_many": "{{count}} invités en cours d'exécution s'arrêtent ou s'éteignent d'abord, selon leurs paramètres de démarrage.",
+        "warning_other": "{{count}} invités en cours d'exécution s'arrêtent ou s'éteignent d'abord, selon leurs paramètres de démarrage."
+      },
+      "shutdown": {
+        "menu": "Éteindre le nœud",
+        "title": "Éteindre {{node}} ?",
+        "submit": "Éteindre",
+        "label": "Éteindre {{node}}",
+        "warning_one": "{{count}} invité en cours d'exécution s'arrête avec lui, et rien ne le redémarre tant que personne ne rallume le nœud.",
+        "warning_many": "{{count}} invités en cours d'exécution s'arrêtent avec lui, et rien ne les redémarre tant que personne ne rallume le nœud.",
+        "warning_other": "{{count}} invités en cours d'exécution s'arrêtent avec lui, et rien ne les redémarre tant que personne ne rallume le nœud."
+      }
+    },
+    "shell": "Shell",
+    "shellHint": "Ouvre le terminal SSH de cet hôte dans Termix.",
+    "system": {
+      "dns": {
+        "title": "DNS",
+        "search": "Domaine de recherche",
+        "server": "Serveur DNS {{n}}",
+        "editTitle": "DNS de {{node}}",
+        "saved": "DNS enregistré",
+        "problem": {
+          "search": "Saisissez un domaine de recherche, par exemple example.com.",
+          "server": "Un serveur DNS est une adresse IPv4 ou IPv6.",
+          "noServer": "Saisissez au moins un serveur DNS."
+        }
+      },
+      "time": {
+        "title": "Heure",
+        "zone": "Fuseau horaire",
+        "local": "Heure locale",
+        "editTitle": "Fuseau horaire de {{node}}",
+        "hint": "L'horloge elle-même est maintenue par NTP (chrony) sur le nœud.",
+        "saved": "Fuseau horaire défini sur {{zone}}"
+      },
+      "hosts": {
+        "title": "Hosts",
+        "editTitle": "/etc/hosts de {{node}}",
+        "warning": "Le nom du nœud doit continuer à résoudre vers son adresse, sinon le cluster et son interface web cessent de fonctionner.",
+        "saved": "/etc/hosts enregistré"
+      },
+      "certs": {
+        "title": "Certificats",
+        "issuer": "émis par {{issuer}}",
+        "validFrom": "{{from}} – {{to}}",
+        "state": {
+          "valid": "Valide jusqu'au {{date}}",
+          "expiring": "Expire le {{date}}",
+          "expired": "Expiré le {{date}}",
+          "notYet": "Pas encore valide"
+        },
+        "upload": "Téléverser un certificat personnalisé",
+        "uploadTitle": "Certificat personnalisé pour {{node}}",
+        "uploaded": "Certificat téléversé",
+        "chain": "Chaîne de certificats",
+        "chainHint": "PEM : d'abord le certificat du nœud, puis les intermédiaires.",
+        "key": "Clé privée",
+        "keyHint": "PEM, non chiffrée. Laissez vide pour conserver la clé déjà présente sur le nœud.",
+        "fromFile": "Lire depuis un fichier",
+        "badCert": "Ce n'est pas un certificat PEM.",
+        "badKey": "Ce n'est pas une clé privée PEM.",
+        "restart": "Redémarrer l'interface web pour l'utiliser",
+        "restartHint": "pveproxy redémarre ; Termix perd l'API pendant quelques secondes.",
+        "remove": "Retirer le certificat personnalisé",
+        "removeTitle": "Retirer le certificat personnalisé ?",
+        "removeDescription": "Le nœud revient à son certificat auto-signé et l'interface web redémarre.",
+        "removed": "Certificat personnalisé retiré"
+      }
+    },
+    "repos": {
+      "on": "Activé",
+      "off": "Désactivé",
+      "enable": "Activer",
+      "disable": "Désactiver",
+      "enableTitle": "Activer ce dépôt ?",
+      "enabled": "Dépôt activé",
+      "disabled": "Dépôt désactivé",
+      "add": "Ajouter :",
+      "added": "Dépôt {{name}} ajouté",
+      "hint": "Lancez Actualiser les listes de paquets sous Paquets après une modification. Les dépôts Enterprise nécessitent un abonnement."
+    },
+    "taskHistory": {
+      "type": "Type, par exemple vzdump",
+      "vmid": "ID VM/CT",
+      "user": "Utilisateur",
+      "errorsOnly": "Tâches en échec uniquement",
+      "none": "Aucune tâche ne correspond.",
+      "more": "Charger plus",
+      "state": {
+        "running": "En cours",
+        "ok": "OK"
+      }
+    },
+    "acme": {
+      "title": "ACME",
+      "order": "Commander un certificat",
+      "renew": "Renouveler",
+      "orderLabel": "Commander un certificat ACME pour {{node}}",
+      "renewLabel": "Renouveler le certificat ACME de {{node}}",
+      "usesAccount": "Compte : {{account}}",
+      "none": "aucun",
+      "noDomains": "Aucun domaine pour l'instant. Modifiez pour ajouter les noms auxquels ce nœud répond.",
+      "viaHttp": "Challenge HTTP",
+      "viaDns": "Challenge DNS via {{plugin}}",
+      "accounts": "Comptes",
+      "plugins": "Plugins de challenge DNS",
+      "remove": "Retirer",
+      "domainsTitle": "Domaines ACME de {{node}}",
+      "domainsSaved": "Domaines ACME enregistrés",
+      "domain": "Domaine",
+      "challenge": "Challenge",
+      "alias": "Alias",
+      "addDomain": "Ajouter un domaine",
+      "httpHint": "Le challenge HTTP nécessite que le port 80 de ce nœud soit joignable depuis Internet sous le domaine. DNS fonctionne sans cela, et pour les wildcards.",
+      "hint": "Les comptes et plugins sont partagés par tout le cluster ; les domaines sont propres à chaque nœud.",
+      "problem": {
+        "noDomain": "Ajoutez au moins un domaine.",
+        "tooMany": "Un nœud a au maximum six domaines ACME.",
+        "domain": "Un domaine est un nom complet comme pve.example.com.",
+        "wildcard": "Un domaine wildcard nécessite un plugin de challenge DNS."
+      },
+      "account": {
+        "title": "Compte",
+        "pick": "Choisissez un compte",
+        "add": "Enregistrer un compte",
+        "addTitle": "Enregistrer un compte ACME",
+        "register": "Enregistrer",
+        "registerLabel": "Enregistrer le compte ACME {{name}}",
+        "name": "Nom",
+        "email": "E-mail",
+        "directory": "Répertoire ACME",
+        "customDirectory": "URL personnalisée",
+        "directoryUrl": "URL du répertoire",
+        "acceptTos": "Accepter les conditions d'utilisation",
+        "eabKid": "ID de clé EAB",
+        "eabHmac": "Clé HMAC EAB",
+        "eabHint": "Uniquement pour les CA qui exigent l'External Account Binding.",
+        "none": "Aucun compte ACME pour l'instant.",
+        "needOne": "Enregistrez d'abord un compte ACME.",
+        "removeTitle": "Désactiver le compte {{name}} ?",
+        "removeDescription": "Le compte est désactivé auprès de la CA et retiré ici. Les certificats déjà émis continuent de fonctionner.",
+        "removeLabel": "Désactiver le compte ACME {{name}}",
+        "problem": {
+          "name": "Un nom contient des lettres, chiffres, -, _ ou .",
+          "email": "Saisissez une adresse e-mail.",
+          "directory": "Le répertoire est une URL http ou https.",
+          "tos": "Acceptez les conditions d'utilisation pour vous enregistrer.",
+          "eab": "EAB nécessite à la fois l'ID de clé et la clé HMAC."
+        }
+      },
+      "plugin": {
+        "add": "Ajouter un plugin",
+        "addTitle": "Ajouter un plugin de challenge DNS",
+        "id": "ID du plugin",
+        "api": "API DNS",
+        "pickApi": "Choisissez un fournisseur DNS",
+        "delay": "Délai de validation (s)",
+        "delayHint": "Temps d'attente pour la propagation de l'enregistrement TXT.",
+        "noFields": "Proxmox ne liste aucun champ pour ce fournisseur ; consultez la documentation d'acme.sh pour les variables qu'il lit.",
+        "none": "Aucun plugin DNS. HTTP fonctionne sans.",
+        "disabled": "Désactivé",
+        "removeTitle": "Retirer le plugin {{name}} ?",
+        "removeDescription": "Les domaines qui l'utilisent ne pourront plus être validés."
+      }
+    }
+  },
+  "console": {
+    "open": "Console",
+    "openHint": "Ouvre l'hôte Termix de l'invité, ou propose d'abord de l'ajouter à Termix.",
+    "tabTitle": "Console Proxmox",
+    "tabLabel": "{{name}} — Console",
+    "pick": "Ouvrez une console depuis une VM ou un conteneur en cours d'exécution dans l'outil Proxmox.",
+    "connect": "Se connecter",
+    "reconnect": "Se reconnecter",
+    "disconnect": "Se déconnecter",
+    "ctrlAltDel": "Ctrl+Alt+Suppr",
+    "fullscreen": "Plein écran",
+    "notRunning": "Démarrez l'invité pour ouvrir sa console.",
+    "lost": "La connexion à la console a été perdue.",
+    "ended": "Console fermée.",
+    "status": {
+      "idle": "Non connecté",
+      "connecting": "Connexion...",
+      "connected": "Connecté",
+      "closed": "Déconnecté",
+      "error": "Connexion impossible"
+    },
+    "proxmox": "Console Proxmox",
+    "proxmoxHint": "La console propre à Proxmox via le nœud : l'écran d'une VM, un shell dans un conteneur. Pour un invité qui n'a pas encore de réseau."
+  },
+  "pool": {
+    "members": "Membres",
+    "empty": "Ce pool est vide."
+  },
+  "sdn": {
+    "hint": "Les zones SDN, VNets et sous-réseaux arriveront avec la gestion du cluster dans une version ultérieure."
+  },
+  "network": {
+    "add": "Créer",
+    "apply": "Appliquer",
+    "revert": "Annuler les modifications",
+    "pending": "Pas encore appliqué",
+    "hint": "Les modifications sont enregistrées dans /etc/network/interfaces.new et prennent effet avec Appliquer, qui recharge le réseau du nœud.",
+    "type": "Type",
+    "name": "Nom",
+    "cidr": "IPv4/CIDR",
+    "gateway": "Passerelle (IPv4)",
+    "cidr6": "IPv6/CIDR",
+    "gateway6": "Passerelle (IPv6)",
+    "ports": "Ports du pont",
+    "slaves": "Esclaves",
+    "portsHint": "Noms d'interfaces, séparés par des espaces.",
+    "bondMode": "Mode",
+    "vlanDevice": "Périphérique brut VLAN",
+    "mtu": "MTU",
+    "comments": "Commentaire",
+    "autostart": "Démarrage automatique",
+    "vlanAware": "Compatible VLAN",
+    "vlanAwareHint": "Permet aux invités sur ce pont d'utiliser des tags VLAN.",
+    "inactive": "Inactif",
+    "create": "Créer",
+    "createTitle": "Créer une interface",
+    "editTitle": "Modifier {{iface}}",
+    "types": {
+      "bridge": "Pont",
+      "bond": "Bond",
+      "vlan": "VLAN",
+      "eth": "Port",
+      "OVSBridge": "Pont OVS",
+      "alias": "Alias"
+    },
+    "nameHint": {
+      "bridge": "vmbr suivi d'un nombre, comme vmbr1.",
+      "bond": "bond suivi d'un nombre, comme bond0.",
+      "vlan": "périphérique.tag comme vmbr0.10, ou vlan10 avec un périphérique brut."
+    },
+    "addressWarning": "Cette interface porte l'adresse par laquelle Termix joint le nœud. Une erreur peut couper Termix jusqu'à ce que quelqu'un répare le nœud depuis sa console.",
+    "removeTitle": "Retirer {{iface}} ?",
+    "removeDescription": "L'interface est retirée lorsque la modification est appliquée.",
+    "applyTitle": "Appliquer les modifications réseau sur {{node}} ?",
+    "applyDescription": "Le nœud recharge son réseau. Si les nouveaux paramètres sont incorrects, le nœud et la connexion de Termix vers lui peuvent passer hors ligne.",
+    "applyLabel": "Appliquer le réseau sur {{node}}",
+    "reverted": "Modifications réseau annulées",
+    "problem": {
+      "cidr": "Saisissez l'adresse sous la forme 10.10.0.1/24.",
+      "gateway": "Une passerelle nécessite une adresse IPv4 et une IP de passerelle valide.",
+      "cidr6": "Saisissez l'adresse sous la forme fd00::1/64.",
+      "ports": "Saisissez des noms d'interfaces séparés par des espaces.",
+      "slaves": "Un bond nécessite au moins un esclave.",
+      "vlanDevice": "Indiquez le périphérique brut d'une interface vlanN.",
+      "mtu": "Le MTU va de 1280 à 65520.",
+      "name": {
+        "bridge": "Un pont se nomme vmbr suivi d'un nombre.",
+        "bond": "Un bond se nomme bond suivi d'un nombre.",
+        "vlan": "Un VLAN se nomme périphérique.tag ou vlan suivi d'un nombre."
+      }
+    }
+  },
+  "import": {
+    "open": "Importer dans Termix",
+    "title": "Importer des invités comme hôtes Termix",
+    "hint": "Chaque VM ou conteneur choisi devient un hôte Termix avec le tag proxmox. L'import actualise aussi les noms, adresses et tags des invités importés auparavant, et marque ceux disparus de Proxmox avec le tag proxmox-missing.",
+    "loading": "Recherche des invités et de leurs adresses…",
+    "counts": "{{total}} invités, {{imported}} déjà importés",
+    "selectAll": "Tout sélectionner",
+    "selectNone": "Ne rien sélectionner",
+    "none": "Ce cluster n'a aucune VM ni aucun conteneur.",
+    "imported": "Importé",
+    "noAddress": "aucune adresse",
+    "folder": "Dossier",
+    "folderDefault": "Dossier nommé {{node}}",
+    "folderSearch": "Rechercher ou créer, / pour un sous-dossier",
+    "folderCreate": "Créer « {{folder}} »",
+    "folderNone": "Aucun dossier pour l'instant",
+    "connection": "Se connecter avec",
+    "connections": {
+      "ssh": "SSH",
+      "rdp": "RDP",
+      "vnc": "VNC"
+    },
+    "runtime": "Runtime de conteneurs",
+    "runtimeOff": "Pas de Docker",
+    "os": {
+      "windows": "Windows",
+      "linux": "Linux",
+      "other": "OS inconnu"
+    },
+    "sshLogin": "Identifiants SSH",
+    "desktopLogin": "Identifiants RDP et VNC",
+    "desktopHint": "Nécessite le plugin Bureau à distance pour se connecter.",
+    "login": {
+      "nodeCredential": "Identifiants du nœud",
+      "nodeUser": "Nom d'utilisateur du nœud",
+      "username": "Nom d'utilisateur seul",
+      "none": "Aucun identifiant"
+    },
+    "username": "Nom d'utilisateur",
+    "submit_one": "Importer {{count}} invité",
+    "submit_many": "Importer {{count}} invités",
+    "submit_other": "Importer {{count}} invités",
+    "refresh": "Actualiser les importés",
+    "done": "Créés : {{created}}, mis à jour : {{updated}}, marqués manquants : {{markedMissing}}",
+    "lastSync": "Dernière synchronisation {{when}}.",
+    "lastSyncFailed": "Échec de la dernière synchronisation {{when}} : {{error}}",
+    "syncHint": "Activez Garder les invités importés synchronisés dans les paramètres Proxmox de l'hôte pour les actualiser selon un planning.",
+    "addTitle": "Ajouter {{name}} à Termix",
+    "addHint": "Cet invité n'est pas encore un hôte Termix. Ajoutez-le pour ouvrir son terminal, puis Console l'ouvrira directement.",
+    "addSubmit": "Ajouter et se connecter",
+    "gone": "Proxmox ne liste plus cet invité."
+  }
+}

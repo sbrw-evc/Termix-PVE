@@ -93,8 +93,14 @@ aren't obvious from the code, and anything that has bitten you before.
 exec` over SSH, local node only; each answer starts with `+` so a failed exec reads as unknown. RDP/VNC hosts
   set `remote-desktop` settings (`enableRdp`/`rdpPort`, `enableVnc`/`vncPort`) and their login in
   `protocolAuth`; Docker is `pluginEnable.docker` plus `containerRuntime`.
+- Rules may list allowed parameters (`params` in `policy.ts`, checked by `paramsAllowed`): PUT
+  `nodes/{node}/config` is open only for `acme`, `acmedomainN`, `digest` and a `delete` of those.
 - Uploads: read the SSH channel (`resume()`) or it never emits `close` and the request hangs at 100%.
 - Import (`src/backend/import.ts`): imported guests carry the hidden `pveSource` host setting; sync
   finds them with `listHostValues`. Scheduled sync runs every minute through `ctx.schedule` and
   `ctx.asUser` (users:impersonate) for nodes with `pveImportSync` on.
+- Translations: `locales/translated/<file>.json` for the 41 languages of Termix-Registry's
+  `translate/languages.json`, with each language's own plural keys (`Intl.PluralRules`), and
+  `locales/translations-lock.json` hashing the English each was made from (the official translator's
+  format). Add new strings to `en.json`; untranslated keys fall back to English.
 - Roadmap: `ROADMAP.md`.

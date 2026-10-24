@@ -25,6 +25,10 @@ import { Field, FormDialog, TextInput } from "./forms";
 import { CreateCtDialog, CreateVmDialog } from "../guests/CreateDialogs";
 import { DisksTab, LogTab, ServicesTab, UpdatesTab } from "../nodes/NodeTabs";
 import { NetworkTab } from "../nodes/NetworkTab";
+import { SystemTab } from "../nodes/SystemTab";
+import { RepositoriesSection } from "../nodes/RepositoriesSection";
+import { DiskStorage, type DiskStorageKind } from "../nodes/DiskStorage";
+import { TaskHistoryTab } from "../nodes/TaskHistoryTab";
 
 interface NodeStatus {
   pveversion?: string;
@@ -35,15 +39,29 @@ interface NodeStatus {
   swap?: { used?: number; total?: number };
 }
 
-type NodeTab = "summary" | "network" | "services" | "updates" | "disks" | "log";
+type NodeTab =
+  | "summary"
+  | "network"
+  | "system"
+  | "services"
+  | "updates"
+  | "disks"
+  | "tasks"
+  | "log";
+/** In the order of Proxmox's node menu. */
 const TABS: NodeTab[] = [
   "summary",
   "network",
+  "system",
   "services",
   "updates",
   "disks",
+  "tasks",
   "log",
 ];
+type UpdatesView = "packages" | "repositories";
+type DisksView = "disks" | DiskStorageKind;
+const DISK_VIEWS: DisksView[] = ["disks", "lvm", "lvmthin", "directory", "zfs"];
 
 /**
  * Rebooting or shutting a node down stops every guest on it, and may take
@@ -107,13 +125,15 @@ export function NodeView({
   resources: PveResource[];
   isVisible: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const name = node.node ?? node.id;
   const [status, setStatus] = useState<NodeStatus | null>(null);
   const [dialog, setDialog] = useState<
     "vm" | "ct" | "reboot" | "shutdown" | null
   >(null);
   const [tab, setTab] = useState<NodeTab>("summary");
+  const [updatesView, setUpdatesView] = useState<UpdatesView>("packages");
+  const [disksView, setDisksView] = useState<DisksView>("disks");
   const online = node.status === "online";
   const tabs = useTabs();
   // The node's shell is the Termix host's own SSH terminal.
@@ -247,7 +267,7 @@ export function NodeView({
           <div>
             <GroupHeading title={t("summary.title")} />
             <Fact label={t("summary.uptime")}>
-              {formatUptime(status?.uptime ?? node.uptime)}
+              {formatUptime(status?.uptime ?? node.uptime, language)}
             </Fact>
             <Fact label={t("summary.guests")}>
               {t("summary.guestsRunning", { running, total: guests.length })}
@@ -277,9 +297,45 @@ export function NodeView({
         </>
       )}
       {tab === "network" && <NetworkTab {...tabProps} />}
+      {tab === "system" && <SystemTab {...tabProps} />}
       {tab === "services" && <ServicesTab {...tabProps} />}
-      {tab === "updates" && <UpdatesTab {...tabProps} />}
-      {tab === "disks" && <DisksTab {...tabProps} />}
+      {tab === "updates" && (
+        <>
+          <Segmented
+            className="max-w-full self-start overflow-x-auto [&>*]:shrink-0 [&>*]:whitespace-nowrap"
+            value={updatesView}
+            onChange={(value) => setUpdatesView(value as UpdatesView)}
+            options={(["packages", "repositories"] as const).map((value) => ({
+              value,
+              label: t(`nodes.updates.views.${value}`),
+            }))}
+          />
+          {updatesView === "packages" ? (
+            <UpdatesTab {...tabProps} />
+          ) : (
+            <RepositoriesSection {...tabProps} />
+          )}
+        </>
+      )}
+      {tab === "disks" && (
+        <>
+          <Segmented
+            className="max-w-full self-start overflow-x-auto [&>*]:shrink-0 [&>*]:whitespace-nowrap"
+            value={disksView}
+            onChange={(value) => setDisksView(value as DisksView)}
+            options={DISK_VIEWS.map((value) => ({
+              value,
+              label: t(`nodes.disks.views.${value}`),
+            }))}
+          />
+          {disksView === "disks" ? (
+            <DisksTab {...tabProps} />
+          ) : (
+            <DiskStorage key={disksView} kind={disksView} {...tabProps} />
+          )}
+        </>
+      )}
+      {tab === "tasks" && <TaskHistoryTab {...tabProps} />}
       {tab === "log" && <LogTab {...tabProps} />}
 
       {dialog === "vm" && (

@@ -88,6 +88,14 @@ describe("helpers", () => {
     expect(percent(undefined, undefined)).toBeNull();
     expect(formatUptime(90061)).toBe("1d 1h");
     expect(formatUptime(3720)).toBe("1h 2m");
+    expect(formatUptime(90061, "ru")).toMatch(/^1 д.? 1 ч$/);
+    expect(formatUptime(120, "ja")).toBe(
+      new Intl.NumberFormat("ja", {
+        style: "unit",
+        unit: "minute",
+        unitDisplay: "narrow",
+      }).format(2),
+    );
   });
 });
 

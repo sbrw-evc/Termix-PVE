@@ -8,6 +8,7 @@ import {
   filenameFromUrl,
 } from "../../src/frontend/storage/params";
 import {
+  inUse,
   journalLines,
   serviceActions,
 } from "../../src/frontend/nodes/NodeTabs";
@@ -120,5 +121,14 @@ describe("node log", () => {
       "Oct 24 05:32:11 proxmox systemd[1]: Started session-15017.scope",
     ]);
     expect(journalLines(null)).toEqual([]);
+  });
+});
+
+describe("node disks", () => {
+  it("keeps disks in use from being wiped", () => {
+    expect(inUse({ used: "LVM" })).toBe(true);
+    expect(inUse({ used: "BIOS boot" })).toBe(true);
+    expect(inUse({ used: "partitions" })).toBe(false);
+    expect(inUse({})).toBe(false);
   });
 });
