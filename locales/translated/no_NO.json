@@ -223,7 +223,11 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} på {{node}}",
     "done": "{{label}}: ferdig",
-    "failed": "{{label}} mislyktes: {{reason}}"
+    "failed": "{{label}} mislyktes: {{reason}}",
+    "collapse": "Skjul oppgavelisten",
+    "expand": "Vis oppgavelisten",
+    "runningCount_one": "Kjører: {{count}}",
+    "runningCount_other": "Kjører: {{count}}"
   },
   "guests": {
     "more": "Flere handlinger",
@@ -602,6 +606,15 @@
         "stop": "Stoppe {{name}}?",
         "restart": "Starte {{name}} på nytt?",
         "description": "Proxmox' egne tjenester holder noden og API-et i gang; stoppes en av dem, kan dette verktøyet miste forbindelsen til den starter igjen."
+      },
+      "states": {
+        "active": "aktiv",
+        "inactive": "inaktiv",
+        "failed": "feilet",
+        "activating": "starter",
+        "deactivating": "stopper",
+        "running": "aktiv",
+        "dead": "Stoppet"
       }
     },
     "updates": {
@@ -697,7 +710,8 @@
       "wipeTitle": "Tømme {{disk}}?",
       "wipeWarning": "Sletter partisjonstabellen og alle filsystem-, LVM- og ZFS-signaturer på disken (nå: {{used}}). Innholdet er borte for godt.",
       "wipeLabel": "Tøm {{disk}} på {{node}}",
-      "typePath": "Skriv {{disk}} for å bekrefte"
+      "typePath": "Skriv {{disk}} for å bekrefte",
+      "wipeInUse": "I bruk. Fjern først volumgruppen, poolen, katalogen eller lagringen på den."
     },
     "log": {
       "search": "Filtrer loggen...",

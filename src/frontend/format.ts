@@ -52,3 +52,20 @@ export function formatUptime(
 
 /** Megabytes and gibibytes as the create forms take them. */
 export const GIB = 1024 ** 3;
+
+/**
+ * Bytes in at most five characters, like 17.1G or 512M, for chart axes:
+ * the SDK chart leaves 44px for a Y label and cuts anything longer.
+ */
+export function formatBytesShort(bytes: number): string {
+  const units = ["", "K", "M", "G", "T", "P"];
+  let value = Math.abs(bytes);
+  let unit = 0;
+  while (value >= 1000 && unit < units.length - 1) {
+    value /= 1024;
+    unit++;
+  }
+  const digits = value >= 100 || unit === 0 ? 0 : 1;
+  const text = value.toFixed(digits).replace(/.0$/, "");
+  return `${bytes < 0 ? "-" : ""}${text}${units[unit]}`;
+}

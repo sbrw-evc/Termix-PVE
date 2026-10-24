@@ -225,7 +225,13 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} na {{node}}",
     "done": "{{label}}: hotovo",
-    "failed": "{{label}} selhalo: {{reason}}"
+    "failed": "{{label}} selhalo: {{reason}}",
+    "collapse": "Skrýt seznam úloh",
+    "expand": "Zobrazit seznam úloh",
+    "runningCount_one": "Probíhá: {{count}}",
+    "runningCount_few": "Probíhá: {{count}}",
+    "runningCount_many": "Probíhá: {{count}}",
+    "runningCount_other": "Probíhá: {{count}}"
   },
   "guests": {
     "more": "Další akce",
@@ -604,6 +610,15 @@
         "stop": "Zastavit {{name}}?",
         "restart": "Restartovat {{name}}?",
         "description": "Vlastní služby Proxmox udržují uzel a jeho API v chodu; zastavení některé z nich může tento nástroj odříznout, dokud se znovu nespustí."
+      },
+      "states": {
+        "active": "aktivní",
+        "inactive": "neaktivní",
+        "failed": "selhala",
+        "activating": "spouští se",
+        "deactivating": "zastavuje se",
+        "running": "aktivní",
+        "dead": "Zastaveno"
       }
     },
     "updates": {
@@ -703,7 +718,8 @@
       "wipeTitle": "Vymazat {{disk}}?",
       "wipeWarning": "Smaže tabulku oddílů a všechny signatury souborových systémů, LVM a ZFS na disku (nyní: {{used}}). Jeho obsah bude nenávratně ztracen.",
       "wipeLabel": "Vymazat {{disk}} na {{node}}",
-      "typePath": "Pro potvrzení zadejte {{disk}}"
+      "typePath": "Pro potvrzení zadejte {{disk}}",
+      "wipeInUse": "Disk se používá. Nejprve odeberte skupinu svazků, fond, adresář nebo úložiště na něm."
     },
     "log": {
       "search": "Filtrovat protokol...",

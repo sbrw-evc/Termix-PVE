@@ -224,7 +224,12 @@
     "ok": "D'acord",
     "logTitle": "{{type}} {{id}} a {{node}}",
     "done": "{{label}}: fet",
-    "failed": "{{label}} ha fallat: {{reason}}"
+    "failed": "{{label}} ha fallat: {{reason}}",
+    "collapse": "Amaga la llista de tasques",
+    "expand": "Mostra la llista de tasques",
+    "runningCount_one": "En execució: {{count}}",
+    "runningCount_many": "En execució: {{count}}",
+    "runningCount_other": "En execució: {{count}}"
   },
   "guests": {
     "more": "Més accions",
@@ -603,6 +608,15 @@
         "stop": "Voleu aturar {{name}}?",
         "restart": "Voleu reiniciar {{name}}?",
         "description": "Els serveis propis de Proxmox mantenen en funcionament el node i la seva API; aturar-ne un pot deixar aquesta eina sense accés fins que torni a iniciar-se."
+      },
+      "states": {
+        "active": "activa",
+        "inactive": "inactiva",
+        "failed": "fallada",
+        "activating": "s'està iniciant",
+        "deactivating": "s'està aturant",
+        "running": "activa",
+        "dead": "Aturat"
       }
     },
     "updates": {
@@ -700,7 +714,8 @@
       "wipeTitle": "Voleu netejar {{disk}}?",
       "wipeWarning": "Esborra la taula de particions i totes les signatures de sistema de fitxers, LVM i ZFS del disc (ara: {{used}}). El que conté es perd per sempre.",
       "wipeLabel": "Neteja {{disk}} a {{node}}",
-      "typePath": "Escriviu {{disk}} per confirmar"
+      "typePath": "Escriviu {{disk}} per confirmar",
+      "wipeInUse": "En ús. Elimineu primer el grup de volums, el pool, el directori o l'emmagatzematge que hi ha."
     },
     "log": {
       "search": "Filtra el registre...",

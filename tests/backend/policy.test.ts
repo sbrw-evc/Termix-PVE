@@ -41,8 +41,13 @@ describe("findRule", () => {
   });
 
   it("refuses paths and methods no rule lists", () => {
-    // Reading access lists, writing node files, the node's own config.
-    expect(findRule("GET", split("access/users"))).toBeNull();
+    // Logging in, writing node files, the node's own config.
+    expect(findRule("POST", split("access/ticket"))).toBeNull();
+    expect(findRule("GET", split("access/permissions"))).toBeNull();
+    // Users are listed, but only for administer.
+    expect(findRule("GET", split("access/users"))?.permission).toBe(
+      "administer",
+    );
     expect(findRule("POST", split("nodes/pve1/execute"))).toBeNull();
     expect(
       findRule("POST", split("nodes/pve1/qemu/100/status/hibernate")),
@@ -209,7 +214,23 @@ describe("node system rules", () => {
     expect(findRule("POST", split("nodes/pve1/disks/other"))).toBeNull();
   });
 
-  it("lets the node config change only its ACME settings", () => {
+  it("allows guest snapshots at the right level", () => {
+    const base = "nodes/pve1/qemu/100/snapshot";
+    expect(findRule("GET", split(base))?.permission).toBe("view");
+    expect(findRule("POST", split(base))?.permission).toBe("configure");
+    expect(findRule("POST", split(`${base}/before/rollback`))?.permission).toBe(
+      "configure",
+    );
+    expect(findRule("DELETE", split(`${base}/before`))?.permission).toBe(
+      "configure",
+    );
+    expect(
+      findRule("PUT", split("nodes/pve1/lxc/400/snapshot/before/config"))
+        ?.permission,
+    ).toBe("configure");
+  });
+
+  it("lets the node config change only ACME, notes and options", () => {
     const rule = findRule("PUT", split("nodes/pve1/config"))!;
     expect(
       paramsAllowed(rule, {
@@ -219,9 +240,16 @@ describe("node system rules", () => {
         digest: "x",
       }),
     ).toBe(true);
-    expect(paramsAllowed(rule, { description: "hi" })).toBe(false);
-    expect(paramsAllowed(rule, { wakeonlan: "aa:bb" })).toBe(false);
-    expect(paramsAllowed(rule, { delete: "description" })).toBe(false);
+    expect(
+      paramsAllowed(rule, {
+        description: "hi",
+        "startall-onboot-delay": 10,
+        wakeonlan: "aa:bb:cc:dd:ee:ff",
+      }),
+    ).toBe(true);
+    expect(paramsAllowed(rule, { delete: "description,wakeonlan" })).toBe(true);
+    expect(paramsAllowed(rule, { "ballooning-target": 80 })).toBe(false);
+    expect(paramsAllowed(rule, { delete: "ballooning-target" })).toBe(false);
     expect(paramsAllowed(rule, { delete: "acme;location" })).toBe(false);
     // Rules without a list take any parameters.
     expect(

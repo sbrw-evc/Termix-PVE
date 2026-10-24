@@ -25,6 +25,8 @@ import { Field, FormDialog, TextInput } from "./forms";
 import { CreateCtDialog, CreateVmDialog } from "../guests/CreateDialogs";
 import { DisksTab, LogTab, ServicesTab, UpdatesTab } from "../nodes/NodeTabs";
 import { NetworkTab } from "../nodes/NetworkTab";
+import { CephTab } from "../nodes/CephTab";
+import { FirewallPanel } from "../datacenter/FirewallPanel";
 import { SystemTab } from "../nodes/SystemTab";
 import { RepositoriesSection } from "../nodes/RepositoriesSection";
 import { DiskStorage, type DiskStorageKind } from "../nodes/DiskStorage";
@@ -45,7 +47,9 @@ type NodeTab =
   | "system"
   | "services"
   | "updates"
+  | "firewall"
   | "disks"
+  | "ceph"
   | "tasks"
   | "log";
 /** In the order of Proxmox's node menu. */
@@ -55,7 +59,9 @@ const TABS: NodeTab[] = [
   "system",
   "services",
   "updates",
+  "firewall",
   "disks",
+  "ceph",
   "tasks",
   "log",
 ];
@@ -317,6 +323,15 @@ export function NodeView({
           )}
         </>
       )}
+      {tab === "firewall" && (
+        <FirewallPanel
+          hostId={hostId}
+          base={["nodes", name, "firewall"]}
+          scope="node"
+          isVisible={isVisible}
+        />
+      )}
+      {tab === "ceph" && <CephTab {...tabProps} />}
       {tab === "disks" && (
         <>
           <Segmented

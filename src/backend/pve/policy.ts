@@ -92,6 +92,29 @@ export const RULES: PveRule[] = [
   },
   { method: "PUT", pattern: `${GUEST}/config`, permission: "configure" },
   { method: "PUT", pattern: `${GUEST}/resize`, permission: "configure" },
+  // Snapshots. Rolling back throws away what changed since, so it is configure too.
+  { method: "GET", pattern: `${GUEST}/snapshot`, permission: "view" },
+  { method: "POST", pattern: `${GUEST}/snapshot`, permission: "configure" },
+  {
+    method: "GET",
+    pattern: `${GUEST}/snapshot/:snap/config`,
+    permission: "view",
+  },
+  {
+    method: "PUT",
+    pattern: `${GUEST}/snapshot/:snap/config`,
+    permission: "configure",
+  },
+  {
+    method: "POST",
+    pattern: `${GUEST}/snapshot/:snap/rollback`,
+    permission: "configure",
+  },
+  {
+    method: "DELETE",
+    pattern: `${GUEST}/snapshot/:snap`,
+    permission: "configure",
+  },
   {
     method: "POST",
     pattern: "nodes/:node/qemu/:vmid/move_disk",
@@ -247,7 +270,9 @@ export const RULES: PveRule[] = [
     method: "PUT",
     pattern: "nodes/:node/config",
     permission: "administer",
-    params: /^(acme|acmedomain\d|digest|delete)$/,
+    // ACME, and the node's Notes and Options; not ballooning or anything else.
+    params:
+      /^(acme|acmedomain\d|description|startall-onboot-delay|wakeonlan|digest|delete)$/,
   },
   {
     method: "GET",
@@ -309,7 +334,176 @@ export const RULES: PveRule[] = [
     pattern: "nodes/:node/network/:iface",
     permission: "administer",
   },
+
+  // Backups of guests, and restoring them (restore is a create with an archive).
+  { method: "POST", pattern: "nodes/:node/vzdump", permission: "configure" },
+  {
+    method: "GET",
+    pattern: "nodes/:node/vzdump/{defaults|extractconfig}",
+    permission: "view",
+  },
+  // A backup's notes and protection.
+  {
+    method: "PUT",
+    pattern: "nodes/:node/storage/:storage/content/:volume",
+    permission: "configure",
+  },
+  ...crud("cluster/backup", "view", "administer"),
+  {
+    method: "GET",
+    pattern: "cluster/backup/:id/included_volumes",
+    permission: "view",
+  },
+  {
+    method: "GET",
+    pattern: "cluster/backup-info/not-backed-up",
+    permission: "view",
+  },
+
+  // Datacenter storage entries, such as a Proxmox Backup Server.
+  ...crud("storage", "view", "administer", ":storage"),
+
+  // Replication.
+  ...crud("cluster/replication", "view", "administer"),
+  { method: "GET", pattern: "nodes/:node/replication", permission: "view" },
+  {
+    method: "GET",
+    pattern: "nodes/:node/replication/:id/{status|log}",
+    permission: "view",
+  },
+  {
+    method: "POST",
+    pattern: "nodes/:node/replication/:id/schedule_now",
+    permission: "administer",
+  },
+
+  // Firewall: the datacenter and nodes need administer, a guest's own configure.
+  ...firewall("cluster/firewall", "administer"),
+  ...firewall("nodes/:node/firewall", "administer"),
+  ...firewall(`${GUEST}/firewall`, "configure"),
+  ...crud("cluster/firewall/aliases", "view", "administer", ":name"),
+  ...crud(`${GUEST}/firewall/aliases`, "view", "configure", ":name"),
+  ...ipsets("cluster/firewall/ipset", "administer"),
+  ...ipsets(`${GUEST}/firewall/ipset`, "configure"),
+  ...crud("cluster/firewall/groups", "view", "administer", ":group"),
+  {
+    method: "GET",
+    pattern: "cluster/firewall/groups/:group/:pos",
+    permission: "view",
+  },
+  {
+    method: "PUT",
+    pattern: "cluster/firewall/groups/:group/:pos",
+    permission: "administer",
+  },
+  {
+    method: "DELETE",
+    pattern: "cluster/firewall/groups/:group/:pos",
+    permission: "administer",
+  },
+  { method: "GET", pattern: "cluster/firewall/macros", permission: "view" },
+
+  // Cluster and high availability.
+  { method: "GET", pattern: "cluster/config/join", permission: "administer" },
+  { method: "GET", pattern: "cluster/config/nodes", permission: "view" },
+  {
+    method: "GET",
+    pattern: "cluster/ha/status/{current|manager_status}",
+    permission: "view",
+  },
+  ...crud("cluster/ha/resources", "view", "administer", ":sid"),
+  {
+    method: "POST",
+    pattern: "cluster/ha/resources/:sid/{migrate|relocate}",
+    permission: "administer",
+  },
+  ...crud("cluster/ha/rules", "view", "administer", ":rule"),
+  ...crud("cluster/ha/groups", "view", "administer", ":group"),
+
+  // Access. Reading users, tokens and 2FA already says too much for view.
+  ...crud("access/users", "administer", "administer", ":userid"),
+  {
+    method: "GET",
+    pattern: "access/users/:userid/token",
+    permission: "administer",
+  },
+  ...each(
+    ["GET", "POST", "PUT", "DELETE"],
+    "access/users/:userid/token/:tokenid",
+  ),
+  { method: "PUT", pattern: "access/password", permission: "administer" },
+  ...crud("access/groups", "administer", "administer", ":groupid"),
+  ...crud("access/roles", "view", "administer", ":roleid"),
+  ...crud("access/domains", "administer", "administer", ":realm"),
+  {
+    method: "POST",
+    pattern: "access/domains/:realm/sync",
+    permission: "administer",
+  },
+  { method: "GET", pattern: "access/acl", permission: "administer" },
+  { method: "PUT", pattern: "access/acl", permission: "administer" },
+  { method: "GET", pattern: "access/tfa", permission: "administer" },
+  ...each(["GET", "POST"], "access/tfa/:userid"),
+  ...each(["GET", "PUT", "DELETE"], "access/tfa/:userid/:id"),
+  // Pools: PVE 9 changes members with PUT /pools and the pool id as a param.
+  ...crud("pools", "view", "administer", ":poolid"),
+  { method: "PUT", pattern: "pools", permission: "administer" },
+  { method: "DELETE", pattern: "pools", permission: "administer" },
+
+  // Ceph, read only: status, monitors, OSDs, pools and file systems.
+  {
+    method: "GET",
+    pattern: "nodes/:node/ceph/{status|mon|osd|pool|fs|mds|mgr}",
+    permission: "view",
+  },
+  { method: "GET", pattern: "cluster/ceph/status", permission: "view" },
 ];
+
+/** One administer rule per method. */
+function each(methods: PveMethod[], pattern: string): PveRule[] {
+  return methods.map((method) => ({
+    method,
+    pattern,
+    permission: "administer",
+  }));
+}
+
+/** List, create, read, change and delete under one path. */
+function crud(
+  base: string,
+  read: PvePermission,
+  write: PvePermission,
+  item = ":id",
+): PveRule[] {
+  return [
+    { method: "GET", pattern: base, permission: read },
+    { method: "POST", pattern: base, permission: write },
+    { method: "GET", pattern: `${base}/${item}`, permission: read },
+    { method: "PUT", pattern: `${base}/${item}`, permission: write },
+    { method: "DELETE", pattern: `${base}/${item}`, permission: write },
+  ];
+}
+
+/** A firewall's options, rules, log and the names its rules can use. */
+function firewall(base: string, write: PvePermission): PveRule[] {
+  return [
+    { method: "GET", pattern: `${base}/options`, permission: "view" },
+    { method: "PUT", pattern: `${base}/options`, permission: write },
+    { method: "GET", pattern: `${base}/{log|refs}`, permission: "view" },
+    ...crud(`${base}/rules`, "view", write, ":pos"),
+  ];
+}
+
+/** IP sets and their entries. */
+function ipsets(base: string, write: PvePermission): PveRule[] {
+  return [
+    ...crud(base, "view", write, ":name"),
+    { method: "POST", pattern: `${base}/:name`, permission: write },
+    { method: "GET", pattern: `${base}/:name/:cidr`, permission: "view" },
+    { method: "PUT", pattern: `${base}/:name/:cidr`, permission: write },
+    { method: "DELETE", pattern: `${base}/:name/:cidr`, permission: write },
+  ];
+}
 
 function segmentMatches(rule: string, value: string): boolean {
   if (rule.startsWith(":")) return true;

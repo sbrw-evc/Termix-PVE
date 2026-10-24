@@ -38,6 +38,14 @@ Added in 0.2:
 - Import VMs and containers as Termix hosts and keep them in sync
 - Load, swap and pressure stall charts; Folder and Server views
 
+Added in 0.3:
+
+- Snapshots; backups with restore; backup jobs and Proxmox Backup Server storage
+- Replication and high availability
+- Firewall for the datacenter, nodes and guests
+- Users, API tokens, two factor, groups, pools, roles, realms and permissions
+- Cluster summary with join information; Ceph health per node
+
 Next: see [ROADMAP.md](ROADMAP.md).
 
 <br />

@@ -34,19 +34,26 @@ Each phase is a release, checked on a real node before it ships. Every new Proxm
 - 0.2.11: creating and removing LVM, LVM-Thin, directory and ZFS storage, wiping disks, custom
   certificates and ACME (accounts, DNS plugins, domains, order and renew)
 
-Still to come: Ceph. Replication and Firewall come with 0.3.
+- 0.2.15: node Notes and Options (start on boot delay, Wake-on-LAN)
 
-## 0.3: data and safety
+Ceph is shown read only since 0.3.0.
 
-- Snapshots: take, roll back, delete
-- Backups: run now, restore, jobs, retention, PBS storages
+## 0.3: data and safety, and access (done in 0.3.0)
+
+- Snapshots: take, roll back, delete (0.2.15)
+- Backups: back up now, restore, jobs, retention, Proxmox Backup Server storage
 - Replication jobs
-- Firewall: datacenter, node and guest rules, aliases, IP sets, security groups
-- Cluster: status, join information, HA groups and resources
+- Firewall: datacenter, node and guest rules, options, aliases, IP sets, security groups
+- Cluster: status, join information, HA resources and rules
+- Access: users, groups, roles, pools, 2FA, API tokens, realms, permissions (`administer`)
+- Ceph: health, monitors and pools per node, read only
 
-## 0.4: access
+## Later
 
-- Users, groups, roles, pools, 2FA, API tokens, realms (`administer`)
+- Ceph setup: install, monitors, OSDs, pools
+- Creating and joining clusters (needs a root password, so it stays in Proxmox for now)
+- SDN, metric servers, notifications and resource mappings
+- The console over API directly
 
 ## Open questions
 

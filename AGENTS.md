@@ -94,7 +94,9 @@ exec` over SSH, local node only; each answer starts with `+` so a failed exec re
   set `remote-desktop` settings (`enableRdp`/`rdpPort`, `enableVnc`/`vncPort`) and their login in
   `protocolAuth`; Docker is `pluginEnable.docker` plus `containerRuntime`.
 - Rules may list allowed parameters (`params` in `policy.ts`, checked by `paramsAllowed`): PUT
-  `nodes/{node}/config` is open only for `acme`, `acmedomainN`, `digest` and a `delete` of those.
+  `nodes/{node}/config` is open only for `acme`, `acmedomainN`, `description`, `startall-onboot-delay`,
+  `wakeonlan`, `digest` and a `delete` of those. Notes and Options save without the digest: they load
+  the config apart, so one save would make the other's digest stale.
 - Uploads: read the SSH channel (`resume()`) or it never emits `close` and the request hangs at 100%.
 - Import (`src/backend/import.ts`): imported guests carry the hidden `pveSource` host setting; sync
   finds them with `listHostValues`. Scheduled sync runs every minute through `ctx.schedule` and
@@ -103,4 +105,18 @@ exec` over SSH, local node only; each answer starts with `+` so a failed exec re
   `translate/languages.json`, with each language's own plural keys (`Intl.PluralRules`), and
   `locales/translations-lock.json` hashing the English each was made from (the official translator's
   format). Add new strings to `en.json`; untranslated keys fall back to English.
+- Datacenter panels (`src/frontend/datacenter/`) are built on `crud.tsx`: a list from one path plus a
+  dialog from a field list. Blank fields become `delete` on update; fields hidden by `showIf` are left
+  out (deleting a key another record type lacks makes Proxmox refuse); secrets are `local` fields the
+  panel sends only when typed. ACLs are added and removed with PUT `access/acl` (`createMethod`,
+  `onDelete`).
+- Firewall IP set entries are addressed by CIDR, so `pvePath` accepts `a.b.c.d/nn` as one segment.
+- PVE 9 migrated HA groups to rules (`cluster/ha/groups` answers "migrated"); the HA panel uses
+  `cluster/ha/rules`, whose PUT needs `type` again.
+- Proxmox's notes templates use `{{guestname}}`, which is also i18next's syntax: never put it in a
+  locale string.
+- The tree holds every Proxmox host at once (`ClustersView` in `PveTab.tsx`), each under its own
+  Datacenter row from `hostTree()`. Resource ids repeat between clusters (`node/proxmox`), so rows
+  select `<hostId>|<id>` (`selectionId`/`parseSelection`); details, tasks and import follow the
+  selected row's host.
 - Roadmap: `ROADMAP.md`.

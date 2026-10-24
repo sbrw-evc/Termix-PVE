@@ -223,7 +223,11 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} sõlmes {{node}}",
     "done": "{{label}}: valmis",
-    "failed": "{{label}} nurjus: {{reason}}"
+    "failed": "{{label}} nurjus: {{reason}}",
+    "collapse": "Peida ülesannete loend",
+    "expand": "Näita ülesannete loendit",
+    "runningCount_one": "Töötab: {{count}}",
+    "runningCount_other": "Töötab: {{count}}"
   },
   "guests": {
     "more": "Rohkem toiminguid",
@@ -602,6 +606,15 @@
         "stop": "Kas peatada {{name}}?",
         "restart": "Kas taaskäivitada {{name}}?",
         "description": "Proxmoxi enda teenused hoiavad sõlme ja selle API töös; ühe peatamine võib selle tööriista ühenduse katkestada, kuni teenus uuesti käivitub."
+      },
+      "states": {
+        "active": "aktiivne",
+        "inactive": "mitteaktiivne",
+        "failed": "nurjus",
+        "activating": "käivitub",
+        "deactivating": "peatub",
+        "running": "aktiivne",
+        "dead": "Peatatud"
       }
     },
     "updates": {
@@ -697,7 +710,8 @@
       "wipeTitle": "Kas tühjendada {{disk}}?",
       "wipeWarning": "Kustutab kettalt partitsioonitabeli ning kõik failisüsteemi-, LVM- ja ZFS-signatuurid (praegu: {{used}}). Selle sisu kaob jäädavalt.",
       "wipeLabel": "Tühjenda {{disk}} sõlmes {{node}}",
-      "typePath": "Kinnitamiseks sisesta {{disk}}"
+      "typePath": "Kinnitamiseks sisesta {{disk}}",
+      "wipeInUse": "Kasutusel. Eemaldage esmalt sellel olev köidete rühm, kogum, kataloog või salvestusruum."
     },
     "log": {
       "search": "Filtreeri logi...",

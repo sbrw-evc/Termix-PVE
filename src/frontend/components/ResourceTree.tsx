@@ -16,6 +16,9 @@ import {
 } from "lucide-react";
 import type { TreeItem, TreeKind } from "../tree";
 
+/** The tree item that opens the datacenter panels; not a /cluster/resources id. */
+export const DATACENTER_ID = "datacenter";
+
 export function statusColor(status: string | undefined): string {
   switch (status) {
     case "running":
@@ -63,7 +66,11 @@ function Row({
   const Icon = ICONS[item.kind];
   const resource = item.resource;
   // Folders and the datacenter carry translation keys.
-  const label = resource ? item.label : t(item.label);
+  const label = resource
+    ? item.label
+    : item.title !== undefined
+      ? t("tree.datacenterOf", { name: item.title })
+      : t(item.label);
   const hasChildren = !!item.children?.length;
   const Chevron = open ? ChevronDown : ChevronRight;
   let toggle: ReactNode = <span className="size-3.5 shrink-0" />;
@@ -84,7 +91,15 @@ function Row({
   return (
     <button
       type="button"
-      onClick={() => (resource ? onSelect(resource.id) : onToggle(item.key))}
+      onClick={() =>
+        item.selectId
+          ? onSelect(item.selectId)
+          : resource
+            ? onSelect(resource.id)
+            : item.kind === "datacenter"
+              ? onSelect(DATACENTER_ID)
+              : onToggle(item.key)
+      }
       className={cn(
         "flex w-full items-center gap-1.5 py-1 pr-2 text-left text-xs hover:bg-accent",
         selected && "bg-accent text-accent-foreground",
@@ -150,7 +165,13 @@ export function ResourceTree({
           <Row
             item={item}
             depth={depth}
-            selected={!!item.resource && item.resource.id === selectedId}
+            selected={
+              item.selectId
+                ? item.selectId === selectedId
+                : item.resource
+                  ? item.resource.id === selectedId
+                  : item.kind === "datacenter" && selectedId === DATACENTER_ID
+            }
             open={open}
             onSelect={onSelect}
             onToggle={toggle}

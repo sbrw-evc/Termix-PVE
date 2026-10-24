@@ -225,7 +225,13 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} na {{node}}",
     "done": "{{label}}: gotowe",
-    "failed": "{{label}} nie powiodło się: {{reason}}"
+    "failed": "{{label}} nie powiodło się: {{reason}}",
+    "collapse": "Ukryj listę zadań",
+    "expand": "Pokaż listę zadań",
+    "runningCount_one": "W toku: {{count}}",
+    "runningCount_few": "W toku: {{count}}",
+    "runningCount_many": "W toku: {{count}}",
+    "runningCount_other": "W toku: {{count}}"
   },
   "guests": {
     "more": "Więcej działań",
@@ -604,6 +610,15 @@
         "stop": "Zatrzymać {{name}}?",
         "restart": "Uruchomić ponownie {{name}}?",
         "description": "Własne usługi Proxmox utrzymują działanie węzła i jego API; zatrzymanie jednej z nich może odciąć to narzędzie do czasu jej ponownego uruchomienia."
+      },
+      "states": {
+        "active": "aktywna",
+        "inactive": "nieaktywna",
+        "failed": "błąd",
+        "activating": "uruchamianie",
+        "deactivating": "zatrzymywanie",
+        "running": "aktywna",
+        "dead": "Zatrzymany"
       }
     },
     "updates": {
@@ -703,7 +718,8 @@
       "wipeTitle": "Wyczyścić {{disk}}?",
       "wipeWarning": "Kasuje tablicę partycji oraz wszystkie sygnatury systemów plików, LVM i ZFS na dysku (obecnie: {{used}}). Jego zawartość zniknie bezpowrotnie.",
       "wipeLabel": "Wyczyść {{disk}} na {{node}}",
-      "typePath": "Wpisz {{disk}}, aby potwierdzić"
+      "typePath": "Wpisz {{disk}}, aby potwierdzić",
+      "wipeInUse": "Dysk jest w użyciu. Najpierw usuń grupę woluminów, pulę, katalog lub magazyn na nim."
     },
     "log": {
       "search": "Filtruj dziennik...",

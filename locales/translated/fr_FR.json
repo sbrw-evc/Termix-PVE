@@ -224,7 +224,12 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} sur {{node}}",
     "done": "{{label}} : terminé",
-    "failed": "{{label}} a échoué : {{reason}}"
+    "failed": "{{label}} a échoué : {{reason}}",
+    "collapse": "Masquer la liste des tâches",
+    "expand": "Afficher la liste des tâches",
+    "runningCount_one": "En cours: {{count}}",
+    "runningCount_many": "En cours: {{count}}",
+    "runningCount_other": "En cours: {{count}}"
   },
   "guests": {
     "more": "Plus d'actions",
@@ -603,6 +608,15 @@
         "stop": "Arrêter {{name}} ?",
         "restart": "Redémarrer {{name}} ?",
         "description": "Les services propres à Proxmox font fonctionner le nœud et son API ; en arrêter un peut couper cet outil jusqu'à son redémarrage."
+      },
+      "states": {
+        "active": "actif",
+        "inactive": "inactif",
+        "failed": "en échec",
+        "activating": "démarrage",
+        "deactivating": "arrêt",
+        "running": "actif",
+        "dead": "Arrêté"
       }
     },
     "updates": {
@@ -700,7 +714,8 @@
       "wipeTitle": "Effacer {{disk}} ?",
       "wipeWarning": "Efface la table de partitions et toutes les signatures de système de fichiers, LVM et ZFS du disque (actuellement : {{used}}). Son contenu est perdu définitivement.",
       "wipeLabel": "Effacer {{disk}} sur {{node}}",
-      "typePath": "Saisissez {{disk}} pour confirmer"
+      "typePath": "Saisissez {{disk}} pour confirmer",
+      "wipeInUse": "Disque utilisé. Supprimez d'abord le groupe de volumes, le pool, le répertoire ou le stockage qu'il contient."
     },
     "log": {
       "search": "Filtrer le journal...",

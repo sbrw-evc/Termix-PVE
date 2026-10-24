@@ -224,7 +224,12 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} su {{node}}",
     "done": "{{label}}: completato",
-    "failed": "{{label}} non riuscito: {{reason}}"
+    "failed": "{{label}} non riuscito: {{reason}}",
+    "collapse": "Nascondi l'elenco delle attività",
+    "expand": "Mostra l'elenco delle attività",
+    "runningCount_one": "In esecuzione: {{count}}",
+    "runningCount_many": "In esecuzione: {{count}}",
+    "runningCount_other": "In esecuzione: {{count}}"
   },
   "guests": {
     "more": "Altre azioni",
@@ -603,6 +608,15 @@
         "stop": "Fermare {{name}}?",
         "restart": "Riavviare {{name}}?",
         "description": "I servizi di Proxmox mantengono attivi il nodo e la sua API; fermarne uno può scollegare questo strumento finché non riparte."
+      },
+      "states": {
+        "active": "attivo",
+        "inactive": "inattivo",
+        "failed": "non riuscito",
+        "activating": "in avvio",
+        "deactivating": "in arresto",
+        "running": "attivo",
+        "dead": "Fermo"
       }
     },
     "updates": {
@@ -700,7 +714,8 @@
       "wipeTitle": "Cancellare {{disk}}?",
       "wipeWarning": "Cancella la tabella delle partizioni e ogni firma di file system, LVM e ZFS sul disco (ora: {{used}}). Il contenuto andrà perso per sempre.",
       "wipeLabel": "Cancella {{disk}} su {{node}}",
-      "typePath": "Digita {{disk}} per confermare"
+      "typePath": "Digita {{disk}} per confermare",
+      "wipeInUse": "In uso. Rimuovi prima il gruppo di volumi, il pool, la directory o lo storage presenti."
     },
     "log": {
       "search": "Filtra il log...",

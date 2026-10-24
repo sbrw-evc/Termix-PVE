@@ -224,7 +224,12 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} mezglā {{node}}",
     "done": "{{label}}: pabeigts",
-    "failed": "{{label}} neizdevās: {{reason}}"
+    "failed": "{{label}} neizdevās: {{reason}}",
+    "collapse": "Paslēpt uzdevumu sarakstu",
+    "expand": "Rādīt uzdevumu sarakstu",
+    "runningCount_zero": "Darbojas: {{count}}",
+    "runningCount_one": "Darbojas: {{count}}",
+    "runningCount_other": "Darbojas: {{count}}"
   },
   "guests": {
     "more": "Citas darbības",
@@ -603,6 +608,15 @@
         "stop": "Apturēt {{name}}?",
         "restart": "Restartēt {{name}}?",
         "description": "Proxmox pakalpojumi uztur mezglu un tā API darbībā; apturot kādu, šis rīks var zaudēt savienojumu, līdz tas atkal tiek startēts."
+      },
+      "states": {
+        "active": "aktīvs",
+        "inactive": "neaktīvs",
+        "failed": "kļūme",
+        "activating": "palaižas",
+        "deactivating": "apstājas",
+        "running": "aktīvs",
+        "dead": "Apturēts"
       }
     },
     "updates": {
@@ -700,7 +714,8 @@
       "wipeTitle": "Notīrīt {{disk}}?",
       "wipeWarning": "Izdzēš nodalījumu tabulu un visus failu sistēmu, LVM un ZFS parakstus diskā (pašlaik: {{used}}). Tā saturs tiek zaudēts neatgriezeniski.",
       "wipeLabel": "Notīrīt {{disk}} mezglā {{node}}",
-      "typePath": "Ierakstiet {{disk}}, lai apstiprinātu"
+      "typePath": "Ierakstiet {{disk}}, lai apstiprinātu",
+      "wipeInUse": "Tiek izmantots. Vispirms noņemiet tajā esošo sējumu grupu, pūlu, direktoriju vai krātuvi."
     },
     "log": {
       "search": "Filtrēt žurnālu...",

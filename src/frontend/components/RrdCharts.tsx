@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "@termix-ssh/plugin-sdk/frontend";
 import { GroupHeading, LineChart, Segmented } from "@termix-ssh/plugin-sdk/ui";
 import { pve, toCallError, type GuestType } from "../api";
-import { formatBytes, formatRate } from "../format";
+import { formatBytesShort } from "../format";
 
 export type Timeframe = "hour" | "day" | "week" | "month" | "year";
 const TIMEFRAMES: Timeframe[] = ["hour", "day", "week", "month", "year"];
@@ -198,8 +198,8 @@ export function hasData(values: Array<number | null>): boolean {
 function formatter(format: ChartSpec["format"]): (v: number) => string {
   if (format === "percent") return (v) => `${v.toFixed(0)}%`;
   if (format === "psi") return (v) => `${v.toFixed(2)}%`;
-  if (format === "bytes") return (v) => formatBytes(v);
-  if (format === "rate") return (v) => formatRate(v);
+  // Short forms: the chart's Y label column is 44px wide; the title names the unit.
+  if (format === "bytes" || format === "rate") return formatBytesShort;
   return (v) => v.toFixed(2);
 }
 

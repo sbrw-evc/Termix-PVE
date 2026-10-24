@@ -224,7 +224,12 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} na {{node}}",
     "done": "{{label}}: gotovo",
-    "failed": "{{label}} nije uspjelo: {{reason}}"
+    "failed": "{{label}} nije uspjelo: {{reason}}",
+    "collapse": "Sakrij popis zadataka",
+    "expand": "Prikaži popis zadataka",
+    "runningCount_one": "U tijeku: {{count}}",
+    "runningCount_few": "U tijeku: {{count}}",
+    "runningCount_other": "U tijeku: {{count}}"
   },
   "guests": {
     "more": "Više radnji",
@@ -603,6 +608,15 @@
         "stop": "Zaustaviti {{name}}?",
         "restart": "Ponovno pokrenuti {{name}}?",
         "description": "Vlastite usluge Proxmoxa održavaju rad čvora i njegovog API-ja; zaustavljanje jedne može prekinuti ovaj alat dok se ponovno ne pokrene."
+      },
+      "states": {
+        "active": "aktivna",
+        "inactive": "neaktivna",
+        "failed": "neuspjela",
+        "activating": "pokreće se",
+        "deactivating": "zaustavlja se",
+        "running": "aktivna",
+        "dead": "Zaustavljeno"
       }
     },
     "updates": {
@@ -700,7 +714,8 @@
       "wipeTitle": "Obrisati {{disk}}?",
       "wipeWarning": "Briše tablicu particija i svaki potpis datotečnog sustava, LVM-a i ZFS-a na disku (sada: {{used}}). Sadržaj se trajno gubi.",
       "wipeLabel": "Obriši {{disk}} na {{node}}",
-      "typePath": "Upišite {{disk}} za potvrdu"
+      "typePath": "Upišite {{disk}} za potvrdu",
+      "wipeInUse": "Disk se koristi. Najprije uklonite grupu volumena, bazen, direktorij ili pohranu na njemu."
     },
     "log": {
       "search": "Filtriraj zapisnik...",

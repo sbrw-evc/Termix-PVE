@@ -223,7 +223,11 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} på {{node}}",
     "done": "{{label}}: klar",
-    "failed": "{{label}} misslyckades: {{reason}}"
+    "failed": "{{label}} misslyckades: {{reason}}",
+    "collapse": "Dölj uppgiftslistan",
+    "expand": "Visa uppgiftslistan",
+    "runningCount_one": "Körs: {{count}}",
+    "runningCount_other": "Körs: {{count}}"
   },
   "guests": {
     "more": "Fler åtgärder",
@@ -602,6 +606,15 @@
         "stop": "Stoppa {{name}}?",
         "restart": "Starta om {{name}}?",
         "description": "Proxmox egna tjänster håller noden och dess API igång; om en stoppas kan det här verktyget kopplas bort tills den startar igen."
+      },
+      "states": {
+        "active": "aktiv",
+        "inactive": "inaktiv",
+        "failed": "misslyckad",
+        "activating": "startar",
+        "deactivating": "stoppar",
+        "running": "aktiv",
+        "dead": "Stoppad"
       }
     },
     "updates": {
@@ -697,7 +710,8 @@
       "wipeTitle": "Rensa {{disk}}?",
       "wipeWarning": "Raderar partitionstabellen och alla filsystems-, LVM- och ZFS-signaturer på disken (nu: {{used}}). Innehållet försvinner för gott.",
       "wipeLabel": "Rensa {{disk}} på {{node}}",
-      "typePath": "Skriv {{disk}} för att bekräfta"
+      "typePath": "Skriv {{disk}} för att bekräfta",
+      "wipeInUse": "Används. Ta först bort volymgruppen, poolen, katalogen eller lagringen på den."
     },
     "log": {
       "search": "Filtrera loggen...",

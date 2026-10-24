@@ -224,7 +224,12 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} ב-{{node}}",
     "done": "{{label}}: הושלם",
-    "failed": "{{label}} נכשל: {{reason}}"
+    "failed": "{{label}} נכשל: {{reason}}",
+    "collapse": "הסתרת רשימת המשימות",
+    "expand": "הצגת רשימת המשימות",
+    "runningCount_one": "פועלת: {{count}}",
+    "runningCount_two": "פועלת: {{count}}",
+    "runningCount_other": "פועלת: {{count}}"
   },
   "guests": {
     "more": "פעולות נוספות",
@@ -603,6 +608,15 @@
         "stop": "לעצור את {{name}}?",
         "restart": "להפעיל מחדש את {{name}}?",
         "description": "השירותים של Proxmox עצמו שומרים על הצומת ועל ה-API שלו פועלים; עצירת אחד מהם עלולה לנתק את הכלי הזה עד שיופעל שוב."
+      },
+      "states": {
+        "active": "פעיל",
+        "inactive": "לא פעיל",
+        "failed": "נכשל",
+        "activating": "מופעל",
+        "deactivating": "נעצר",
+        "running": "פעיל",
+        "dead": "עצור"
       }
     },
     "updates": {
@@ -700,7 +714,8 @@
       "wipeTitle": "למחוק את {{disk}}?",
       "wipeWarning": "מוחק את טבלת המחיצות ואת כל חתימות מערכות הקבצים, LVM ו-ZFS בדיסק (כעת: {{used}}). מה שעליו יאבד לצמיתות.",
       "wipeLabel": "מחיקת {{disk}} ב-{{node}}",
-      "typePath": "הקלידו {{disk}} לאישור"
+      "typePath": "הקלידו {{disk}} לאישור",
+      "wipeInUse": "הדיסק בשימוש. הסירו קודם את קבוצת הכרכים, המאגר, התיקייה או האחסון שעליו."
     },
     "log": {
       "search": "סינון היומן...",

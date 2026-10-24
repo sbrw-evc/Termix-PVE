@@ -227,7 +227,15 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} على {{node}}",
     "done": "{{label}}: تم",
-    "failed": "فشل {{label}}: {{reason}}"
+    "failed": "فشل {{label}}: {{reason}}",
+    "collapse": "إخفاء قائمة المهام",
+    "expand": "إظهار قائمة المهام",
+    "runningCount_zero": "قيد التشغيل: {{count}}",
+    "runningCount_one": "قيد التشغيل: {{count}}",
+    "runningCount_two": "قيد التشغيل: {{count}}",
+    "runningCount_few": "قيد التشغيل: {{count}}",
+    "runningCount_many": "قيد التشغيل: {{count}}",
+    "runningCount_other": "قيد التشغيل: {{count}}"
   },
   "guests": {
     "more": "إجراءات أخرى",
@@ -606,6 +614,15 @@
         "stop": "إيقاف {{name}}؟",
         "restart": "إعادة تشغيل {{name}}؟",
         "description": "خدمات Proxmox الخاصة تُبقي العقدة وواجهة API تعملان؛ إيقاف إحداها قد يقطع هذه الأداة حتى تبدأ من جديد."
+      },
+      "states": {
+        "active": "نشطة",
+        "inactive": "غير نشطة",
+        "failed": "فشلت",
+        "activating": "قيد البدء",
+        "deactivating": "قيد الإيقاف",
+        "running": "نشطة",
+        "dead": "متوقف"
       }
     },
     "updates": {
@@ -709,7 +726,8 @@
       "wipeTitle": "مسح {{disk}}؟",
       "wipeWarning": "يمحو جدول الأقسام وكل توقيعات أنظمة الملفات وLVM وZFS على القرص (حاليًا: {{used}}). ما عليه سيُفقد نهائيًا.",
       "wipeLabel": "مسح {{disk}} على {{node}}",
-      "typePath": "اكتب {{disk}} للتأكيد"
+      "typePath": "اكتب {{disk}} للتأكيد",
+      "wipeInUse": "القرص قيد الاستخدام. احذف أولًا مجموعة وحدات التخزين أو التجمع أو الدليل أو التخزين الموجود عليه."
     },
     "log": {
       "search": "تصفية السجل...",

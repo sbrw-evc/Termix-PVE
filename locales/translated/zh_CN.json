@@ -222,7 +222,10 @@
     "ok": "OK",
     "logTitle": "{{node}} 上的 {{type}} {{id}}",
     "done": "{{label}}：已完成",
-    "failed": "{{label}} 失败：{{reason}}"
+    "failed": "{{label}} 失败：{{reason}}",
+    "collapse": "隐藏任务列表",
+    "expand": "显示任务列表",
+    "runningCount_other": "运行中: {{count}}"
   },
   "guests": {
     "more": "更多操作",
@@ -601,6 +604,15 @@
         "stop": "停止 {{name}}？",
         "restart": "重启 {{name}}？",
         "description": "Proxmox 自身的服务维持节点及其 API 的运行；停止其中之一可能导致此工具断开，直到该服务重新启动。"
+      },
+      "states": {
+        "active": "运行中",
+        "inactive": "未激活",
+        "failed": "失败",
+        "activating": "正在启动",
+        "deactivating": "正在停止",
+        "running": "运行中",
+        "dead": "已停止"
       }
     },
     "updates": {
@@ -694,7 +706,8 @@
       "wipeTitle": "擦除 {{disk}}？",
       "wipeWarning": "将擦除磁盘上的分区表以及所有文件系统、LVM 和 ZFS 签名（当前：{{used}}）。其上的内容将永久丢失。",
       "wipeLabel": "擦除 {{node}} 上的 {{disk}}",
-      "typePath": "输入 {{disk}} 以确认"
+      "typePath": "输入 {{disk}} 以确认",
+      "wipeInUse": "磁盘正在使用。请先删除其上的卷组、池、目录或存储。"
     },
     "log": {
       "search": "筛选日志...",

@@ -222,7 +222,10 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} di {{node}}",
     "done": "{{label}}: selesai",
-    "failed": "{{label}} gagal: {{reason}}"
+    "failed": "{{label}} gagal: {{reason}}",
+    "collapse": "Sembunyikan daftar tugas",
+    "expand": "Tampilkan daftar tugas",
+    "runningCount_other": "Berjalan: {{count}}"
   },
   "guests": {
     "more": "Tindakan lainnya",
@@ -601,6 +604,15 @@
         "stop": "Hentikan {{name}}?",
         "restart": "Mulai ulang {{name}}?",
         "description": "Layanan milik Proxmox menjaga node dan API-nya tetap berjalan; menghentikan salah satunya dapat memutus alat ini hingga layanan itu berjalan lagi."
+      },
+      "states": {
+        "active": "aktif",
+        "inactive": "tidak aktif",
+        "failed": "gagal",
+        "activating": "memulai",
+        "deactivating": "menghentikan",
+        "running": "aktif",
+        "dead": "Berhenti"
       }
     },
     "updates": {
@@ -694,7 +706,8 @@
       "wipeTitle": "Wipe {{disk}}?",
       "wipeWarning": "Menghapus tabel partisi dan setiap signature sistem file, LVM, dan ZFS di disk (saat ini: {{used}}). Isinya hilang selamanya.",
       "wipeLabel": "Wipe {{disk}} di {{node}}",
-      "typePath": "Ketik {{disk}} untuk mengonfirmasi"
+      "typePath": "Ketik {{disk}} untuk mengonfirmasi",
+      "wipeInUse": "Sedang digunakan. Hapus dulu grup volume, pool, direktori, atau penyimpanan di dalamnya."
     },
     "log": {
       "search": "Filter log...",

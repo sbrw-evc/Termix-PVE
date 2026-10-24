@@ -1,5 +1,53 @@
 # Changelog
 
+## 0.3.2
+
+### Changed
+
+- Every Proxmox host shows in one tree, each under its own Datacenter row named after the host, instead of picking one at the top left; details, tasks and Import to Termix follow the selected row
+
+## 0.3.1
+
+### Fixed
+
+- Restoring a container backup failed with "Parameter verification failed": the restore storage is now picked from the storages that hold this kind of disk, and a container needs one
+- Move down on a firewall rule did nothing; it now moves the rule one step
+- A form dialog lists Proxmox's errors for parameters it has no field for, instead of only "Parameter verification failed"
+- Recovery keys ask which user first and say they replace the old ones, instead of making keys for the first user at once
+- The datacenter summary says how many guests run, without the node count
+
+## 0.3.0
+
+### Added
+
+- Datacenter view: click Datacenter in the tree for Summary, Storage, Backup, Replication, Permissions, HA and Firewall
+- Cluster summary: quorum, nodes and the join information a new node pastes into Proxmox
+- Proxmox Backup Server storage: add, edit and remove
+- Backup jobs: schedule, guests (all, all except, listed or a pool), mode, compression, notes and retention, with Run now, and the guests no job includes
+- Backup tab on guests: back up now, restore into a new guest or over the guest, notes, protection and delete
+- Replication jobs with their last sync and errors, and Run now
+- High availability: status, managed guests with Migrate to, and node and resource affinity rules
+- Firewall for the datacenter, nodes and guests: options, rules with move up and down, security groups, aliases, IP sets and the log; turning the datacenter firewall on asks first
+- Permissions: users, API tokens (the secret is shown once), two factor with TOTP and recovery keys, groups, pools and their members, roles, realms (LDAP, Active Directory, OpenID Connect) and permissions
+- Ceph tab on nodes: health, monitors and pools, read only; says so when Ceph is not installed
+
+### Changed
+
+- The Now row of the snapshot list no longer shows Proxmox's untranslated "You are here!"
+- The new screens are in English and Russian; other languages show them in English for now
+
+## 0.2.15
+
+### Added
+
+- Snapshots tab on VMs and containers: take a snapshot (with RAM for a running VM), roll back, edit its description and delete, shown as a tree like in Proxmox
+- Node Notes and Options in the System tab: notes, the delay before guests start on boot, and the Wake-on-LAN MAC
+- The strings added in 0.2.13 and 0.2.14 are translated into every language
+
+### Fixed
+
+- Chart axis labels like 17.1 GiB were cut on the left: memory, swap and network axes use short forms like 17.1G
+
 ## 0.2.14
 
 ### Added

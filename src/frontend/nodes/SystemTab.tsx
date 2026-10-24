@@ -7,6 +7,7 @@ import { Fact } from "../components/Usage";
 import { Field, FormDialog, SelectInput, TextInput } from "../components/forms";
 import { State, useNodeData, type NodeTabProps } from "./NodeTabs";
 import { CertificatesSection } from "./Certificates";
+import { NotesSection, OptionsSection } from "./NodeOptions";
 import {
   dnsForm,
   dnsParams,
@@ -18,12 +19,14 @@ import {
   type NodeTime,
 } from "./system";
 
-/** DNS, /etc/hosts, time zone and certificates of a node, as Proxmox's System menu. */
+/** Notes, DNS, time zone, options, /etc/hosts and certificates of a node, as Proxmox's System menu. */
 export function SystemTab(props: NodeTabProps) {
   return (
     <div className="flex flex-col gap-5">
+      <NotesSection {...props} />
       <DnsSection {...props} />
       <TimeSection {...props} />
+      <OptionsSection {...props} />
       <HostsSection {...props} />
       <CertificatesSection {...props} />
     </div>

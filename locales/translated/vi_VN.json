@@ -222,7 +222,10 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} trên {{node}}",
     "done": "{{label}}: xong",
-    "failed": "{{label}} thất bại: {{reason}}"
+    "failed": "{{label}} thất bại: {{reason}}",
+    "collapse": "Ẩn danh sách tác vụ",
+    "expand": "Hiện danh sách tác vụ",
+    "runningCount_other": "Đang chạy: {{count}}"
   },
   "guests": {
     "more": "Thao tác khác",
@@ -601,6 +604,15 @@
         "stop": "Dừng {{name}}?",
         "restart": "Khởi động lại {{name}}?",
         "description": "Các dịch vụ của chính Proxmox giữ cho node và API hoạt động; dừng một dịch vụ có thể làm công cụ này mất kết nối cho đến khi nó khởi động lại."
+      },
+      "states": {
+        "active": "đang hoạt động",
+        "inactive": "không hoạt động",
+        "failed": "lỗi",
+        "activating": "đang khởi động",
+        "deactivating": "đang dừng",
+        "running": "đang hoạt động",
+        "dead": "Đã dừng"
       }
     },
     "updates": {
@@ -694,7 +706,8 @@
       "wipeTitle": "Xóa sạch {{disk}}?",
       "wipeWarning": "Xóa bảng phân vùng và mọi chữ ký hệ thống tệp, LVM và ZFS trên ổ đĩa (hiện tại: {{used}}). Dữ liệu trên đó sẽ mất vĩnh viễn.",
       "wipeLabel": "Xóa sạch {{disk}} trên {{node}}",
-      "typePath": "Nhập {{disk}} để xác nhận"
+      "typePath": "Nhập {{disk}} để xác nhận",
+      "wipeInUse": "Đang được dùng. Hãy xóa nhóm ổ đĩa, pool, thư mục hoặc kho lưu trữ trên đĩa trước."
     },
     "log": {
       "search": "Lọc nhật ký...",

@@ -1,7 +1,7 @@
 {
   "id": "pve",
   "name": "Proxmox VE",
-  "version": "0.2.14",
+  "version": "0.3.2",
   "description": "Manage Proxmox VE from Termix: virtual machines, containers, storage, network, backups, firewall, access and the cluster.",
   "author": {
     "name": "Дмитрий Ляхов"
@@ -23,6 +23,11 @@
     "Import VMs and containers as Termix hosts and keep them in sync",
     "Node services, updates, disks with SMART, log, reboot and shutdown",
     "CPU, load, memory, swap, network, disk and pressure stall charts for nodes and guests",
+    "Snapshots, backups with restore, backup jobs and Proxmox Backup Server storage",
+    "Replication jobs and high availability: resources, rules and migration",
+    "Firewall for the datacenter, nodes and guests: rules, security groups, aliases and IP sets",
+    "Users, API tokens, two factor, groups, pools, roles, realms and permissions",
+    "Cluster summary with join information, and Ceph health per node",
     "Connect through the Proxmox API over SSH, straight to the API, or with pvesh over SSH"
   ],
   "env": [],

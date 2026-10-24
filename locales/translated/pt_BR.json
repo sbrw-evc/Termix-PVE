@@ -224,7 +224,12 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} em {{node}}",
     "done": "{{label}}: concluído",
-    "failed": "{{label}} falhou: {{reason}}"
+    "failed": "{{label}} falhou: {{reason}}",
+    "collapse": "Ocultar a lista de tarefas",
+    "expand": "Mostrar a lista de tarefas",
+    "runningCount_one": "Em execução: {{count}}",
+    "runningCount_many": "Em execução: {{count}}",
+    "runningCount_other": "Em execução: {{count}}"
   },
   "guests": {
     "more": "Mais ações",
@@ -603,6 +608,15 @@
         "stop": "Parar {{name}}?",
         "restart": "Reiniciar {{name}}?",
         "description": "Os serviços do próprio Proxmox mantêm o nó e sua API funcionando; parar um deles pode desconectar esta ferramenta até que ele inicie novamente."
+      },
+      "states": {
+        "active": "ativo",
+        "inactive": "inativo",
+        "failed": "com falha",
+        "activating": "iniciando",
+        "deactivating": "parando",
+        "running": "ativo",
+        "dead": "Parado"
       }
     },
     "updates": {
@@ -700,7 +714,8 @@
       "wipeTitle": "Apagar {{disk}}?",
       "wipeWarning": "Apaga a tabela de partições e todas as assinaturas de sistema de arquivos, LVM e ZFS do disco (agora: {{used}}). O que há nele será perdido para sempre.",
       "wipeLabel": "Apagar {{disk}} em {{node}}",
-      "typePath": "Digite {{disk}} para confirmar"
+      "typePath": "Digite {{disk}} para confirmar",
+      "wipeInUse": "Em uso. Remova primeiro o grupo de volumes, pool, diretório ou armazenamento nele."
     },
     "log": {
       "search": "Filtrar o log...",

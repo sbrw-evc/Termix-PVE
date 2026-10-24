@@ -222,7 +222,10 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} pada {{node}}",
     "done": "{{label}}: selesai",
-    "failed": "{{label}} gagal: {{reason}}"
+    "failed": "{{label}} gagal: {{reason}}",
+    "collapse": "Sembunyikan senarai tugas",
+    "expand": "Tunjukkan senarai tugas",
+    "runningCount_other": "Berjalan: {{count}}"
   },
   "guests": {
     "more": "Tindakan lain",
@@ -601,6 +604,15 @@
         "stop": "Hentikan {{name}}?",
         "restart": "Mula semula {{name}}?",
         "description": "Perkhidmatan Proxmox sendiri memastikan nod dan API-nya berjalan; menghentikan satu boleh memutuskan alat ini sehingga ia dimulakan semula."
+      },
+      "states": {
+        "active": "aktif",
+        "inactive": "tidak aktif",
+        "failed": "gagal",
+        "activating": "sedang bermula",
+        "deactivating": "sedang berhenti",
+        "running": "aktif",
+        "dead": "Dihentikan"
       }
     },
     "updates": {
@@ -694,7 +706,8 @@
       "wipeTitle": "Hapuskan {{disk}}?",
       "wipeWarning": "Memadamkan jadual partition dan setiap tandatangan sistem fail, LVM dan ZFS pada cakera (kini: {{used}}). Kandungannya hilang untuk selamanya.",
       "wipeLabel": "Hapuskan {{disk}} pada {{node}}",
-      "typePath": "Taip {{disk}} untuk mengesahkan"
+      "typePath": "Taip {{disk}} untuk mengesahkan",
+      "wipeInUse": "Sedang digunakan. Alih keluar kumpulan volum, kolam, direktori atau storan padanya dahulu."
     },
     "log": {
       "search": "Tapis log...",

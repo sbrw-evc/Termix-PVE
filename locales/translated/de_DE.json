@@ -223,7 +223,11 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} auf {{node}}",
     "done": "{{label}}: erledigt",
-    "failed": "{{label}} fehlgeschlagen: {{reason}}"
+    "failed": "{{label}} fehlgeschlagen: {{reason}}",
+    "collapse": "Aufgabenliste ausblenden",
+    "expand": "Aufgabenliste einblenden",
+    "runningCount_one": "Läuft: {{count}}",
+    "runningCount_other": "Läuft: {{count}}"
   },
   "guests": {
     "more": "Weitere Aktionen",
@@ -602,6 +606,15 @@
         "stop": "{{name}} stoppen?",
         "restart": "{{name}} neu starten?",
         "description": "Die eigenen Dienste von Proxmox halten den Knoten und seine API am Laufen; das Stoppen eines Dienstes kann dieses Werkzeug trennen, bis er wieder startet."
+      },
+      "states": {
+        "active": "aktiv",
+        "inactive": "inaktiv",
+        "failed": "fehlgeschlagen",
+        "activating": "startet",
+        "deactivating": "stoppt",
+        "running": "aktiv",
+        "dead": "Gestoppt"
       }
     },
     "updates": {
@@ -697,7 +710,8 @@
       "wipeTitle": "{{disk}} löschen?",
       "wipeWarning": "Löscht die Partitionstabelle und jede Dateisystem-, LVM- und ZFS-Signatur auf der Festplatte (derzeit: {{used}}). Der Inhalt ist endgültig verloren.",
       "wipeLabel": "{{disk}} auf {{node}} löschen",
-      "typePath": "Geben Sie zur Bestätigung {{disk}} ein"
+      "typePath": "Geben Sie zur Bestätigung {{disk}} ein",
+      "wipeInUse": "In Benutzung. Entfernen Sie zuerst die Volume-Gruppe, den Pool, das Verzeichnis oder den Speicher darauf."
     },
     "log": {
       "search": "Protokoll filtern...",

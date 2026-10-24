@@ -49,19 +49,32 @@ import { CloneDialog, DeleteDialog, MigrateDialog } from "./GuestDialogs";
 import { HardwareTab } from "./hardware/HardwareTab";
 import { OptionsTab } from "./options/OptionsTab";
 import { CloudInitTab } from "./options/CloudInitTab";
+import { SnapshotsTab } from "./SnapshotsTab";
+import { BackupTab } from "./BackupTab";
+import { FirewallPanel } from "../datacenter/FirewallPanel";
 import { useGuestIps } from "./ips";
 import { CONSOLE_TAB, type ConsoleTabData } from "./console/ConsoleTab";
 import { ImportDialog } from "../components/ImportDialog";
 
-type GuestTab = "summary" | "hardware" | "options" | "cloudinit";
+type GuestTab =
+  | "summary"
+  | "hardware"
+  | "options"
+  | "cloudinit"
+  | "backup"
+  | "snapshots"
+  | "firewall";
 
-/** Cloud-init only exists for VMs. */
+/** Cloud-init only exists for VMs; templates can't have snapshots. In Proxmox's order. */
 function tabsFor(guest: { type: GuestType; template?: number }): GuestTab[] {
   return [
     "summary",
     "hardware",
     "options",
     ...(guest.type === "qemu" ? (["cloudinit"] as const) : []),
+    "backup",
+    ...(guest.template ? [] : (["snapshots"] as const)),
+    "firewall",
   ];
 }
 
@@ -415,6 +428,20 @@ export function GuestView({
       {tab === "options" && <OptionsTab guest={ref} isVisible={isVisible} />}
       {tab === "cloudinit" && (
         <CloudInitTab guest={ref} isVisible={isVisible} />
+      )}
+      {tab === "backup" && (
+        <BackupTab guest={ref} running={running} isVisible={isVisible} />
+      )}
+      {tab === "firewall" && (
+        <FirewallPanel
+          hostId={hostId}
+          base={["nodes", guest.node, guest.type, guest.vmid, "firewall"]}
+          scope="guest"
+          isVisible={isVisible}
+        />
+      )}
+      {tab === "snapshots" && (
+        <SnapshotsTab guest={ref} running={running} isVisible={isVisible} />
       )}
 
       {offerImport && (

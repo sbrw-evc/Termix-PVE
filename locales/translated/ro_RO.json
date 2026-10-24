@@ -224,7 +224,12 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} pe {{node}}",
     "done": "{{label}}: finalizat",
-    "failed": "{{label}} a eșuat: {{reason}}"
+    "failed": "{{label}} a eșuat: {{reason}}",
+    "collapse": "Ascunde lista de sarcini",
+    "expand": "Afișează lista de sarcini",
+    "runningCount_one": "Rulează: {{count}}",
+    "runningCount_few": "Rulează: {{count}}",
+    "runningCount_other": "Rulează: {{count}}"
   },
   "guests": {
     "more": "Mai multe acțiuni",
@@ -603,6 +608,15 @@
         "stop": "Opriți {{name}}?",
         "restart": "Reporniți {{name}}?",
         "description": "Serviciile proprii Proxmox mențin nodul și API-ul său în funcțiune; oprirea unuia poate deconecta acest instrument până când pornește din nou."
+      },
+      "states": {
+        "active": "activ",
+        "inactive": "inactiv",
+        "failed": "eșuat",
+        "activating": "pornește",
+        "deactivating": "se oprește",
+        "running": "activ",
+        "dead": "Oprit"
       }
     },
     "updates": {
@@ -700,7 +714,8 @@
       "wipeTitle": "Ștergeți {{disk}}?",
       "wipeWarning": "Șterge tabela de partiții și toate semnăturile de sistem de fișiere, LVM și ZFS de pe disc (acum: {{used}}). Ce conține se pierde definitiv.",
       "wipeLabel": "Ștergeți {{disk}} pe {{node}}",
-      "typePath": "Tastați {{disk}} pentru confirmare"
+      "typePath": "Tastați {{disk}} pentru confirmare",
+      "wipeInUse": "În uz. Eliminați mai întâi grupul de volume, pool-ul, directorul sau stocarea de pe el."
     },
     "log": {
       "search": "Filtrați jurnalul...",

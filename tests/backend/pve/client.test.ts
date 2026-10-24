@@ -67,6 +67,16 @@ describe("pvePath", () => {
     }
   });
 
+  it("keeps an IP set's CIDR as one segment", () => {
+    const path = ["cluster", "firewall", "ipset", "lan", "10.0.0.0/24"];
+    expect(pvePath(path, true)).toBe(
+      "/cluster/firewall/ipset/lan/10.0.0.0%2F24",
+    );
+    for (const bad of ["10.0.0.0/24/x", "10.0.0/24", "a.b.c.d/24", "../24"]) {
+      expect(() => pvePath(["nodes", bad])).toThrow(PveError);
+    }
+  });
+
   it("refuses segments that could leave the path", () => {
     for (const bad of ["..", ".", "a/b", "a b", "a?b", "a#b", "", "a;rm"]) {
       expect(() => pvePath(["nodes", bad])).toThrow(PveError);

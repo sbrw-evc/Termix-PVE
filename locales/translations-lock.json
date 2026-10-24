@@ -780,5 +780,16 @@
   "import.addTitle": "a38f2eff3cb5",
   "import.addHint": "f8f39a8d5bba",
   "import.addSubmit": "4f3b144c5247",
-  "import.gone": "0b11d5061343"
+  "import.gone": "0b11d5061343",
+  "tasks.collapse": "d038ed878d2b",
+  "tasks.expand": "9b08a68dd089",
+  "tasks.runningCount": "553cc53d22e3",
+  "nodes.services.states.active": "2bb6b986c5d6",
+  "nodes.services.states.inactive": "d436a3f40e3e",
+  "nodes.services.states.failed": "5f5f8758f5f2",
+  "nodes.services.states.activating": "9493af057b02",
+  "nodes.services.states.deactivating": "d1a59b5a827f",
+  "nodes.services.states.running": "3c49d9cc3c0c",
+  "nodes.services.states.dead": "5acf41112413",
+  "nodes.disks.wipeInUse": "42bc812d05af"
 }

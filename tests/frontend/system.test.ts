@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  optionsParams,
+  optionsProblem,
+} from "../../src/frontend/nodes/NodeOptions";
+import {
   addableRepos,
   certState,
   commonName,
@@ -185,5 +189,28 @@ describe("node tasks and disks", () => {
       volumeGroups({ children: [{ name: "pve", size: 10, free: 2 }] }),
     ).toEqual([{ name: "pve", size: 10, free: 2 }]);
     expect(volumeGroups(null)).toEqual([]);
+  });
+});
+
+describe("node options", () => {
+  it("checks the boot delay and the Wake-on-LAN address", () => {
+    expect(optionsProblem("", "")).toBeNull();
+    expect(optionsProblem("30", "AA-BB-CC-DD-EE-FF")).toBeNull();
+    expect(optionsProblem("301", "")).toBe("delay");
+    expect(optionsProblem("1.5", "")).toBe("delay");
+    expect(optionsProblem("", "aa:bb:cc")).toBe("mac");
+  });
+
+  it("deletes emptied options and normalizes the MAC", () => {
+    expect(optionsParams("30", "AA-BB-CC-DD-EE-FF")).toEqual({
+      "startall-onboot-delay": 30,
+      wakeonlan: "aa:bb:cc:dd:ee:ff",
+      delete: undefined,
+    });
+    expect(optionsParams("", "")).toEqual({
+      "startall-onboot-delay": undefined,
+      wakeonlan: undefined,
+      delete: "startall-onboot-delay,wakeonlan",
+    });
   });
 });

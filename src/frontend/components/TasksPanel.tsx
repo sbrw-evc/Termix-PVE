@@ -89,9 +89,12 @@ export function TaskLogDialog({
 
 export function TasksPanel({
   hostId,
+  hostName,
   isVisible,
 }: {
   hostId: number;
+  /** Which host's tasks these are, when there are several. */
+  hostName?: string;
   isVisible: boolean;
 }) {
   const { t } = useTranslation();
@@ -150,6 +153,11 @@ export function TasksPanel({
       >
         <ListChecks className="size-3.5" />
         {t("tasks.title")}
+        {hostName && (
+          <span className="font-normal text-muted-foreground">
+            · {hostName}
+          </span>
+        )}
         {/* Collapsed, the header still says when something is going on. */}
         {collapsed && running > 0 && (
           <span className="font-normal text-muted-foreground">

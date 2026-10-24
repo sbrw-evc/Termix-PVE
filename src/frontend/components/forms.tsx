@@ -60,6 +60,17 @@ export function FormDialog({
     }
   };
 
+  // Field errors no input asked for still need saying, or Proxmox's
+  // "Parameter verification failed." arrives with nothing to act on.
+  const claimed = new Set<string>();
+  const body = children((key) => {
+    claimed.add(key);
+    return error?.fieldErrors?.[key];
+  });
+  const unclaimed = Object.entries(error?.fieldErrors ?? {}).filter(
+    ([key]) => !claimed.has(key),
+  );
+
   return (
     <Dialog open onOpenChange={(open) => !open && !busy && onClose()}>
       <DialogContent className={wide ? "sm:max-w-2xl" : "sm:max-w-md"}>
@@ -68,7 +79,7 @@ export function FormDialog({
             <DialogTitle>{title}</DialogTitle>
           </DialogHeader>
           <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto pr-1">
-            {children((key) => error?.fieldErrors?.[key])}
+            {body}
           </div>
           {error && (
             <p
@@ -76,6 +87,10 @@ export function FormDialog({
               className="text-xs text-destructive whitespace-pre-wrap"
             >
               {error.message}
+              {unclaimed.map(
+                ([key, message]) => `
+${key}: ${message}`,
+              )}
             </p>
           )}
           <DialogFooter>

@@ -163,14 +163,14 @@ describe("POST /hosts/:hostId/call", () => {
     expect(node.commands).toEqual([]);
   });
 
-  it("refuses node config parameters outside ACME", async () => {
+  it("refuses node config parameters outside ACME, notes and options", async () => {
     const { call, node } = await start({
       permissions: ["pve.view", "pve.administer"],
     });
     const res = await call({
       method: "PUT",
       path: ["nodes", "pve1", "config"],
-      params: { description: "changed" },
+      params: { "ballooning-target": 80 },
     });
     expect(res.status).toBe(403);
     expect((await res.json()).code).toBe("PVE_PARAMS_NOT_ALLOWED");

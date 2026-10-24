@@ -223,7 +223,11 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} itt: {{node}}",
     "done": "{{label}}: kész",
-    "failed": "{{label}} sikertelen: {{reason}}"
+    "failed": "{{label}} sikertelen: {{reason}}",
+    "collapse": "Feladatlista elrejtése",
+    "expand": "Feladatlista megjelenítése",
+    "runningCount_one": "Fut: {{count}}",
+    "runningCount_other": "Fut: {{count}}"
   },
   "guests": {
     "more": "További műveletek",
@@ -602,6 +606,15 @@
         "stop": "Leállítja ezt: {{name}}?",
         "restart": "Újraindítja ezt: {{name}}?",
         "description": "A Proxmox saját szolgáltatásai tartják működésben a csomópontot és az API-ját; egy leállítása elvághatja ezt az eszközt, amíg újra el nem indul."
+      },
+      "states": {
+        "active": "aktív",
+        "inactive": "inaktív",
+        "failed": "hibás",
+        "activating": "indul",
+        "deactivating": "leáll",
+        "running": "aktív",
+        "dead": "Leállítva"
       }
     },
     "updates": {
@@ -697,7 +710,8 @@
       "wipeTitle": "Letörli ezt: {{disk}}?",
       "wipeWarning": "Törli a partíciós táblát és minden fájlrendszer-, LVM- és ZFS-aláírást a lemezről (jelenleg: {{used}}). A rajta lévő tartalom végleg elvész.",
       "wipeLabel": "{{disk}} törlése itt: {{node}}",
-      "typePath": "A megerősítéshez írja be: {{disk}}"
+      "typePath": "A megerősítéshez írja be: {{disk}}",
+      "wipeInUse": "Használatban van. Először távolítsa el a rajta lévő kötetcsoportot, poolt, könyvtárat vagy tárolót."
     },
     "log": {
       "search": "Napló szűrése...",

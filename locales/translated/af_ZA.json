@@ -223,7 +223,11 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} op {{node}}",
     "done": "{{label}}: klaar",
-    "failed": "{{label}} het misluk: {{reason}}"
+    "failed": "{{label}} het misluk: {{reason}}",
+    "collapse": "Versteek die taaklys",
+    "expand": "Wys die taaklys",
+    "runningCount_one": "Loop: {{count}}",
+    "runningCount_other": "Loop: {{count}}"
   },
   "guests": {
     "more": "Meer aksies",
@@ -602,6 +606,15 @@
         "stop": "Stop {{name}}?",
         "restart": "Herbegin {{name}}?",
         "description": "Proxmox se eie dienste hou die nodus en sy API aan die gang; om een te stop kan hierdie hulpmiddel afsny totdat dit weer begin."
+      },
+      "states": {
+        "active": "aktief",
+        "inactive": "onaktief",
+        "failed": "misluk",
+        "activating": "begin",
+        "deactivating": "stop",
+        "running": "aktief",
+        "dead": "Gestop"
       }
     },
     "updates": {
@@ -697,7 +710,8 @@
       "wipeTitle": "Vee {{disk}} uit?",
       "wipeWarning": "Vee die partisietabel en elke lêerstelsel-, LVM- en ZFS-handtekening op die skyf uit (nou: {{used}}). Wat daarop is, is vir altyd weg.",
       "wipeLabel": "Vee {{disk}} op {{node}} uit",
-      "typePath": "Tik {{disk}} om te bevestig"
+      "typePath": "Tik {{disk}} om te bevestig",
+      "wipeInUse": "In gebruik. Verwyder eers die volumegroep, poel, gids of berging daarop."
     },
     "log": {
       "search": "Filtreer die log...",

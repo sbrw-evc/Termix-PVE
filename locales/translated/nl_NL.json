@@ -223,7 +223,11 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} op {{node}}",
     "done": "{{label}}: voltooid",
-    "failed": "{{label}} mislukt: {{reason}}"
+    "failed": "{{label}} mislukt: {{reason}}",
+    "collapse": "Takenlijst verbergen",
+    "expand": "Takenlijst tonen",
+    "runningCount_one": "Actief: {{count}}",
+    "runningCount_other": "Actief: {{count}}"
   },
   "guests": {
     "more": "Meer acties",
@@ -602,6 +606,15 @@
         "stop": "{{name}} stoppen?",
         "restart": "{{name}} herstarten?",
         "description": "De eigen services van Proxmox houden de node en de API draaiende; als u er een stopt, kan deze tool worden afgesloten totdat de service weer start."
+      },
+      "states": {
+        "active": "actief",
+        "inactive": "inactief",
+        "failed": "mislukt",
+        "activating": "start",
+        "deactivating": "stopt",
+        "running": "actief",
+        "dead": "Gestopt"
       }
     },
     "updates": {
@@ -697,7 +710,8 @@
       "wipeTitle": "{{disk}} wissen?",
       "wipeWarning": "Wist de partitietabel en elke bestandssysteem-, LVM- en ZFS-handtekening op de schijf (nu: {{used}}). Wat erop staat, is definitief weg.",
       "wipeLabel": "{{disk}} wissen op {{node}}",
-      "typePath": "Typ {{disk}} om te bevestigen"
+      "typePath": "Typ {{disk}} om te bevestigen",
+      "wipeInUse": "In gebruik. Verwijder eerst de volumegroep, pool, map of opslag erop."
     },
     "log": {
       "search": "Logboek filteren...",

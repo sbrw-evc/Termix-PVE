@@ -225,7 +225,13 @@
     "ok": "V redu",
     "logTitle": "{{type}} {{id}} na {{node}}",
     "done": "{{label}}: končano",
-    "failed": "{{label}} ni uspelo: {{reason}}"
+    "failed": "{{label}} ni uspelo: {{reason}}",
+    "collapse": "Skrij seznam opravil",
+    "expand": "Pokaži seznam opravil",
+    "runningCount_one": "V teku: {{count}}",
+    "runningCount_two": "V teku: {{count}}",
+    "runningCount_few": "V teku: {{count}}",
+    "runningCount_other": "V teku: {{count}}"
   },
   "guests": {
     "more": "Več dejanj",
@@ -604,6 +610,15 @@
         "stop": "Ustavim {{name}}?",
         "restart": "Znova zaženem {{name}}?",
         "description": "Lastne storitve Proxmox ohranjajo delovanje vozlišča in njegovega API; ustavitev ene lahko odklopi to orodje, dokler se znova ne zažene."
+      },
+      "states": {
+        "active": "aktivna",
+        "inactive": "neaktivna",
+        "failed": "neuspešna",
+        "activating": "se zaganja",
+        "deactivating": "se ustavlja",
+        "running": "aktivna",
+        "dead": "Ustavljeno"
       }
     },
     "updates": {
@@ -703,7 +718,8 @@
       "wipeTitle": "Počistim {{disk}}?",
       "wipeWarning": "Izbriše particijsko tabelo in vse podpise datotečnih sistemov, LVM in ZFS na disku (zdaj: {{used}}). Vsebina je za vedno izgubljena.",
       "wipeLabel": "Počisti {{disk}} na {{node}}",
-      "typePath": "Za potrditev vnesite {{disk}}"
+      "typePath": "Za potrditev vnesite {{disk}}",
+      "wipeInUse": "V uporabi. Najprej odstranite skupino nosilcev, bazen, imenik ali shrambo na njem."
     },
     "log": {
       "search": "Filtriraj dnevnik ...",

@@ -6,7 +6,12 @@ import {
   guestCounts,
   guestLabel,
 } from "../../src/frontend/tree";
-import { formatBytes, formatUptime, percent } from "../../src/frontend/format";
+import {
+  formatBytes,
+  formatBytesShort,
+  formatUptime,
+  percent,
+} from "../../src/frontend/format";
 import type { PveResource } from "../../src/frontend/api";
 
 const resources: PveResource[] = [
@@ -88,6 +93,19 @@ describe("helpers", () => {
     expect(percent(undefined, undefined)).toBeNull();
     expect(formatUptime(90061)).toBe("1d 1h");
     expect(formatUptime(3720)).toBe("1h 2m");
+    // Chart axes have room for about five characters.
+    for (const [bytes, label] of [
+      [0, "0"],
+      [512, "512"],
+      [1536, "1.5K"],
+      [512 * 1024 ** 2, "512M"],
+      [17.1 * 1024 ** 3, "17.1G"],
+      [4 * 1024 ** 3, "4G"],
+      [1023 * 1024, "1M"],
+    ] as const) {
+      expect(formatBytesShort(bytes)).toBe(label);
+      expect(formatBytesShort(bytes).length).toBeLessThanOrEqual(5);
+    }
     expect(formatUptime(90061, "ru")).toMatch(/^1 д.? 1 ч$/);
     expect(formatUptime(120, "ja")).toBe(
       new Intl.NumberFormat("ja", {
@@ -154,5 +172,49 @@ describe("folder and server views", () => {
       "300 (npm)",
       "local",
     ]);
+  });
+});
+
+describe("several Proxmox hosts", () => {
+  const cluster = [
+    { id: "node/proxmox", type: "node", node: "proxmox", status: "online" },
+    {
+      id: "lxc/300",
+      type: "lxc",
+      node: "proxmox",
+      vmid: 300,
+      name: "npm",
+      status: "running",
+    },
+  ] as PveResource[];
+
+  it("puts each host under a Datacenter row of its own", async () => {
+    const { hostTree, selectionId, parseSelection } =
+      await import("../../src/frontend/tree");
+    const a = hostTree(1, "SB | Proxmox", cluster, "folder");
+    const b = hostTree(16, "RM | Proxmox", cluster, "server");
+    expect(a).toMatchObject({
+      kind: "datacenter",
+      title: "SB | Proxmox",
+      selectId: "1|datacenter",
+    });
+    // The same node id in two clusters stays apart.
+    const keys = (item: { key: string; children?: unknown[] }): string[] => [
+      item.key,
+      ...(
+        (item.children ?? []) as Array<{ key: string; children?: unknown[] }>
+      ).flatMap(keys),
+    ];
+    const all = [...keys(a), ...keys(b)];
+    expect(new Set(all).size).toBe(all.length);
+    expect(JSON.stringify(a)).toContain(
+      `"selectId":"${selectionId(1, "lxc/300")}"`,
+    );
+    expect(JSON.stringify(b)).toContain('"selectId":"16|node/proxmox"');
+    expect(parseSelection("16|node/proxmox")).toEqual({
+      hostId: 16,
+      id: "node/proxmox",
+    });
+    expect(parseSelection("datacenter")).toBeNull();
   });
 });

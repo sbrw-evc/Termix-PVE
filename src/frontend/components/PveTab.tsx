@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   useHosts,
   useTranslation,
@@ -17,7 +11,6 @@ import {
   PanelShell,
   ScrollArea,
   Segmented,
-  Select2,
 } from "@termix-ssh/plugin-sdk/ui";
 import { Download, RefreshCw, Server } from "lucide-react";
 import {
@@ -29,10 +22,11 @@ import {
   type PveResource,
 } from "../api";
 import {
-  buildFolderTree,
-  buildServerTree,
+  DATACENTER,
   guestCounts,
+  hostTree,
   isGuest,
+  parseSelection,
   type TreeView,
 } from "../tree";
 
@@ -59,6 +53,7 @@ function saveView(view: TreeView) {
 import { errorText } from "../error-text";
 import { TaskProvider } from "../tasks";
 import { ResourceTree } from "./ResourceTree";
+import { DatacenterView } from "../datacenter/DatacenterView";
 import { TasksPanel } from "./TasksPanel";
 import { NodeView } from "./NodeView";
 import { StorageView } from "../storage/StorageView";
@@ -117,82 +112,123 @@ function Details({
   return null;
 }
 
-function ClusterView({
-  hostId,
-  isVisible,
-  hostPicker,
-}: {
-  hostId: number;
-  isVisible: boolean;
-  hostPicker: ReactNode;
-}) {
-  const { t } = useTranslation();
-  const [resources, setResources] = useState<PveResource[] | null>(null);
-  const [error, setError] = useState<PveCallError | null>(null);
+interface ClusterState {
+  resources: PveResource[] | null;
+  error: PveCallError | null;
+}
+
+/** /cluster/resources of every Proxmox host, kept fresh while the tab shows. */
+function useClusters(hostIds: number[], isVisible: boolean) {
+  const [state, setState] = useState<Record<number, ClusterState>>({});
   const [loading, setLoading] = useState(false);
-  const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [importing, setImporting] = useState(false);
+  const key = hostIds.join(",");
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const loadOne = useCallback(async (hostId: number) => {
     try {
-      setResources(
+      const resources =
         (await pve<PveResource[]>(hostId, "GET", ["cluster", "resources"])) ??
-          [],
-      );
-      setError(null);
+        [];
+      setState((s) => ({ ...s, [hostId]: { resources, error: null } }));
     } catch (err) {
-      setError(toCallError(err));
-    } finally {
-      setLoading(false);
+      // Keep what was loaded before, so a hiccup doesn't empty the tree.
+      setState((s) => ({
+        ...s,
+        [hostId]: {
+          resources: s[hostId]?.resources ?? null,
+          error: toCallError(err),
+        },
+      }));
     }
-  }, [hostId]);
+  }, []);
 
-  useEffect(() => {
-    setResources(null);
-    setSelectedId(null);
-  }, [hostId]);
+  const loadAll = useCallback(async () => {
+    setLoading(true);
+    await Promise.all(hostIds.map(loadOne));
+    setLoading(false);
+    // key stands for hostIds.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, loadOne]);
 
   useEffect(() => {
     if (!isVisible) return;
-    void load();
-    const timer = setInterval(() => void load(), REFRESH_MS);
+    void loadAll();
+    const timer = setInterval(() => void loadAll(), REFRESH_MS);
     return () => clearInterval(timer);
-  }, [isVisible, load]);
+  }, [isVisible, loadAll]);
 
+  return { state, loading, loadAll, loadOne };
+}
+
+/**
+ * Every Proxmox host in one tree, each under a Datacenter row of its own, as
+ * Proxmox would show separate clusters. What is selected decides which host
+ * the details, tasks and import work on.
+ */
+function ClustersView({
+  hosts,
+  initialHostId,
+  isVisible,
+}: {
+  hosts: Array<{ id: number; name: string }>;
+  initialHostId: number;
+  isVisible: boolean;
+}) {
+  const { t } = useTranslation();
+  const hostIds = useMemo(() => hosts.map((h) => h.id), [hosts]);
+  const { state, loading, loadAll, loadOne } = useClusters(hostIds, isVisible);
+  const [query, setQuery] = useState("");
+  const [selection, setSelection] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
   const [view, setView] = useState<TreeView>(readView);
+
+  const picked = parseSelection(selection);
+  // The host everything works on: the selection's, or the one the tab opened with.
+  const activeId =
+    picked && hostIds.includes(picked.hostId)
+      ? picked.hostId
+      : hostIds.includes(initialHostId)
+        ? initialHostId
+        : hostIds[0];
+  const active = state[activeId];
+  const activeName = hosts.find((h) => h.id === activeId)?.name ?? "";
+
   const tree = useMemo(
     () =>
-      view === "folder"
-        ? buildFolderTree(resources ?? [], query)
-        : buildServerTree(resources ?? [], query),
-    [resources, query, view],
+      hosts
+        .filter((h) => state[h.id]?.resources)
+        .map((h) =>
+          hostTree(h.id, h.name, state[h.id].resources!, view, query),
+        ),
+    [hosts, state, view, query],
   );
-  const nodeCount = useMemo(
-    () => (resources ?? []).filter((r) => r.type === "node").length,
-    [resources],
+  const all = useMemo(
+    () => hosts.flatMap((h) => state[h.id]?.resources ?? []),
+    [hosts, state],
   );
-  const selected = useMemo(
-    () => resources?.find((r) => r.id === selectedId) ?? null,
-    [resources, selectedId],
-  );
-  const counts = useMemo(() => guestCounts(resources ?? []), [resources]);
+  const counts = useMemo(() => guestCounts(all), [all]);
+  const nodeCount = all.filter((r) => r.type === "node").length;
+  const failed = hosts.filter((h) => state[h.id]?.error);
+  const loaded = hosts.some((h) => state[h.id]?.resources);
+  const selected =
+    picked && picked.hostId === activeId && picked.id !== DATACENTER
+      ? (active?.resources?.find((r) => r.id === picked.id) ?? null)
+      : null;
 
   return (
     <TaskProvider
-      hostId={hostId}
+      key={activeId}
+      hostId={activeId}
       onFinished={() => {
-        void load();
+        void loadOne(activeId);
         // /cluster/resources catches up with a finished task a few seconds late.
-        setTimeout(() => void load(), 3000);
+        setTimeout(() => void loadOne(activeId), 3000);
       }}
     >
       <PanelShell
         icon={<Server className="size-4" />}
         title={t("nav.title")}
         status={
-          resources
+          loaded
             ? t("app.status", {
                 nodes: nodeCount,
                 running: counts.running,
@@ -201,14 +237,13 @@ function ClusterView({
             : undefined
         }
         scroll={false}
-        leading={hostPicker}
         actions={
           <>
             <Button
               size="sm"
               variant="ghost"
               onClick={() => setImporting(true)}
-              title={t("import.open")}
+              title={t("import.openFor", { name: activeName })}
             >
               <Download className="mr-1 size-3.5" />
               {t("import.open")}
@@ -216,7 +251,7 @@ function ClusterView({
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => void load()}
+              onClick={() => void loadAll()}
               disabled={loading}
               title={t("app.refresh")}
             >
@@ -248,53 +283,79 @@ function ClusterView({
           </div>
         }
       >
-        {error && !resources ? (
+        {!loaded && failed.length === hosts.length ? (
           // EmptyState shows its hint and action only at "guided" verbosity,
           // and the reason is what the user needs to fix this.
           <div className="flex flex-col items-center gap-3 px-6 py-8 text-center">
             <EmptyState icon={Server} title={t("app.loadFailed")} />
-            <p
-              role="alert"
-              className="max-w-xl text-xs whitespace-pre-wrap text-muted-foreground"
-            >
-              {errorText(t, error)}
-            </p>
-            <Button size="sm" onClick={() => void load()} disabled={loading}>
+            {failed.map((h) => (
+              <p
+                key={h.id}
+                role="alert"
+                className="max-w-xl text-xs whitespace-pre-wrap text-muted-foreground"
+              >
+                {hosts.length > 1 ? `${h.name}: ` : ""}
+                {errorText(t, state[h.id].error!)}
+              </p>
+            ))}
+            <Button size="sm" onClick={() => void loadAll()} disabled={loading}>
               {t("app.retry")}
             </Button>
           </div>
-        ) : !resources ? (
+        ) : !loaded ? (
           <EmptyState icon={Server} title={t("app.loading")} />
         ) : (
           <div className="flex h-full min-h-0 flex-col">
-            {error && (
-              <div className="border-b border-border bg-destructive/10 px-3 py-1.5 text-xs text-destructive">
-                {t("app.refreshFailed", { message: errorText(t, error) })}
+            {failed.map((h) => (
+              <div
+                key={h.id}
+                className="border-b border-border bg-destructive/10 px-3 py-1.5 text-xs text-destructive"
+              >
+                {t("app.hostFailed", {
+                  name: h.name,
+                  message: errorText(t, state[h.id].error!),
+                })}
               </div>
-            )}
+            ))}
             <div className="flex min-h-0 flex-1">
               <ScrollArea className="w-72 shrink-0 border-r border-border">
                 <ResourceTree
                   tree={tree}
-                  selectedId={selectedId}
-                  onSelect={setSelectedId}
+                  selectedId={selection}
+                  onSelect={setSelection}
                 />
               </ScrollArea>
               {/* A plain scroller: Radix ScrollArea lays its content out as a
                   table, which grows past the pane instead of wrapping. */}
               <div className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
-                <Details
-                  hostId={hostId}
-                  selected={selected}
-                  resources={resources}
-                  isVisible={isVisible}
-                />
+                {picked?.id === DATACENTER && active?.resources ? (
+                  <DatacenterView
+                    key={activeId}
+                    hostId={activeId}
+                    title={t("tree.datacenterOf", { name: activeName })}
+                    resources={active.resources}
+                    isVisible={isVisible}
+                  />
+                ) : (
+                  <Details
+                    key={activeId}
+                    hostId={activeId}
+                    selected={selected}
+                    resources={active?.resources ?? []}
+                    isVisible={isVisible}
+                  />
+                )}
               </div>
             </div>
-            <TasksPanel hostId={hostId} isVisible={isVisible} />
+            <TasksPanel
+              key={activeId}
+              hostId={activeId}
+              hostName={hosts.length > 1 ? activeName : undefined}
+              isVisible={isVisible}
+            />
             {importing && (
               <ImportDialog
-                hostId={hostId}
+                hostId={activeId}
                 onClose={() => setImporting(false)}
               />
             )}
@@ -312,19 +373,13 @@ export function PveTab({ host, isVisible }: TabProps) {
     () =>
       hosts
         .filter(isPveHost)
-        .sort((a, b) => String(a.name).localeCompare(String(b.name))),
+        .map((h) => ({ id: Number(h.id), name: String(h.name || h.ip) }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
     [hosts],
   );
   const opened = host && isPveHost(host) ? Number(host.id) : null;
-  const [chosen, setChosen] = useState<number | null>(opened);
-  const hostId =
-    chosen && pveHosts.some((h) => Number(h.id) === chosen)
-      ? chosen
-      : pveHosts[0]
-        ? Number(pveHosts[0].id)
-        : null;
 
-  if (!hostId) {
+  if (!pveHosts.length) {
     return (
       <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
         <EmptyState
@@ -340,28 +395,11 @@ export function PveTab({ host, isVisible }: TabProps) {
     );
   }
 
-  const picker =
-    pveHosts.length > 1 ? (
-      <Select2
-        aria-label={t("app.pickHost")}
-        value={String(hostId)}
-        onChange={(e) => setChosen(Number(e.target.value))}
-        className="h-7 max-w-48 border border-border bg-background px-2 text-xs outline-none"
-      >
-        {pveHosts.map((h) => (
-          <option key={h.id} value={String(h.id)}>
-            {h.name || h.ip}
-          </option>
-        ))}
-      </Select2>
-    ) : null;
-
   return (
-    <ClusterView
-      key={hostId}
-      hostId={hostId}
+    <ClustersView
+      hosts={pveHosts}
+      initialHostId={opened ?? pveHosts[0].id}
       isVisible={isVisible}
-      hostPicker={picker}
     />
   );
 }

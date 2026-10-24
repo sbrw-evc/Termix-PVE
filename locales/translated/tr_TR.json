@@ -223,7 +223,11 @@
     "ok": "Tamam",
     "logTitle": "{{node}} üzerinde {{type}} {{id}}",
     "done": "{{label}}: tamamlandı",
-    "failed": "{{label}} başarısız: {{reason}}"
+    "failed": "{{label}} başarısız: {{reason}}",
+    "collapse": "Görev listesini gizle",
+    "expand": "Görev listesini göster",
+    "runningCount_one": "Çalışıyor: {{count}}",
+    "runningCount_other": "Çalışıyor: {{count}}"
   },
   "guests": {
     "more": "Diğer işlemler",
@@ -602,6 +606,15 @@
         "stop": "{{name}} durdurulsun mu?",
         "restart": "{{name}} yeniden başlatılsın mı?",
         "description": "Proxmox'un kendi hizmetleri düğümü ve API'sini çalışır tutar; birini durdurmak, yeniden başlayana kadar bu aracın bağlantısını kesebilir."
+      },
+      "states": {
+        "active": "etkin",
+        "inactive": "etkin değil",
+        "failed": "başarısız",
+        "activating": "başlatılıyor",
+        "deactivating": "durduruluyor",
+        "running": "etkin",
+        "dead": "Durduruldu"
       }
     },
     "updates": {
@@ -697,7 +710,8 @@
       "wipeTitle": "{{disk}} silinsin mi?",
       "wipeWarning": "Diskteki bölüm tablosunu ve tüm dosya sistemi, LVM ve ZFS imzalarını siler (şu an: {{used}}). Üzerindekiler kalıcı olarak gider.",
       "wipeLabel": "{{node}} üzerinde {{disk}} sil",
-      "typePath": "Onaylamak için {{disk}} yazın"
+      "typePath": "Onaylamak için {{disk}} yazın",
+      "wipeInUse": "Kullanımda. Önce üzerindeki birim grubunu, havuzu, dizini veya depolamayı kaldırın."
     },
     "log": {
       "search": "Günlüğü filtrele...",

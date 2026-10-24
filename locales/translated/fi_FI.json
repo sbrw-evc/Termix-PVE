@@ -223,7 +223,11 @@
     "ok": "OK",
     "logTitle": "{{type}} {{id}} solmussa {{node}}",
     "done": "{{label}}: valmis",
-    "failed": "{{label}} epäonnistui: {{reason}}"
+    "failed": "{{label}} epäonnistui: {{reason}}",
+    "collapse": "Piilota tehtäväluettelo",
+    "expand": "Näytä tehtäväluettelo",
+    "runningCount_one": "Käynnissä: {{count}}",
+    "runningCount_other": "Käynnissä: {{count}}"
   },
   "guests": {
     "more": "Lisää toimintoja",
@@ -602,6 +606,15 @@
         "stop": "Pysäytetäänkö {{name}}?",
         "restart": "Käynnistetäänkö {{name}} uudelleen?",
         "description": "Proxmoxin omat palvelut pitävät solmun ja sen API:n käynnissä; yhden pysäyttäminen voi katkaista tämän työkalun yhteyden, kunnes se käynnistyy uudelleen."
+      },
+      "states": {
+        "active": "aktiivinen",
+        "inactive": "ei aktiivinen",
+        "failed": "epäonnistui",
+        "activating": "käynnistyy",
+        "deactivating": "pysähtyy",
+        "running": "aktiivinen",
+        "dead": "Pysäytetty"
       }
     },
     "updates": {
@@ -697,7 +710,8 @@
       "wipeTitle": "Tyhjennetäänkö {{disk}}?",
       "wipeWarning": "Poistaa levyltä osiotaulun ja kaikki tiedostojärjestelmä-, LVM- ja ZFS-allekirjoitukset (nyt: {{used}}). Sen sisältö häviää pysyvästi.",
       "wipeLabel": "Tyhjennä {{disk}} solmussa {{node}}",
-      "typePath": "Vahvista kirjoittamalla {{disk}}"
+      "typePath": "Vahvista kirjoittamalla {{disk}}",
+      "wipeInUse": "Käytössä. Poista ensin levyllä oleva taltioryhmä, pooli, hakemisto tai tallennustila."
     },
     "log": {
       "search": "Suodata lokia...",

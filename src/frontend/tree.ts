@@ -116,6 +116,10 @@ export interface TreeItem {
   /** Set on rows that are a resource; folders have none. */
   resource?: PveResource;
   children?: TreeItem[];
+  /** What selecting the row selects, when the tree holds several hosts. */
+  selectId?: string;
+  /** A datacenter root's host name, shown as "Datacenter (name)". */
+  title?: string;
 }
 
 export type TreeView = "folder" | "server";
@@ -203,4 +207,50 @@ export function buildServerTree(
       ...branch.storage.map((s) => item(s, false)),
     ],
   }));
+}
+
+/** The datacenter row's id within one host. */
+export const DATACENTER = "datacenter";
+
+/**
+ * A selection across hosts: resource ids repeat between clusters (two
+ * clusters both have node/proxmox), so the host comes with them.
+ */
+export function selectionId(hostId: number, id: string): string {
+  return `${hostId}|${id}`;
+}
+
+export function parseSelection(
+  selection: string | null,
+): { hostId: number; id: string } | null {
+  const match = /^(\d+)\|(.+)$/.exec(selection ?? "");
+  return match ? { hostId: Number(match[1]), id: match[2] } : null;
+}
+
+/** One Proxmox host's tree under a Datacenter row of its own, as Proxmox draws one cluster. */
+export function hostTree(
+  hostId: number,
+  hostName: string,
+  resources: PveResource[],
+  view: TreeView,
+  query = "",
+): TreeItem {
+  const inner =
+    view === "folder"
+      ? (buildFolderTree(resources, query)[0]?.children ?? [])
+      : buildServerTree(resources, query);
+  const scope = (row: TreeItem): TreeItem => ({
+    ...row,
+    key: `${hostId}/${row.key}`,
+    selectId: row.resource ? selectionId(hostId, row.resource.id) : undefined,
+    children: row.children?.map(scope),
+  });
+  return {
+    key: `${hostId}/datacenter`,
+    label: "tree.datacenter",
+    title: hostName,
+    kind: "datacenter",
+    selectId: selectionId(hostId, DATACENTER),
+    children: inner.map(scope),
+  };
 }

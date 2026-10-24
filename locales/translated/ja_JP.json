@@ -222,7 +222,10 @@
     "ok": "OK",
     "logTitle": "{{node}} 上の {{type}} {{id}}",
     "done": "{{label}}: 完了",
-    "failed": "{{label}} に失敗しました: {{reason}}"
+    "failed": "{{label}} に失敗しました: {{reason}}",
+    "collapse": "タスク一覧を隠す",
+    "expand": "タスク一覧を表示",
+    "runningCount_other": "実行中: {{count}}"
   },
   "guests": {
     "more": "その他の操作",
@@ -601,6 +604,15 @@
         "stop": "{{name}} を停止しますか?",
         "restart": "{{name}} を再起動しますか?",
         "description": "Proxmox 自身のサービスはノードとその API を動作させています。停止すると、再起動するまでこのツールが切断される可能性があります。"
+      },
+      "states": {
+        "active": "稼働中",
+        "inactive": "停止中",
+        "failed": "失敗",
+        "activating": "起動中",
+        "deactivating": "停止処理中",
+        "running": "稼働中",
+        "dead": "停止"
       }
     },
     "updates": {
@@ -694,7 +706,8 @@
       "wipeTitle": "{{disk}} をワイプしますか?",
       "wipeWarning": "ディスク上のパーティションテーブルと、すべてのファイルシステム、LVM、ZFS の署名を消去します (現在: {{used}})。内容は完全に失われます。",
       "wipeLabel": "{{node}} の {{disk}} をワイプ",
-      "typePath": "確認のため {{disk}} と入力してください"
+      "typePath": "確認のため {{disk}} と入力してください",
+      "wipeInUse": "使用中です。先にこのディスク上のボリュームグループ、プール、ディレクトリ、またはストレージを削除してください。"
     },
     "log": {
       "search": "ログを絞り込む...",

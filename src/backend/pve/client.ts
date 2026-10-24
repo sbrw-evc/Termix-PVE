@@ -71,9 +71,13 @@ const SAFE_SEGMENT_RE = /^[A-Za-z0-9._@!:=+-]{1,256}$/;
 // A volume id is one segment that may hold slashes: local:iso/debian.iso.
 const SAFE_VOLUME_RE = /^[A-Za-z0-9._@!:=+-]+(\/[A-Za-z0-9._@!:=+-]+)*$/;
 
+/** An IPv4 network as a firewall IP set entry names it: 10.0.0.0/24. */
+const CIDR4_RE = /^\d{1,3}(\.\d{1,3}){3}\/\d{1,2}$/;
+
 function isSafeSegment(value: string): boolean {
   if (value.length > 512) return false;
   if (SAFE_SEGMENT_RE.test(value)) return value !== "." && value !== "..";
+  if (CIDR4_RE.test(value)) return true;
   return (
     value.includes(":") &&
     SAFE_VOLUME_RE.test(value) &&

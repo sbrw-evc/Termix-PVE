@@ -225,7 +225,13 @@
     "ok": "Gerai",
     "logTitle": "{{type}} {{id}} mazge {{node}}",
     "done": "{{label}}: atlikta",
-    "failed": "{{label}} nepavyko: {{reason}}"
+    "failed": "{{label}} nepavyko: {{reason}}",
+    "collapse": "Slėpti užduočių sąrašą",
+    "expand": "Rodyti užduočių sąrašą",
+    "runningCount_one": "Vykdoma: {{count}}",
+    "runningCount_few": "Vykdoma: {{count}}",
+    "runningCount_many": "Vykdoma: {{count}}",
+    "runningCount_other": "Vykdoma: {{count}}"
   },
   "guests": {
     "more": "Daugiau veiksmų",
@@ -604,6 +610,15 @@
         "stop": "Sustabdyti {{name}}?",
         "restart": "Paleisti {{name}} iš naujo?",
         "description": "Pačios Proxmox tarnybos palaiko mazgo ir jo API veikimą; sustabdžius vieną, šis įrankis gali atsijungti, kol ji vėl bus paleista."
+      },
+      "states": {
+        "active": "aktyvi",
+        "inactive": "neaktyvi",
+        "failed": "nepavyko",
+        "activating": "paleidžiama",
+        "deactivating": "stabdoma",
+        "running": "aktyvi",
+        "dead": "Sustabdyta"
       }
     },
     "updates": {
@@ -703,7 +718,8 @@
       "wipeTitle": "Išvalyti {{disk}}?",
       "wipeWarning": "Ištrina skaidinių lentelę ir visus failų sistemų, LVM bei ZFS parašus diske (dabar: {{used}}). Jo turinys bus prarastas visam laikui.",
       "wipeLabel": "Išvalyti {{disk}} mazge {{node}}",
-      "typePath": "Patvirtinkite įvesdami {{disk}}"
+      "typePath": "Patvirtinkite įvesdami {{disk}}",
+      "wipeInUse": "Naudojamas. Pirmiausia pašalinkite jame esančią tomų grupę, telkinį, katalogą ar saugyklą."
     },
     "log": {
       "search": "Filtruoti žurnalą...",
