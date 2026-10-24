@@ -1,12 +1,42 @@
-Hello World adds a tab where you can save short notes. It is a small example plugin to copy when you start your own.
+Proxmox VE manages Proxmox nodes and clusters from Termix: their virtual machines and containers, with charts and tasks. Storage, network, backups, firewall, access and the cluster itself come in later releases.
 
-## Turn it on
+## Add a node
 
-1. Install Hello World from the Plugins tab.
-2. Open the Hello World tab from the sidebar.
+1. Add the Proxmox node as a normal SSH host, or open one you have.
+2. In the host's settings, open SSH, find Proxmox node and turn it on.
+3. Pick how Termix reaches the node under Connect through:
+   - Automatic: the API over an SSH tunnel once an API token is saved, pvesh over SSH until then.
+   - API over SSH tunnel: the API on port 8006 of the node, reached through the host's SSH connection. The API does not need to be open to the network, and no CA is needed.
+   - API directly: Termix calls the API without SSH. Set API address if it is not the host's address, and paste the node's CA from `/etc/pve/pve-root-ca.pem` into CA certificate.
+   - pvesh over SSH: no token. The SSH user must be root or have sudo.
+4. For the API, make a token in Proxmox under Datacenter, Permissions, API Tokens, and enter its API token ID (like `root@pam!termix`) and API token secret.
+5. Save.
+
+Proxmox now shows under Tools in the sidebar. It stays hidden until at least one host is a Proxmox node.
 
 ## Use it
 
-Type a note and press Add. Notes are stored on the server and each user sees only their own. Using the tab needs the Use Hello World permission, which admins and users get by default.
+Open Proxmox from Tools, or pick Open in Proxmox on a node in the host list. With more than one node, pick which one at the top left.
 
-Admins can change the greeting at the top of the tab in Settings, under Hello World.
+- The tree lists every node in the cluster with its VMs, containers and storage. Search filters it.
+- A node shows its use, version and charts, and has Create VM and Create CT.
+- A guest shows its use and charts, with buttons for what its state allows: Start, Shut down, Reboot, Suspend, Resume, Stop and Reset. Stop and Reset ask first, because they cut the power.
+- More on a guest has Clone, Migrate, Convert to template and Delete. Delete asks you to type the guest's ID.
+- Tasks at the bottom lists the cluster's recent tasks. Click one to read its log. Tasks you start are followed until they end.
+
+Charts show an hour, a day, a week, a month or a year.
+
+## Permissions
+
+- View Proxmox: see nodes, guests, storage, charts and tasks.
+- Operate Proxmox guests: power guests on and off.
+- Configure Proxmox: create, clone, migrate, convert and delete guests.
+- Administer Proxmox: access and cluster management, in a later release.
+
+Anything beyond viewing also needs edit access to the Termix host. Every change is written to the audit log. Proxmox's own rights for the token or SSH user still apply on top.
+
+## Troubleshooting
+
+- Termix does not trust the node's certificate: with API directly, paste the node's CA from `/etc/pve/pve-root-ca.pem` into CA certificate, or pick API over SSH tunnel, which needs no CA.
+- The API token was refused: check the token ID and secret. With Privilege Separation on, the token needs its own role, like PVEVMAdmin on `/`.
+- pvesh was not found: the host is not a Proxmox node, or the SSH user can't run `pvesh`.

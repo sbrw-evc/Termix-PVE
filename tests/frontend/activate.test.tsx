@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import {
   renderWithApp,
   type RenderedPluginApp,
@@ -11,6 +11,19 @@ import locales from "../../locales/en.json";
 
 const manifest = manifestJson as unknown as PluginManifest;
 
+const pveHost = {
+  id: 1,
+  name: "Proxmox",
+  ip: "192.168.0.200",
+  pluginSettings: { pve: { enablePve: true } },
+};
+const plainHost = {
+  id: 2,
+  name: "web",
+  ip: "192.168.0.10",
+  pluginSettings: {},
+};
+
 let rendered: RenderedPluginApp | null = null;
 
 afterEach(async () => {
@@ -19,52 +32,66 @@ afterEach(async () => {
 });
 
 describe(`${manifest.id} activate`, () => {
-  it("registers the rail item and tab", async () => {
+  it("registers the tab, a Tools rail item and the host action", async () => {
     rendered = await renderWithApp(plugin, { manifest, locales });
-    expect(rendered.registered.tabs()).toEqual(["hello-world"]);
+    expect(rendered.registered.tabs()).toEqual(["pve"]);
     expect(rendered.registered.railItems()).toEqual([
-      expect.objectContaining({
-        id: "hello-world",
-        permission: "hello-world.use",
-      }),
+      expect.objectContaining({ id: "pve", permission: "pve.view" }),
     ]);
+    expect(rendered.registered.hostActions()).toEqual([
+      expect.objectContaining({ id: "pve-open", tabType: "pve" }),
+    ]);
+    expect(rendered.registered.slot("shell.overlay")).toEqual(["pve.railSync"]);
   });
 
-  it("shows the greeting and notes", async () => {
+  it("hides the rail item until a host is a Proxmox node", async () => {
+    rendered = await renderWithApp(plugin, { manifest, locales });
+    expect(rendered.registered.railItems()[0].hidden).toBe(true);
+  });
+
+  it("offers Open in Proxmox only on Proxmox hosts", async () => {
+    rendered = await renderWithApp(plugin, { manifest, locales });
+    expect(rendered.registered.hostActionsFor(pveHost)).toHaveLength(1);
+    expect(rendered.registered.hostActionsFor(plainHost)).toHaveLength(0);
+  });
+
+  it("explains how to add a node when there is none", async () => {
     rendered = await renderWithApp(plugin, {
       manifest,
       locales,
-      api: {
-        get: vi.fn(async () => ({
+      hosts: [plainHost],
+    });
+    rendered.renderTab("pve", { isVisible: true });
+    expect(await screen.findByText(locales.app.noHosts)).toBeTruthy();
+  });
+
+  it("shows why the cluster could not load", async () => {
+    const post = vi.fn(async () => {
+      throw Object.assign(new Error("Request failed"), {
+        response: {
           data: {
-            greeting: "Hi there",
-            notes: [{ id: 1, text: "first", createdAt: "" }],
+            error: "raw message",
+            code: "PVE_TLS_UNTRUSTED",
           },
-        })),
-      } as never,
+        },
+      });
     });
-    rendered.renderTab("hello-world", { isVisible: true });
-    expect(await screen.findByText("Hi there")).toBeTruthy();
-    expect(screen.getByText("first")).toBeTruthy();
-  });
-
-  it("shows an error when a note cannot be saved", async () => {
     rendered = await renderWithApp(plugin, {
       manifest,
       locales,
-      api: {
-        get: vi.fn(async () => ({ data: { greeting: "Hello", notes: [] } })),
-        post: vi.fn(async () => {
-          throw new Error("offline");
-        }),
-      } as never,
+      hosts: [pveHost],
+      api: { post, get: vi.fn() } as never,
     });
-    rendered.renderTab("hello-world", { isVisible: true });
-    await screen.findByText(locales.tab.empty);
-    fireEvent.change(screen.getByPlaceholderText(locales.tab.placeholder), {
-      target: { value: "note" },
+    rendered.renderTab("pve", { isVisible: true });
+    await waitFor(() =>
+      expect(screen.getByRole("alert").textContent).toBe(
+        locales.errors.tlsUntrusted,
+      ),
+    );
+    expect(post).toHaveBeenCalledWith("/hosts/1/call", {
+      method: "GET",
+      path: ["cluster", "resources"],
+      params: {},
     });
-    fireEvent.click(screen.getByText(locales.tab.add));
-    expect(await screen.findByText(locales.tab.error)).toBeTruthy();
   });
 });

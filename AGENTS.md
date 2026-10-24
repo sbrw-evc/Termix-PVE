@@ -60,4 +60,18 @@ file per theme scoped under `.<id>`). A theme only plugin has no `src/`: just `m
 Keep this section current when the plugin changes: what it does, how it is put together, decisions that
 aren't obvious from the code, and anything that has bitten you before.
 
-- What it does: a template example that keeps short notes per user. Replace this.
+- What it does: manages Proxmox VE nodes and clusters. A host becomes a Proxmox node through its
+  `enablePve` host setting; the Proxmox tool in the rail's Tools band is hidden until one exists
+  (`RailItemSync` in `src/frontend/index.tsx`, mounted in the `shell.overlay` slot).
+- How it talks to Proxmox: `src/backend/pve/client.ts` has one `PveClient` over three transports (API
+  over an SSH `forwardOut` tunnel, API through `ctx.fetch`, `pvesh` over SSH). Paths and params are
+  the same for all three.
+- The UI calls one route, `POST /hosts/:hostId/call`, with a method, path segments and params.
+  `src/backend/pve/policy.ts` lists every allowed path with the permission it needs; anything else is
+  refused. Add a rule there for every new Proxmox call, and keep reads at `view`.
+- Changes need edit access to the Termix host and are audited as `pve_call`.
+- Settings are declared in `manifest.json`, so core draws the host form. There are no tables.
+- Bitten before: `EmptyState` shows `hint` and `action` only at guided verbosity, so error text goes in
+  its own element. `DialogContent` needs `sm:max-w-*` to widen. `ctx.fetch` failures carry the TLS
+  code in `cause`.
+- Roadmap: `ROADMAP.md`.

@@ -1,27 +1,290 @@
 {
   "plugin": {
-    "name": "Hello World",
-    "description": "A minimal Termix plugin: one tab, one route, one setting and one table."
+    "name": "Proxmox VE",
+    "description": "Manage Proxmox VE from Termix: virtual machines, containers, storage, network, backups, firewall, access and the cluster."
   },
-  "tab": {
-    "title": "Hello World",
-    "empty": "No notes yet.",
-    "placeholder": "Write a note",
-    "add": "Add",
-    "error": "Could not load or save notes."
+  "nav": {
+    "title": "Proxmox",
+    "openHost": "Open in Proxmox"
   },
   "permissions": {
-    "use": {
-      "title": "Use Hello World",
-      "description": "Open the Hello World tab and keep notes in it."
+    "view": {
+      "title": "View Proxmox",
+      "description": "See nodes, guests, storage, charts and tasks on Proxmox hosts you can connect to."
+    },
+    "operate": {
+      "title": "Operate Proxmox guests",
+      "description": "Start, stop, shut down, reboot, suspend and resume VMs and containers. Needs edit access to the host."
+    },
+    "configure": {
+      "title": "Configure Proxmox",
+      "description": "Create, clone, migrate, convert and delete VMs and containers. Needs edit access to the host."
+    },
+    "administer": {
+      "title": "Administer Proxmox",
+      "description": "Manage users, groups, roles, pools, 2FA, tokens, realms and the cluster. Needs edit access to the host."
     }
   },
   "settings": {
-    "admin": {
-      "greeting": {
-        "label": "Greeting",
-        "description": "Shown at the top of the Hello World tab."
+    "enable": {
+      "label": "Proxmox node",
+      "description": "Mark this host as a Proxmox VE node. It then shows in the Proxmox tool under Tools."
+    },
+    "transport": {
+      "label": "Connect through",
+      "description": "Automatic uses the API over an SSH tunnel once a token is saved, and pvesh over SSH until then.",
+      "auto": "Automatic",
+      "tunnel": "API over SSH tunnel",
+      "direct": "API directly",
+      "pvesh": "pvesh over SSH"
+    },
+    "tokenId": {
+      "label": "API token ID",
+      "description": "Made in Proxmox under Datacenter, Permissions, API Tokens. Looks like user@realm!name.",
+      "placeholder": "root@pam!termix"
+    },
+    "tokenSecret": {
+      "label": "API token secret",
+      "description": "Shown once when the token is made. Stored encrypted."
+    },
+    "apiHost": {
+      "label": "API address",
+      "description": "API directly only. Leave empty to use this host's address."
+    },
+    "apiPort": {
+      "label": "API port",
+      "description": "8006 unless you changed it."
+    },
+    "caCert": {
+      "label": "CA certificate",
+      "description": "API directly only. The node's CA in PEM, from /etc/pve/pve-root-ca.pem. Leave empty if the API has a publicly trusted certificate.",
+      "placeholder": "-----BEGIN CERTIFICATE-----"
+    }
+  },
+  "app": {
+    "loading": "Loading...",
+    "loadFailed": "Could not load the cluster",
+    "refreshFailed": "Refresh failed: {{message}}",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "search": "Search guests, nodes and storage...",
+    "status": "{{nodes}} nodes, {{running}} of {{total}} guests running",
+    "pickHost": "Proxmox host",
+    "pickResource": "Pick a node, guest or storage on the left",
+    "noHosts": "No Proxmox hosts yet",
+    "noHostsHint": "Open a host's settings, turn on Proxmox node under SSH, and pick how to connect. The node then shows here.",
+    "cancel": "Cancel",
+    "working": "Working..."
+  },
+  "errors": {
+    "tlsUntrusted": "Termix does not trust the node's certificate. In the host's Proxmox settings, paste the node's CA from /etc/pve/pve-root-ca.pem into CA certificate, or pick API over SSH tunnel.",
+    "tlsHostname": "The node's certificate is for another name. Set API address to a name or address the certificate lists.",
+    "tlsExpired": "The node's certificate has expired or is not valid yet. Renew it in Proxmox under the node, System, Certificates.",
+    "notEnabled": "This host is not marked as a Proxmox node. Turn on Proxmox node in the host's settings.",
+    "hostAccess": "You need edit access to this host to change it."
+  },
+  "tree": {
+    "nothingFound": "Nothing matches the search.",
+    "expand": "Expand",
+    "collapse": "Collapse"
+  },
+  "types": {
+    "node": "Node",
+    "qemu": "VM",
+    "lxc": "Container",
+    "storage": "Storage"
+  },
+  "states": {
+    "running": "Running",
+    "stopped": "Stopped",
+    "paused": "Paused",
+    "suspended": "Suspended",
+    "online": "Online",
+    "offline": "Offline",
+    "available": "Available",
+    "unknown": "Unknown"
+  },
+  "usage": {
+    "cpu": "CPU",
+    "memory": "Memory",
+    "disk": "Disk",
+    "rootDisk": "Root disk",
+    "usage": "Usage",
+    "cores_one": "{{count}} core",
+    "cores_other": "{{count}} cores"
+  },
+  "summary": {
+    "title": "Summary",
+    "node": "Node",
+    "vmid": "ID",
+    "uptime": "Uptime",
+    "pool": "Pool",
+    "ha": "HA",
+    "tags": "Tags",
+    "guests": "Guests",
+    "guestsRunning": "{{running}} of {{total}} running",
+    "cpuModel": "CPU",
+    "sockets": "sockets",
+    "load": "Load average",
+    "pveVersion": "Proxmox VE",
+    "kernel": "Kernel"
+  },
+  "charts": {
+    "title": "Charts",
+    "cpu": "CPU",
+    "load": "Load average",
+    "memory": "Memory",
+    "network": "Network",
+    "diskIo": "Disk I/O",
+    "cpuUsage": "CPU usage",
+    "ioDelay": "IO delay",
+    "used": "Used",
+    "total": "Total",
+    "in": "In",
+    "out": "Out",
+    "read": "Read",
+    "write": "Write",
+    "timeframe": {
+      "hour": "Hour",
+      "day": "Day",
+      "week": "Week",
+      "month": "Month",
+      "year": "Year"
+    },
+    "noData": "No data for this period"
+  },
+  "tasks": {
+    "title": "Tasks",
+    "started": "Started",
+    "node": "Node",
+    "user": "User",
+    "task": "Task",
+    "status": "Status",
+    "running": "Running",
+    "ok": "OK",
+    "logTitle": "{{type}} {{id}} on {{node}}",
+    "done": "{{label}}: done",
+    "failed": "{{label}} failed: {{reason}}"
+  },
+  "guests": {
+    "more": "More actions",
+    "isTemplate": "Template",
+    "locked": "Locked: {{lock}}",
+    "power": {
+      "start": "Start",
+      "shutdown": "Shut down",
+      "stop": "Stop",
+      "reboot": "Reboot",
+      "suspend": "Suspend",
+      "resume": "Resume",
+      "reset": "Reset",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Stop {{name}} now?",
+        "reset": "Reset {{name}} now?",
+        "description": "This cuts the power like pulling the plug. Work that is not saved in the guest is lost."
       }
+    },
+    "clone": {
+      "menu": "Clone",
+      "title": "Clone {{name}}",
+      "submit": "Clone",
+      "label": "Clone {{source}} to {{id}}",
+      "full": "Full clone",
+      "fullHint": "Copies every disk, so the clone does not depend on the original.",
+      "linkedHint": "Off makes a linked clone that shares the template's disks and is made in seconds.",
+      "sameStorage": "Same storage as the original"
+    },
+    "migrate": {
+      "menu": "Migrate",
+      "title": "Migrate {{name}}",
+      "submit": "Migrate",
+      "label": "Migrate {{name}} to {{target}}",
+      "noOtherNodes": "There is no other online node in this cluster to move it to.",
+      "onlineHint": "The VM is running and moves live, without stopping.",
+      "restartHint": "The container is running. It stops, moves and starts again on the target."
+    },
+    "template": {
+      "menu": "Convert to template",
+      "confirm": "Convert {{name}} to a template?",
+      "description": "A template can't be started, only cloned. This can't be undone.",
+      "submit": "Convert",
+      "label": "Convert {{name}} to a template"
+    },
+    "delete": {
+      "menu": "Delete",
+      "title": "Delete {{name}}",
+      "submit": "Delete",
+      "label": "Delete {{name}}",
+      "warning": "This deletes guest {{vmid}} and its disks. It can't be undone.",
+      "stopFirst": "Stop the guest before deleting it.",
+      "typeId": "Type {{vmid}} to confirm",
+      "purge": "Remove from backup jobs, replication and HA",
+      "purgeHint": "Leaves no jobs pointing at a guest that is gone.",
+      "unreferenced": "Also delete unreferenced disks",
+      "unreferencedHint": "Disks on enabled storages with this ID that the config does not list."
+    },
+    "create": {
+      "vmButton": "Create VM",
+      "ctButton": "Create CT",
+      "vmTitle": "Create virtual machine",
+      "ctTitle": "Create container",
+      "submit": "Create",
+      "vmLabel": "Create VM {{id}} ({{name}})",
+      "ctLabel": "Create CT {{id}} ({{name}})",
+      "noTemplates": "No container templates on this node. Download one in Proxmox under a storage, CT Templates.",
+      "noIso": "No installation media",
+      "unprivilegedHint": "Safer: root in the container is not root on the node.",
+      "loginHint": "Set a root password, SSH keys, or both.",
+      "problem": {
+        "vmid": "Pick an ID of 100 or more.",
+        "hostname": "Enter a hostname: letters, digits and dashes.",
+        "name": "Enter a name: letters, digits and dashes.",
+        "template": "Pick a template.",
+        "storage": "Pick a storage.",
+        "disk": "Enter a disk size.",
+        "cores": "Enter how many cores.",
+        "sockets": "Enter how many sockets.",
+        "memory": "Enter at least 16 MiB of memory.",
+        "swap": "Enter swap in MiB, 0 for none.",
+        "network": "Pick a bridge and, for a static address, enter it like 192.168.0.60/24.",
+        "login": "Set a root password or SSH keys so you can log in.",
+        "password": "The password needs at least 5 characters."
+      }
+    },
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "other": "Other"
+    },
+    "fields": {
+      "vmid": "ID",
+      "name": "Name",
+      "hostname": "Hostname",
+      "node": "Node",
+      "targetNode": "Target node",
+      "targetStorage": "Target storage",
+      "storage": "Storage",
+      "template": "Template",
+      "iso": "Installation media",
+      "ostype": "Guest OS",
+      "rootPassword": "Root password",
+      "sshKeys": "SSH public keys",
+      "unprivileged": "Unprivileged container",
+      "diskGiB": "Disk (GiB)",
+      "cores": "Cores",
+      "sockets": "Sockets",
+      "memoryMiB": "Memory (MiB)",
+      "swapMiB": "Swap (MiB)",
+      "bridge": "Network bridge",
+      "ipv4": "IPv4",
+      "dhcp": "DHCP",
+      "static": "Static",
+      "cidr": "Address/prefix",
+      "gateway": "Gateway",
+      "startAfter": "Start after creating",
+      "pick": "Pick one"
     }
   }
 }

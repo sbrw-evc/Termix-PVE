@@ -1,11 +1,10 @@
 import type { Router } from "express";
 import type { PluginContext } from "@termix-ssh/plugin-sdk/backend";
-import { notes } from "./tables.js";
 import { registerRoutes } from "./routes.js";
 
 export async function activate(ctx: PluginContext) {
-  const notesTable = await ctx.db.define(notes);
-  registerRoutes(ctx.http.router<Router>(), ctx, notesTable);
+  registerRoutes(ctx, ctx.http.router<Router>());
+  ctx.log.info("Proxmox routes mounted at /plugin-api/pve");
 }
 
 export async function deactivate() {
