@@ -51,7 +51,10 @@ describe(`${manifest.id} activate`, () => {
 
   it("offers Open in Proxmox only on Proxmox hosts", async () => {
     rendered = await renderWithApp(plugin, { manifest, locales });
-    expect(rendered.registered.hostActionsFor(pveHost)).toHaveLength(1);
+    expect(rendered.registered.hostActionsFor(pveHost)).toEqual([
+      // Tools is the way in; no extra button on the host row.
+      expect.objectContaining({ id: "pve-open", tray: false }),
+    ]);
     expect(rendered.registered.hostActionsFor(plainHost)).toHaveLength(0);
   });
 

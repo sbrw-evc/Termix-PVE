@@ -62,6 +62,8 @@ export function activate(app: TermixApp): void {
     component: RailItemSync as ComponentType<Record<string, unknown>>,
   });
 
+  // Tools is the way in. A node's own shortcut lives in its right-click menu,
+  // not as another button on the host row.
   app.registerHostAction({
     id: "pve-open",
     titleKey: "nav.openHost",
@@ -69,6 +71,14 @@ export function activate(app: TermixApp): void {
     kind: "open",
     order: 55,
     tabType: TAB_ID,
+    tray: false,
     when: isPveHost,
+  });
+  app.registerHostContextMenuItem({
+    id: "pve-open",
+    titleKey: "nav.openHost",
+    icon: Server,
+    when: isPveHost,
+    run: (host, shell) => shell.openTab(host, TAB_ID),
   });
 }

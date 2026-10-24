@@ -16,7 +16,7 @@ Proxmox now shows under Tools in the sidebar. It stays hidden until at least one
 
 ## Use it
 
-Open Proxmox from Tools, or pick Open in Proxmox on a node in the host list. With more than one node, pick which one at the top left.
+Open Proxmox from Tools, or right-click a node in the host list and pick Open in Proxmox. With more than one node, pick which one at the top left.
 
 - The tree lists every node in the cluster with its VMs, containers and storage. Search filters it.
 - A node shows its use, version and charts, and has Create VM and Create CT.

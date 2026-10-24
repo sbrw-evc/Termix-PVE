@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3
+
+### Changed
+
+- Open in Proxmox moved from the host row to the host's right-click menu; Proxmox under Tools is the way in
+
 ## 0.1.2
 
 ### Fixed
