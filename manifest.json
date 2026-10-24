@@ -1,7 +1,7 @@
 {
   "id": "pve",
   "name": "Proxmox VE",
-  "version": "0.1.3",
+  "version": "0.2.1",
   "description": "Manage Proxmox VE from Termix: virtual machines, containers, storage, network, backups, firewall, access and the cluster.",
   "author": {
     "name": "Дмитрий Ляхов"
@@ -15,6 +15,9 @@
     "A Proxmox tool in the sidebar once a host is marked as a Proxmox node",
     "Start, stop, shut down, reboot, suspend and resume VMs and containers",
     "Create, clone, migrate, convert to template and delete VMs and containers",
+    "Edit processors, memory, disks, network adapters, options and cloud-init",
+    "Download ISO images and CT templates, and delete storage content",
+    "Node services, updates, disks with SMART, log, reboot and shutdown",
     "CPU, memory, network and disk charts for nodes and guests",
     "Connect through the Proxmox API over SSH, straight to the API, or with pvesh over SSH"
   ],

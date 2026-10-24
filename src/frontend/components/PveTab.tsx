@@ -33,7 +33,7 @@ import { TaskProvider } from "../tasks";
 import { ResourceTree } from "./ResourceTree";
 import { TasksPanel } from "./TasksPanel";
 import { NodeView } from "./NodeView";
-import { StorageView } from "./StorageView";
+import { StorageView } from "../storage/StorageView";
 import { GuestView } from "../guests/GuestView";
 
 const REFRESH_MS = 10000;
@@ -77,7 +77,11 @@ function Details({
       />
     );
   }
-  if (selected.type === "storage") return <StorageView storage={selected} />;
+  if (selected.type === "storage") {
+    return (
+      <StorageView hostId={hostId} storage={selected} isVisible={isVisible} />
+    );
+  }
   return null;
 }
 

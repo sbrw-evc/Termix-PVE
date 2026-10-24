@@ -15,6 +15,7 @@
 
 import http from "node:http";
 import tls from "node:tls";
+import zlib from "node:zlib";
 import type { Duplex } from "node:stream";
 import type { Client } from "ssh2";
 import type { PluginFetch } from "@termix-ssh/plugin-sdk/backend";
@@ -67,10 +68,29 @@ const DEFAULT_TIMEOUT_MS = 30000;
 
 // Node names, vmids, storage ids, UPIDs, snapshot names, users and token ids.
 const SAFE_SEGMENT_RE = /^[A-Za-z0-9._@!:=+-]{1,256}$/;
+// A volume id is one segment that may hold slashes: local:iso/debian.iso.
+const SAFE_VOLUME_RE = /^[A-Za-z0-9._@!:=+-]+(\/[A-Za-z0-9._@!:=+-]+)*$/;
+
+function isSafeSegment(value: string): boolean {
+  if (value.length > 512) return false;
+  if (SAFE_SEGMENT_RE.test(value)) return value !== "." && value !== "..";
+  return (
+    value.includes(":") &&
+    SAFE_VOLUME_RE.test(value) &&
+    !value.split(/[/:]/).some((part) => part === "." || part === "..")
+  );
+}
 const SAFE_PARAM_KEY_RE = /^[A-Za-z][A-Za-z0-9_-]{0,63}(\[\d+\])?$/;
 
-/** Checks every path segment so a request can never leave the path it names. */
-export function pvePath(segments: Array<string | number>): string {
+/**
+ * Checks every path segment so a request can never leave the path it names.
+ * The API takes each segment URL-encoded; pvesh takes them as they are,
+ * so a volume id's slash stays a slash there.
+ */
+export function pvePath(
+  segments: Array<string | number>,
+  encode = false,
+): string {
   if (!segments.length) {
     throw new PveError("Empty API path", "PVE_BAD_REQUEST", 400);
   }
@@ -79,14 +99,14 @@ export function pvePath(segments: Array<string | number>): string {
     segments
       .map((segment) => {
         const value = String(segment);
-        if (!SAFE_SEGMENT_RE.test(value) || value === "." || value === "..") {
+        if (!isSafeSegment(value)) {
           throw new PveError(
             `Invalid API path segment: ${value}`,
             "PVE_BAD_REQUEST",
             400,
           );
         }
-        return value;
+        return encode ? encodeURIComponent(value) : value;
       })
       .join("/")
   );
@@ -197,7 +217,7 @@ function buildTarget(request: PveRequest): {
   body: string | undefined;
 } {
   const method = request.method ?? "GET";
-  const path = `/api2/json${pvePath(request.path)}`;
+  const path = `/api2/json${pvePath(request.path, true)}`;
   const params = new URLSearchParams(pveParamEntries(request.params));
   const encoded = params.toString();
   if (method === "GET" || method === "DELETE") {
@@ -211,6 +231,24 @@ function buildTarget(request: PveRequest): {
 }
 
 // tunnel
+
+/**
+ * The body as text, unpacked when PVE compressed it. It gzips some answers,
+ * like /nodes/{node}/journal, even when the request did not ask for it.
+ */
+export function decodeBody(body: Buffer, encoding: string | undefined): string {
+  switch ((encoding ?? "").trim().toLowerCase()) {
+    case "gzip":
+    case "x-gzip":
+      return zlib.gunzipSync(body).toString("utf8");
+    case "deflate":
+      return zlib.inflateSync(body).toString("utf8");
+    case "br":
+      return zlib.brotliDecompressSync(body).toString("utf8");
+    default:
+      return body.toString("utf8");
+  }
+}
 
 /** Opens a raw stream to the API port on the node. */
 export type StreamOpener = () => Promise<Duplex>;
@@ -290,7 +328,10 @@ export function createTunnelClient(
                   parseApiResponse<T>(
                     res.statusCode ?? 0,
                     res.statusMessage ?? "",
-                    Buffer.concat(chunks).toString("utf8"),
+                    decodeBody(
+                      Buffer.concat(chunks),
+                      res.headers["content-encoding"],
+                    ),
                   ),
                 );
               } catch (err) {

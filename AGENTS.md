@@ -74,4 +74,10 @@ aren't obvious from the code, and anything that has bitten you before.
 - Bitten before: `EmptyState` shows `hint` and `action` only at guided verbosity, so error text goes in
   its own element. `DialogContent` needs `sm:max-w-*` to widen. `ctx.fetch` failures carry the TLS
   code in `cause`.
+- Volume ids ("local:iso/x.iso") are one path segment. `pvePath` URL-encodes segments for the API and
+  passes them raw to pvesh, which can't decode %2F.
+- Guest config edits go through `setConfig` in `src/frontend/guests/useGuestConfig.ts`: empty values
+  become `delete`, and the config's `digest` makes PVE refuse a change someone else beat us to.
+  Property strings ("local-lvm:vm-1-disk-0,size=8G") are parsed in `guests/config.ts`.
+- `/nodes/{node}/journal` returns its cursors as the first and last lines; `journalLines` drops them.
 - Roadmap: `ROADMAP.md`.

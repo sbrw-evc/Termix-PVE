@@ -155,7 +155,7 @@ describe("POST /hosts/:hostId/call", () => {
     });
     const res = await call({
       method: "POST",
-      path: ["nodes", "pve1", "status"],
+      path: ["nodes", "pve1", "execute"],
     });
     expect(res.status).toBe(403);
     expect(await res.json()).toMatchObject({ code: "PVE_PATH_NOT_ALLOWED" });

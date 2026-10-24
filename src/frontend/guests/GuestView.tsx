@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   GroupHeading,
+  Segmented,
 } from "@termix-ssh/plugin-sdk/ui";
 import {
   Copy,
@@ -38,6 +39,19 @@ import { Fact, Usage } from "../components/Usage";
 import { RrdCharts } from "../components/RrdCharts";
 import { availableActions, DESTRUCTIVE, type PowerAction } from "./actions";
 import { CloneDialog, DeleteDialog, MigrateDialog } from "./GuestDialogs";
+import { HardwareTab } from "./hardware/HardwareTab";
+import { OptionsTab } from "./options/OptionsTab";
+import { CloudInitTab } from "./options/CloudInitTab";
+import { useGuestIps } from "./ips";
+
+type GuestTab = "summary" | "hardware" | "options" | "cloudinit";
+
+/** Cloud-init only exists for VMs; templates have no running state to show. */
+function tabsFor(guest: { type: GuestType }): GuestTab[] {
+  return guest.type === "qemu"
+    ? ["summary", "hardware", "options", "cloudinit"]
+    : ["summary", "hardware", "options"];
+}
 
 const ICONS: Record<PowerAction, LucideIcon> = {
   start: Play,
@@ -73,6 +87,12 @@ export function GuestView({
   const { track } = useTasks();
   const toast = useToast();
   const [status, setStatus] = useState<GuestStatus | null>(null);
+  const [tab, setTab] = useState<GuestTab>("summary");
+  const ref = { hostId, node: guest.node, type: guest.type, vmid: guest.vmid };
+  const ips = useGuestIps(
+    ref,
+    (status?.status ?? guest.status) === "running" && isVisible,
+  );
   const [dialog, setDialog] = useState<"clone" | "migrate" | "delete" | null>(
     null,
   );
@@ -224,62 +244,83 @@ export function GuestView({
         </div>
       </div>
 
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-2">
-        <Usage
-          label={t("usage.cpu")}
-          value={cpu}
-          detail={
-            guest.maxcpu ? t("usage.cores", { count: guest.maxcpu }) : "-"
-          }
-        />
-        <Usage
-          label={t("usage.memory")}
-          value={running ? percent(guest.mem, guest.maxmem) : null}
-          detail={`${running ? formatBytes(guest.mem) : "-"} / ${formatBytes(guest.maxmem)}`}
-        />
-        <Usage
-          label={t("usage.disk")}
-          value={percent(guest.disk, guest.maxdisk)}
-          detail={`${formatBytes(guest.disk)} / ${formatBytes(guest.maxdisk)}`}
-        />
-      </div>
+      <Segmented
+        value={tab}
+        onChange={(value) => setTab(value as GuestTab)}
+        options={tabsFor(guest).map((value) => ({
+          value,
+          label: t(`guests.tabs.${value}`),
+        }))}
+      />
 
-      <div>
-        <GroupHeading title={t("summary.title")} />
-        <Fact label={t("summary.node")}>{guest.node}</Fact>
-        <Fact label={t("summary.vmid")}>{guest.vmid}</Fact>
-        <Fact label={t("summary.uptime")}>
-          {formatUptime(status?.uptime ?? guest.uptime)}
-        </Fact>
-        {guest.pool && <Fact label={t("summary.pool")}>{guest.pool}</Fact>}
-        {(status?.ha?.managed || guest.hastate) && (
-          <Fact label={t("summary.ha")}>
-            {status?.ha?.state ?? guest.hastate}
-          </Fact>
-        )}
-        {guest.tags && (
-          <Fact label={t("summary.tags")}>
-            <span className="flex flex-wrap justify-end gap-1">
-              {guest.tags
-                .split(/[;, ]/)
-                .filter(Boolean)
-                .map((tag) => (
-                  <Badge key={tag} variant="outline">
-                    {tag}
-                  </Badge>
-                ))}
-            </span>
-          </Fact>
-        )}
-      </div>
+      {tab === "summary" && (
+        <>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-2">
+            <Usage
+              label={t("usage.cpu")}
+              value={cpu}
+              detail={
+                guest.maxcpu ? t("usage.cores", { count: guest.maxcpu }) : "-"
+              }
+            />
+            <Usage
+              label={t("usage.memory")}
+              value={running ? percent(guest.mem, guest.maxmem) : null}
+              detail={`${running ? formatBytes(guest.mem) : "-"} / ${formatBytes(guest.maxmem)}`}
+            />
+            <Usage
+              label={t("usage.disk")}
+              value={percent(guest.disk, guest.maxdisk)}
+              detail={`${formatBytes(guest.disk)} / ${formatBytes(guest.maxdisk)}`}
+            />
+          </div>
 
-      {!guest.template && (
-        <RrdCharts
-          hostId={hostId}
-          node={guest.node}
-          guest={{ type: guest.type, vmid: guest.vmid }}
-          isVisible={isVisible}
-        />
+          <div>
+            <GroupHeading title={t("summary.title")} />
+            <Fact label={t("summary.node")}>{guest.node}</Fact>
+            <Fact label={t("summary.vmid")}>{guest.vmid}</Fact>
+            {ips && ips.length > 0 && (
+              <Fact label={t("summary.ips")}>{ips.join(", ")}</Fact>
+            )}
+            <Fact label={t("summary.uptime")}>
+              {formatUptime(status?.uptime ?? guest.uptime)}
+            </Fact>
+            {guest.pool && <Fact label={t("summary.pool")}>{guest.pool}</Fact>}
+            {(status?.ha?.managed || guest.hastate) && (
+              <Fact label={t("summary.ha")}>
+                {status?.ha?.state ?? guest.hastate}
+              </Fact>
+            )}
+            {guest.tags && (
+              <Fact label={t("summary.tags")}>
+                <span className="flex flex-wrap justify-end gap-1">
+                  {guest.tags
+                    .split(/[;, ]/)
+                    .filter(Boolean)
+                    .map((tag) => (
+                      <Badge key={tag} variant="outline">
+                        {tag}
+                      </Badge>
+                    ))}
+                </span>
+              </Fact>
+            )}
+          </div>
+
+          {!guest.template && (
+            <RrdCharts
+              hostId={hostId}
+              node={guest.node}
+              guest={{ type: guest.type, vmid: guest.vmid }}
+              isVisible={isVisible}
+            />
+          )}
+        </>
+      )}
+      {tab === "hardware" && <HardwareTab guest={ref} isVisible={isVisible} />}
+      {tab === "options" && <OptionsTab guest={ref} isVisible={isVisible} />}
+      {tab === "cloudinit" && (
+        <CloudInitTab guest={ref} isVisible={isVisible} />
       )}
 
       {dialog === "clone" && (

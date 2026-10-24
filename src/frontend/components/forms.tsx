@@ -26,6 +26,7 @@ export function FormDialog({
   onSubmit,
   onClose,
   wide,
+  hideCancel,
   children,
 }: {
   title: string;
@@ -36,6 +37,8 @@ export function FormDialog({
   onSubmit: () => Promise<void>;
   onClose: () => void;
   wide?: boolean;
+  /** For a dialog with one way out, like a list you only browse. */
+  hideCancel?: boolean;
   children: (fieldError: (key: string) => string | undefined) => ReactNode;
 }) {
   const { t } = useTranslation();
@@ -76,14 +79,16 @@ export function FormDialog({
             </p>
           )}
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={busy}
-            >
-              {t("app.cancel")}
-            </Button>
+            {!hideCancel && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={busy}
+              >
+                {t("app.cancel")}
+              </Button>
+            )}
             <Button
               type="submit"
               variant={destructive ? "destructive" : "default"}

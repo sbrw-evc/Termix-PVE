@@ -10,14 +10,19 @@ Each phase is a release, checked on a real node before it ships. Every new Proxm
 - VMs and containers: power, create, clone, migrate, template, delete
 - Charts for nodes and guests, tasks with logs
 
-## 0.2: infrastructure
+## 0.2: infrastructure (done)
 
 - Hardware of VMs and containers: CPU, memory, options, cloud-init
-- Disks: add, resize, move, detach, delete (`configure`)
-- Network adapters of guests; node networks and bridges with apply (`configure` / `administer`)
-- CT templates and ISO images: list, download from URL, upload, delete
-- Nodes: services, syslog, updates, disks, shutdown and reboot (`administer`)
+- Disks: add, grow, move, detach, delete unused
+- Network adapters of guests
+- ISO images and CT templates: download from URL, template catalog, delete
+- Nodes: services, updates, disks with SMART, log, reboot and shutdown
+
+## 0.2.x: console and the rest of 0.2
+
 - Console: noVNC for VMs, xterm.js for containers and node shells over the `/plugin-ws` proxy
+- Upload ISO images and templates from the browser
+- Node network: bridges, bonds, VLANs, with apply
 
 ## 0.3: data and safety
 

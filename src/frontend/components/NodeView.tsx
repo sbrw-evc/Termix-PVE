@@ -1,13 +1,25 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "@termix-ssh/plugin-sdk/frontend";
-import { Badge, Button, GroupHeading } from "@termix-ssh/plugin-sdk/ui";
-import { Box, Monitor } from "lucide-react";
+import {
+  Badge,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  GroupHeading,
+  Segmented,
+} from "@termix-ssh/plugin-sdk/ui";
+import { Box, Monitor, Power } from "lucide-react";
 import { pve, type PveResource } from "../api";
 import { formatBytes, formatUptime, percent } from "../format";
 import { isGuest } from "../tree";
+import { useTasks } from "../tasks";
 import { Fact, Usage } from "./Usage";
 import { RrdCharts } from "./RrdCharts";
+import { Field, FormDialog, TextInput } from "./forms";
 import { CreateCtDialog, CreateVmDialog } from "../guests/CreateDialogs";
+import { DisksTab, LogTab, ServicesTab, UpdatesTab } from "../nodes/NodeTabs";
 
 interface NodeStatus {
   pveversion?: string;
@@ -15,6 +27,60 @@ interface NodeStatus {
   loadavg?: string[];
   cpuinfo?: { model?: string; cpus?: number; sockets?: number };
   uptime?: number;
+}
+
+type NodeTab = "summary" | "services" | "updates" | "disks" | "log";
+const TABS: NodeTab[] = ["summary", "services", "updates", "disks", "log"];
+
+/**
+ * Rebooting or shutting a node down stops every guest on it, and may take
+ * Termix down with it, so it asks for the node's name.
+ */
+function NodePowerDialog({
+  hostId,
+  node,
+  command,
+  running,
+  onClose,
+}: {
+  hostId: number;
+  node: string;
+  command: "reboot" | "shutdown";
+  running: number;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const { track } = useTasks();
+  const [typed, setTyped] = useState("");
+  return (
+    <FormDialog
+      title={t(`nodes.power.${command}.title`, { node })}
+      submitLabel={t(`nodes.power.${command}.submit`)}
+      destructive
+      canSubmit={typed === node}
+      onClose={onClose}
+      onSubmit={async () => {
+        const result = await pve(hostId, "POST", ["nodes", node, "status"], {
+          command,
+        });
+        void track(result, t(`nodes.power.${command}.label`, { node }));
+      }}
+    >
+      {() => (
+        <>
+          <p className="text-xs text-muted-foreground">
+            {t(`nodes.power.${command}.warning`, { count: running })}
+          </p>
+          <p className="text-xs text-destructive">
+            {t("nodes.power.termixWarning")}
+          </p>
+          <Field label={t("nodes.power.typeName", { node })}>
+            <TextInput value={typed} onChange={setTyped} placeholder={node} />
+          </Field>
+        </>
+      )}
+    </FormDialog>
+  );
 }
 
 export function NodeView({
@@ -31,7 +97,10 @@ export function NodeView({
   const { t } = useTranslation();
   const name = node.node ?? node.id;
   const [status, setStatus] = useState<NodeStatus | null>(null);
-  const [dialog, setDialog] = useState<"vm" | "ct" | null>(null);
+  const [dialog, setDialog] = useState<
+    "vm" | "ct" | "reboot" | "shutdown" | null
+  >(null);
+  const [tab, setTab] = useState<NodeTab>("summary");
   const online = node.status === "online";
 
   useEffect(() => {
@@ -50,6 +119,7 @@ export function NodeView({
     (r) => isGuest(r) && r.node === name && !r.template,
   );
   const running = guests.filter((g) => g.status === "running").length;
+  const tabProps = { hostId, node: name, isVisible };
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -61,7 +131,7 @@ export function NodeView({
             {t(`states.${node.status}`, { defaultValue: node.status })}
           </Badge>
         )}
-        <div className="ml-auto flex gap-1">
+        <div className="ml-auto flex flex-wrap gap-1">
           <Button
             size="sm"
             variant="outline"
@@ -80,57 +150,101 @@ export function NodeView({
             <Box className="mr-1 size-3.5" />
             {t("guests.create.ctButton")}
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!online}
+                aria-label={t("nodes.power.menu")}
+              >
+                <Power className="size-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setDialog("reboot")}>
+                {t("nodes.power.reboot.menu")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive"
+                onClick={() => setDialog("shutdown")}
+              >
+                {t("nodes.power.shutdown.menu")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-2">
-        <Usage
-          label={t("usage.cpu")}
-          value={node.cpu !== undefined ? node.cpu * 100 : null}
-          detail={node.maxcpu ? t("usage.cores", { count: node.maxcpu }) : "-"}
-        />
-        <Usage
-          label={t("usage.memory")}
-          value={percent(node.mem, node.maxmem)}
-          detail={`${formatBytes(node.mem)} / ${formatBytes(node.maxmem)}`}
-        />
-        <Usage
-          label={t("usage.rootDisk")}
-          value={percent(node.disk, node.maxdisk)}
-          detail={`${formatBytes(node.disk)} / ${formatBytes(node.maxdisk)}`}
-        />
-      </div>
-
-      <div>
-        <GroupHeading title={t("summary.title")} />
-        <Fact label={t("summary.uptime")}>
-          {formatUptime(status?.uptime ?? node.uptime)}
-        </Fact>
-        <Fact label={t("summary.guests")}>
-          {t("summary.guestsRunning", { running, total: guests.length })}
-        </Fact>
-        {status?.cpuinfo?.model && (
-          <Fact label={t("summary.cpuModel")}>
-            {status.cpuinfo.model}
-            {status.cpuinfo.sockets
-              ? ` (${status.cpuinfo.sockets} × ${t("summary.sockets")})`
-              : ""}
-          </Fact>
-        )}
-        {status?.loadavg && (
-          <Fact label={t("summary.load")}>{status.loadavg.join(" ")}</Fact>
-        )}
-        {status?.pveversion && (
-          <Fact label={t("summary.pveVersion")}>{status.pveversion}</Fact>
-        )}
-        {status?.kversion && (
-          <Fact label={t("summary.kernel")}>{status.kversion}</Fact>
-        )}
-      </div>
-
       {online && (
-        <RrdCharts hostId={hostId} node={name} isVisible={isVisible} />
+        <Segmented
+          value={tab}
+          onChange={(v) => setTab(v as NodeTab)}
+          options={TABS.map((value) => ({
+            value,
+            label: t(`nodes.tabs.${value}`),
+          }))}
+        />
       )}
+
+      {tab === "summary" && (
+        <>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-2">
+            <Usage
+              label={t("usage.cpu")}
+              value={node.cpu !== undefined ? node.cpu * 100 : null}
+              detail={
+                node.maxcpu ? t("usage.cores", { count: node.maxcpu }) : "-"
+              }
+            />
+            <Usage
+              label={t("usage.memory")}
+              value={percent(node.mem, node.maxmem)}
+              detail={`${formatBytes(node.mem)} / ${formatBytes(node.maxmem)}`}
+            />
+            <Usage
+              label={t("usage.rootDisk")}
+              value={percent(node.disk, node.maxdisk)}
+              detail={`${formatBytes(node.disk)} / ${formatBytes(node.maxdisk)}`}
+            />
+          </div>
+
+          <div>
+            <GroupHeading title={t("summary.title")} />
+            <Fact label={t("summary.uptime")}>
+              {formatUptime(status?.uptime ?? node.uptime)}
+            </Fact>
+            <Fact label={t("summary.guests")}>
+              {t("summary.guestsRunning", { running, total: guests.length })}
+            </Fact>
+            {status?.cpuinfo?.model && (
+              <Fact label={t("summary.cpuModel")}>
+                {status.cpuinfo.model}
+                {status.cpuinfo.sockets
+                  ? ` (${status.cpuinfo.sockets} × ${t("summary.sockets")})`
+                  : ""}
+              </Fact>
+            )}
+            {status?.loadavg && (
+              <Fact label={t("summary.load")}>{status.loadavg.join(" ")}</Fact>
+            )}
+            {status?.pveversion && (
+              <Fact label={t("summary.pveVersion")}>{status.pveversion}</Fact>
+            )}
+            {status?.kversion && (
+              <Fact label={t("summary.kernel")}>{status.kversion}</Fact>
+            )}
+          </div>
+
+          {online && (
+            <RrdCharts hostId={hostId} node={name} isVisible={isVisible} />
+          )}
+        </>
+      )}
+      {tab === "services" && <ServicesTab {...tabProps} />}
+      {tab === "updates" && <UpdatesTab {...tabProps} />}
+      {tab === "disks" && <DisksTab {...tabProps} />}
+      {tab === "log" && <LogTab {...tabProps} />}
 
       {dialog === "vm" && (
         <CreateVmDialog
@@ -143,6 +257,15 @@ export function NodeView({
         <CreateCtDialog
           hostId={hostId}
           node={name}
+          onClose={() => setDialog(null)}
+        />
+      )}
+      {(dialog === "reboot" || dialog === "shutdown") && (
+        <NodePowerDialog
+          hostId={hostId}
+          node={name}
+          command={dialog}
+          running={running}
           onClose={() => setDialog(null)}
         />
       )}

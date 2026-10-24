@@ -72,6 +72,85 @@ export const RULES: PveRule[] = [
   { method: "POST", pattern: `${GUEST}/template`, permission: "configure" },
   { method: "POST", pattern: `${GUEST}/migrate`, permission: "configure" },
   { method: "DELETE", pattern: GUEST, permission: "configure" },
+
+  // Hardware, disks, network adapters and options of a guest.
+  { method: "GET", pattern: `${GUEST}/pending`, permission: "view" },
+  {
+    method: "GET",
+    pattern: "nodes/:node/lxc/:vmid/interfaces",
+    permission: "view",
+  },
+  {
+    method: "GET",
+    pattern: "nodes/:node/qemu/:vmid/agent/network-get-interfaces",
+    permission: "view",
+  },
+  { method: "PUT", pattern: `${GUEST}/config`, permission: "configure" },
+  { method: "PUT", pattern: `${GUEST}/resize`, permission: "configure" },
+  {
+    method: "POST",
+    pattern: "nodes/:node/qemu/:vmid/move_disk",
+    permission: "configure",
+  },
+  {
+    method: "POST",
+    pattern: "nodes/:node/lxc/:vmid/move_volume",
+    permission: "configure",
+  },
+  {
+    method: "GET",
+    pattern: "nodes/:node/qemu/:vmid/cloudinit",
+    permission: "view",
+  },
+  {
+    method: "PUT",
+    pattern: "nodes/:node/qemu/:vmid/cloudinit",
+    permission: "configure",
+  },
+
+  // Storage content: ISO images, CT templates, backups and disk images.
+  {
+    method: "GET",
+    pattern: "nodes/:node/storage/:storage/status",
+    permission: "view",
+  },
+  {
+    method: "GET",
+    pattern: "nodes/:node/storage/:storage/content/:volume",
+    permission: "view",
+  },
+  {
+    method: "DELETE",
+    pattern: "nodes/:node/storage/:storage/content/:volume",
+    permission: "configure",
+  },
+  {
+    method: "POST",
+    pattern: "nodes/:node/storage/:storage/download-url",
+    permission: "configure",
+  },
+  { method: "GET", pattern: "nodes/:node/aplinfo", permission: "view" },
+  { method: "POST", pattern: "nodes/:node/aplinfo", permission: "configure" },
+
+  // Nodes. Their logs and power need administer.
+  { method: "GET", pattern: "nodes/:node/services", permission: "view" },
+  {
+    method: "POST",
+    pattern: "nodes/:node/services/:service/{start|stop|restart|reload}",
+    permission: "administer",
+  },
+  { method: "GET", pattern: "nodes/:node/syslog", permission: "administer" },
+  { method: "GET", pattern: "nodes/:node/journal", permission: "administer" },
+  { method: "GET", pattern: "nodes/:node/apt/update", permission: "view" },
+  {
+    method: "POST",
+    pattern: "nodes/:node/apt/update",
+    permission: "administer",
+  },
+  { method: "GET", pattern: "nodes/:node/apt/versions", permission: "view" },
+  { method: "GET", pattern: "nodes/:node/disks/list", permission: "view" },
+  { method: "GET", pattern: "nodes/:node/disks/smart", permission: "view" },
+  { method: "POST", pattern: "nodes/:node/status", permission: "administer" },
 ];
 
 function segmentMatches(rule: string, value: string): boolean {

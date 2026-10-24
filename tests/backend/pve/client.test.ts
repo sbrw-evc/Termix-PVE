@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import net from "node:net";
+import zlib from "node:zlib";
 import { PassThrough } from "node:stream";
 import {
   PveError,
@@ -7,6 +8,7 @@ import {
   createDirectClient,
   createPveshClient,
   createTunnelClient,
+  decodeBody,
   fetchFailure,
   isValidTokenId,
   parseApiResponse,
@@ -37,6 +39,32 @@ describe("pvePath", () => {
         "log",
       ]),
     ).toContain("UPID:pve1");
+  });
+
+  it("keeps a volume id as one segment, encoded only for the API", () => {
+    const path = [
+      "nodes",
+      "pve1",
+      "storage",
+      "local",
+      "content",
+      "local:iso/debian 13.iso".replace(" ", "-"),
+    ];
+    expect(pvePath(path)).toBe(
+      "/nodes/pve1/storage/local/content/local:iso/debian-13.iso",
+    );
+    expect(pvePath(path, true)).toBe(
+      "/nodes/pve1/storage/local/content/local%3Aiso%2Fdebian-13.iso",
+    );
+    for (const bad of [
+      "local:iso/../etc",
+      "local:../x",
+      "a/b",
+      "local:iso//x",
+      "local:iso/x?y",
+    ]) {
+      expect(() => pvePath(["nodes", bad])).toThrow(PveError);
+    }
   });
 
   it("refuses segments that could leave the path", () => {
@@ -344,6 +372,19 @@ describe("direct transport", () => {
     expect(() =>
       createDirectClient(vi.fn(), { host: "evil.com/x?", token }),
     ).toThrow(PveError);
+  });
+});
+
+describe("decodeBody", () => {
+  const json = '{"data":["Oct 24 05:32:11 proxmox systemd[1]: Started"]}';
+  it("unpacks what PVE compressed, like the journal", () => {
+    expect(decodeBody(zlib.gzipSync(json), "gzip")).toBe(json);
+    expect(decodeBody(zlib.deflateSync(json), "deflate")).toBe(json);
+    expect(decodeBody(zlib.brotliCompressSync(json), "br")).toBe(json);
+  });
+  it("leaves plain bodies alone", () => {
+    expect(decodeBody(Buffer.from(json), undefined)).toBe(json);
+    expect(decodeBody(Buffer.from(json), "identity")).toBe(json);
   });
 });
 

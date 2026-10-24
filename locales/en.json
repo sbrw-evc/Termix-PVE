@@ -74,7 +74,12 @@
     "noHosts": "No Proxmox hosts yet",
     "noHostsHint": "Open a host's settings, turn on Proxmox node under SSH, and pick how to connect. The node then shows here.",
     "cancel": "Cancel",
-    "working": "Working..."
+    "working": "Working...",
+    "save": "Save",
+    "reset": "Reset",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No"
   },
   "errors": {
     "tlsUntrusted": "Termix does not trust the node's certificate. In the host's Proxmox settings, paste the node's CA from /etc/pve/pve-root-ca.pem into CA certificate, or pick API over SSH tunnel.",
@@ -127,7 +132,8 @@
     "sockets": "sockets",
     "load": "Load average",
     "pveVersion": "Proxmox VE",
-    "kernel": "Kernel"
+    "kernel": "Kernel",
+    "ips": "Addresses"
   },
   "charts": {
     "title": "Charts",
@@ -285,6 +291,297 @@
       "gateway": "Gateway",
       "startAfter": "Start after creating",
       "pick": "Pick one"
+    },
+    "tabs": {
+      "summary": "Summary",
+      "hardware": "Hardware",
+      "options": "Options",
+      "cloudinit": "Cloud-Init"
+    }
+  },
+  "hardware": {
+    "edit": "Edit",
+    "add": "Add",
+    "remove": "Remove",
+    "removed": "{{key}} removed",
+    "pending": "Pending",
+    "pendingHint": "Changes marked Pending apply when the guest restarts from Proxmox: a reboot inside the guest is not enough.",
+    "processors": "Processors",
+    "processorsValue": "{{sockets}} socket × {{cores}} cores, {{cpu}}",
+    "allCores": "All",
+    "swap": "Swap",
+    "balloonShort": "min",
+    "cpuMemory": {
+      "heading": "Processor and memory",
+      "title": "Processor and memory"
+    },
+    "cpuType": "CPU type",
+    "cpulimit": "CPU limit",
+    "cpulimitHint": "0 for no limit. 1.5 is one and a half cores of time.",
+    "balloon": "Minimum memory (MiB)",
+    "balloonHint": "With the balloon driver the guest gives memory back down to this. Equal to memory turns it off, 0 removes the driver.",
+    "disks": "Disks",
+    "volumes": "Root disk and mount points",
+    "bus": "Bus",
+    "slot": "Will be {{key}}",
+    "iothread": "IO thread",
+    "discard": "Discard",
+    "discardHint": "Lets the guest free unused blocks on thin storage.",
+    "ssd": "SSD emulation",
+    "mountPath": "Mount path in the container",
+    "backup": "Include in backups",
+    "addDisk": {
+      "button": "Add disk",
+      "title": "Add disk",
+      "label": "Add {{key}}"
+    },
+    "addMount": {
+      "button": "Add mount point",
+      "title": "Add mount point"
+    },
+    "resize": {
+      "menu": "Resize",
+      "title": "Grow {{key}}",
+      "grow": "Add (GiB)",
+      "result": "{{from}} GiB becomes {{to}} GiB",
+      "noShrink": "Disks can only grow. The guest's partition and file system need growing inside the guest afterwards, unless it does that on boot.",
+      "submit": "Grow",
+      "label": "Grow {{key}} by {{size}} GiB"
+    },
+    "move": {
+      "menu": "Move to storage",
+      "title": "Move {{key}}",
+      "submit": "Move",
+      "deleteSource": "Delete the original",
+      "deleteSourceHint": "Off keeps it as an unused disk.",
+      "label": "Move {{key}} to {{storage}}"
+    },
+    "detach": {
+      "menu": "Detach",
+      "title": "Detach {{key}}?",
+      "description": "The disk stays on its storage as an unused disk and can be deleted or attached again."
+    },
+    "unused": {
+      "delete": "Delete",
+      "title": "Delete {{volume}}?",
+      "description": "This deletes the disk and everything on it. It can't be undone."
+    },
+    "cd": {
+      "heading": "CD/DVD drives",
+      "title": "Media in {{key}}",
+      "empty": "No media"
+    },
+    "nic": {
+      "heading": "Network adapters",
+      "add": "Add adapter",
+      "addTitle": "Add {{key}}",
+      "editTitle": "Edit {{key}}",
+      "none": "No network adapters.",
+      "model": "Model",
+      "name": "Name in the container",
+      "ipv6": "IPv6",
+      "ip": {
+        "dhcp": "DHCP",
+        "static": "Static",
+        "none": "None",
+        "auto": "SLAAC"
+      },
+      "tag": "VLAN tag",
+      "tagHint": "Empty for untagged.",
+      "rate": "Rate limit (MB/s)",
+      "rateHint": "Empty for no limit.",
+      "firewall": "Firewall",
+      "firewallShort": "firewall",
+      "removeTitle": "Remove {{key}}?",
+      "removeDescription": "The guest loses this adapter and its address."
+    },
+    "problem": {
+      "cpu": "Enter at least one socket and core.",
+      "cpulimit": "The CPU limit goes from 0 to 8192.",
+      "memory": "Enter at least 16 MiB of memory.",
+      "balloon": "Minimum memory can't be more than memory.",
+      "swap": "Enter swap in MiB, 0 for none.",
+      "noSlot": "Every slot of this kind is taken.",
+      "storage": "Pick a storage.",
+      "size": "Enter a size in whole GiB.",
+      "path": "Enter an absolute path like /data, not / itself.",
+      "bridge": "Pick a bridge.",
+      "tag": "A VLAN tag goes from 1 to 4094.",
+      "rate": "Enter a rate above 0, or leave it empty.",
+      "name": "Enter a name like eth0.",
+      "ip4": "Enter the address like 192.168.0.60/24 and a valid gateway.",
+      "ip6": "Enter the address like fd00::10/64."
+    },
+    "detached": "{{key}} detached; it stays as an unused disk",
+    "coresHint": "Empty uses every core of the node."
+  },
+  "options": {
+    "general": "General",
+    "tags": "Tags",
+    "tagsHint": "Separated by commas.",
+    "onboot": "Start when the node boots",
+    "protection": "Protection",
+    "protectionHint": "Blocks deleting the guest and its disks until turned off.",
+    "agent": "QEMU guest agent",
+    "agentHint": "Turn on once the agent runs in the guest, for its addresses and clean shutdowns.",
+    "startup": "Start and shutdown order",
+    "startupOrder": "Order",
+    "startupUp": "Delay after start (s)",
+    "startupDown": "Shutdown timeout (s)",
+    "dns": "DNS",
+    "nameserver": "DNS servers",
+    "searchdomain": "Search domain",
+    "useHost": "Empty uses the node's.",
+    "notes": "Notes",
+    "saved": "Options saved",
+    "ostype": {
+      "l26": "Linux",
+      "win11": "Windows 11 / Server 2022+",
+      "win10": "Windows 10 / Server 2016-2019",
+      "win8": "Windows 8 / Server 2012",
+      "w2k8": "Windows Vista / Server 2008",
+      "solaris": "Solaris",
+      "other": "Other"
+    },
+    "problem": {
+      "name": "Enter a name.",
+      "startup": "Order and delays are whole numbers.",
+      "tags": "Tags use letters, digits, dashes, dots and underscores.",
+      "nameserver": "Enter IP addresses separated by spaces."
+    }
+  },
+  "cloudinit": {
+    "noDrive": "This VM has no cloud-init drive. Add one, then set the user, keys and network here; the guest image must support cloud-init.",
+    "addDrive": "Add cloud-init drive",
+    "driveAdded": "Cloud-init drive added",
+    "user": "User",
+    "username": "User name",
+    "usernameHint": "Empty uses the image's default user.",
+    "password": "Password",
+    "passwordHint": "Empty keeps the current one. Stored hashed by Proxmox.",
+    "network": "Network",
+    "saved": "Cloud-init settings saved",
+    "regenerate": "Regenerate image",
+    "regenerated": "Cloud-init image regenerated",
+    "regenerateHint": "Writes the settings to {{drive}}. The guest reads them on its next boot."
+  },
+  "storage": {
+    "tabs": {
+      "summary": "Summary",
+      "iso": "ISO images",
+      "vztmpl": "CT templates",
+      "backup": "Backups",
+      "images": "Disk images"
+    },
+    "content": "Holds",
+    "contentTypes": {
+      "images": "VM disks",
+      "rootdir": "Container disks",
+      "iso": "ISO images",
+      "vztmpl": "CT templates",
+      "backup": "Backups",
+      "snippets": "Snippets",
+      "import": "Import"
+    },
+    "shared": "Shared",
+    "empty": "Nothing here yet.",
+    "owner": "guest {{vmid}}",
+    "protected": "Protected",
+    "download": {
+      "button": "Download from URL",
+      "title": {
+        "iso": "Download an ISO image to {{storage}}",
+        "vztmpl": "Download a CT template to {{storage}}"
+      },
+      "url": "URL",
+      "filename": "File name",
+      "algorithm": "Checksum type",
+      "noChecksum": "None",
+      "checksum": "Checksum",
+      "verify": "Check the server's certificate",
+      "submit": "Download",
+      "label": "Download {{name}}",
+      "problem": {
+        "url": "Enter an http or https URL.",
+        "filename": "The file name uses letters, digits, dots, dashes and underscores.",
+        "extension": "ISO images end in .iso or .img; templates in .tar.gz, .tar.xz or .tar.zst.",
+        "checksum": "Pick a checksum type and enter the checksum in hex, or leave both empty."
+      }
+    },
+    "catalog": {
+      "button": "Templates",
+      "title": "Container templates for {{storage}}",
+      "search": "Search templates...",
+      "have": "Downloaded",
+      "label": "Download {{name}}"
+    },
+    "delete": {
+      "title": "Delete {{name}}?",
+      "description": "This deletes the file from the storage. It can't be undone.",
+      "submit": "Delete",
+      "done": "{{name}} deleted"
+    }
+  },
+  "nodes": {
+    "tabs": {
+      "summary": "Summary",
+      "services": "Services",
+      "updates": "Updates",
+      "disks": "Disks",
+      "log": "Log"
+    },
+    "services": {
+      "start": "Start",
+      "stop": "Stop",
+      "restart": "Restart",
+      "reload": "Reload",
+      "label": "{{action}} {{name}}",
+      "confirm": {
+        "stop": "Stop {{name}}?",
+        "restart": "Restart {{name}}?",
+        "description": "Proxmox's own services keep the node and its API running; stopping one can cut off this tool until it starts again."
+      }
+    },
+    "updates": {
+      "refresh": "Refresh package lists",
+      "refreshLabel": "Refresh package lists on {{node}}",
+      "count_one": "{{count}} package can be upgraded",
+      "count_other": "{{count}} packages can be upgraded",
+      "none": "Everything is up to date",
+      "installHint": "Install upgrades from the node's terminal with apt full-upgrade; Proxmox does not upgrade through its API."
+    },
+    "disks": {
+      "smart": "SMART",
+      "smartTitle": "SMART for {{disk}}",
+      "health": "Health",
+      "usedBy": "used by {{used}}",
+      "unused": "unused",
+      "wearout": "{{value}}% life left"
+    },
+    "log": {
+      "search": "Filter the log...",
+      "empty": "No lines match."
+    },
+    "power": {
+      "menu": "Node power",
+      "termixWarning": "If Termix runs on this node, it goes down too until the node is back.",
+      "typeName": "Type {{node}} to confirm",
+      "reboot": {
+        "menu": "Reboot node",
+        "title": "Reboot {{node}}?",
+        "submit": "Reboot",
+        "label": "Reboot {{node}}",
+        "warning_one": "{{count}} running guest stops or shuts down first, as its startup settings say.",
+        "warning_other": "{{count}} running guests stop or shut down first, as their startup settings say."
+      },
+      "shutdown": {
+        "menu": "Shut down node",
+        "title": "Shut down {{node}}?",
+        "submit": "Shut down",
+        "label": "Shut down {{node}}",
+        "warning_one": "{{count}} running guest goes down with it, and nothing starts it again until someone powers the node on.",
+        "warning_other": "{{count}} running guests go down with it, and nothing starts them again until someone powers the node on."
+      }
     }
   }
 }

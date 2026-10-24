@@ -36,10 +36,10 @@ describe("findRule", () => {
   });
 
   it("refuses paths and methods no rule lists", () => {
-    // Writing a node's files, shutting the node down, reading access lists.
-    expect(findRule("POST", split("nodes/pve1/status"))).toBeNull();
+    // Reading access lists, writing node files, the node's own config.
     expect(findRule("GET", split("access/users"))).toBeNull();
-    expect(findRule("PUT", split("nodes/pve1/qemu/100/config"))).toBeNull();
+    expect(findRule("PUT", split("nodes/pve1/config"))).toBeNull();
+    expect(findRule("POST", split("nodes/pve1/execute"))).toBeNull();
     expect(
       findRule("POST", split("nodes/pve1/qemu/100/status/hibernate")),
     ).toBeNull();
@@ -55,8 +55,10 @@ describe("findRule", () => {
       expect(["view", "operate", "configure", "administer"]).toContain(
         rule.permission,
       );
-      // Reads never need more than view, changes never pass with view.
-      expect(rule.method === "GET").toBe(rule.permission === "view");
+      // Changes never pass with view. Reads are view, or administer for
+      // a node's logs.
+      if (rule.method !== "GET") expect(rule.permission).not.toBe("view");
+      else expect(["view", "administer"]).toContain(rule.permission);
     }
   });
 
@@ -64,6 +66,50 @@ describe("findRule", () => {
     expect(hostLevelFor("view")).toBe("connect");
     expect(hostLevelFor("operate")).toBe("edit");
     expect(hostLevelFor("administer")).toBe("edit");
+  });
+});
+
+describe("phase 2 rules", () => {
+  it("lets guests be configured with configure", () => {
+    expect(
+      findRule("PUT", split("nodes/pve1/qemu/100/config"))?.permission,
+    ).toBe("configure");
+    expect(
+      findRule("PUT", split("nodes/pve1/lxc/400/resize"))?.permission,
+    ).toBe("configure");
+    expect(
+      findRule("POST", split("nodes/pve1/qemu/100/move_disk"))?.permission,
+    ).toBe("configure");
+    expect(findRule("POST", split("nodes/pve1/lxc/400/move_disk"))).toBeNull();
+  });
+
+  it("takes a volume id as one segment", () => {
+    expect(
+      findRule("DELETE", [
+        "nodes",
+        "pve1",
+        "storage",
+        "local",
+        "content",
+        "local:iso/debian.iso",
+      ])?.permission,
+    ).toBe("configure");
+  });
+
+  it("keeps node logs and power behind administer", () => {
+    expect(findRule("GET", split("nodes/pve1/syslog"))?.permission).toBe(
+      "administer",
+    );
+    expect(findRule("POST", split("nodes/pve1/status"))?.permission).toBe(
+      "administer",
+    );
+    expect(
+      findRule("POST", split("nodes/pve1/services/pveproxy/restart"))
+        ?.permission,
+    ).toBe("administer");
+    expect(
+      findRule("POST", split("nodes/pve1/services/pveproxy/disable")),
+    ).toBeNull();
   });
 });
 

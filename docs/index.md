@@ -1,4 +1,4 @@
-Proxmox VE manages Proxmox nodes and clusters from Termix: their virtual machines and containers, with charts and tasks. Storage, network, backups, firewall, access and the cluster itself come in later releases.
+Proxmox VE manages Proxmox nodes and clusters from Termix: virtual machines and containers with their hardware and options, storage content, and the nodes themselves, with charts and tasks. Backups, snapshots, firewall, access and the cluster come in later releases.
 
 ## Add a node
 
@@ -26,12 +26,29 @@ Open Proxmox from Tools, or right-click a node in the host list and pick Open in
 
 Charts show an hour, a day, a week, a month or a year.
 
+## Guests
+
+A guest has tabs:
+
+- Summary: use, addresses (a VM needs the QEMU guest agent for these), uptime and charts.
+- Hardware: Edit changes processors and memory. Add disk (or Add mount point on a container) makes a new disk; a disk's menu grows it, moves it to another storage, or detaches it. A detached disk stays as unused until you delete it. Network adapters are added, edited and removed here too. Changes Proxmox can't make while the guest runs are marked Pending and apply when it restarts from Proxmox.
+- Options: name, tags, start on boot, protection, start order and notes, the QEMU guest agent for VMs and DNS for containers.
+- Cloud-Init (VMs): user, password, SSH keys and network. Regenerate image writes them for the next boot. A VM without a cloud-init drive offers to add one.
+
+## Storage
+
+A storage has a tab for each kind of content it holds. ISO images and CT templates can be downloaded from a URL, with a checksum if you have one; CT templates also have Templates, the Proxmox catalog. The bin deletes a file. Backups and disk images are listed; restore comes with backups in a later release.
+
+## Nodes
+
+A node has tabs for Services (start, stop, restart, reload), Updates (refresh the package lists; install upgrades from the node's terminal), Disks (health and SMART) and Log. The power button reboots or shuts the node down after you type its name. If Termix runs on that node, it goes down too.
+
 ## Permissions
 
 - View Proxmox: see nodes, guests, storage, charts and tasks.
 - Operate Proxmox guests: power guests on and off.
-- Configure Proxmox: create, clone, migrate, convert and delete guests.
-- Administer Proxmox: access and cluster management, in a later release.
+- Configure Proxmox: create, clone, migrate, convert and delete guests, change their hardware and options, and manage storage content.
+- Administer Proxmox: node services, log, reboot and shutdown, and later access and cluster management.
 
 Anything beyond viewing also needs edit access to the Termix host. Every change is written to the audit log. Proxmox's own rights for the token or SSH user still apply on top.
 
