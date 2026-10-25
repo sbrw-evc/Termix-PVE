@@ -84,8 +84,12 @@ aren't obvious from the code, and anything that has bitten you before.
   over SSH exec, which sets that ticket as the VNC password; noVNC is handed the open socket and the
   password. Containers run `pct enter` on a PTY, relayed to xterm.js as JSON frames. Non-root users go
   through `sudo -n env`. No console over API directly.
-- Uploads (`src/backend/upload.ts`) stream the raw body over SSH `tee` into the path `pvesm path` gives,
-  then `mv -n`: core parses only JSON and form bodies, so the route reads the request itself.
+- Uploads (`src/backend/upload.ts`) come in 16 MiB chunks (`storage/chunks.ts`): Node's HTTP server and
+  proxies cut a request off after about 5 minutes, and the browser then resent the whole file from 0%
+  forever. Each chunk is written at its offset with `dd oflag=seek_bytes conv=notrunc` into
+  `<path>.termix-upload-<id>` (a resent chunk lands in the same place); 409 `PVE_UPLOAD_OFFSET` says how
+  much the node has, the last chunk trims to `total` and `mv -n`s it into place, DELETE drops the temp
+  file. Core parses only JSON and form bodies, so the route reads the request itself.
 - Node network edits land in `interfaces.new`; PUT `nodes/{node}/network` applies, DELETE reverts.
   pvesh drops the `changes` attribute, so the UI tracks pending changes itself.
 - Import detection (`src/backend/guest-probe.ts`): OS from `ostype` (old Windows types are w2k*, wxp, wvista,

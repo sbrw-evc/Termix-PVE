@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.8
+
+### Fixed
+
+- An upload over a shaky connection gave up after six failed tries of one piece; it now tries ten times with pauses of up to 30 seconds, about four minutes in all, and drops a piece that takes over two minutes so it can be sent again
+
+## 0.4.7
+
+### Fixed
+
+- Uploads that take longer than about five minutes kept starting over from 0%: Termix's server cut the request off and the browser sent the whole file again. Files now go up in 16 MiB pieces, a piece that fails is sent again, and the progress bar counts what the node has received
+- Cancelling an upload, or one that keeps failing, removes its half-written file from the node
+
 ## 0.4.6
 
 ### Fixed

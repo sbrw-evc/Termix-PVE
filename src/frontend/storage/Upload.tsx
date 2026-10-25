@@ -4,6 +4,12 @@ import { Button, getBasePath } from "@termix-ssh/plugin-sdk/ui";
 import { Upload as UploadIcon, X } from "lucide-react";
 import { PLUGIN_ID } from "../api";
 import { formatBytes } from "../format";
+import {
+  CHUNK_TIMEOUT_MS,
+  uploadId,
+  uploadInChunks,
+  type ChunkAnswer,
+} from "./chunks";
 
 const EXTENSIONS: Record<"iso" | "vztmpl", string> = {
   iso: ".iso,.img",
@@ -16,9 +22,45 @@ export function uploadUrl(
   storage: string,
   content: "iso" | "vztmpl",
   filename: string,
+  chunk?: { offset: number; total: number; id: string },
 ): string {
   const query = new URLSearchParams({ node, storage, content, filename });
+  if (chunk) {
+    query.set("offset", String(chunk.offset));
+    query.set("total", String(chunk.total));
+    query.set("upload", chunk.id);
+  }
   return `${getBasePath()}/plugin-api/${PLUGIN_ID}/hosts/${hostId}/upload?${query}`;
+}
+
+/** One chunk over XHR, the only way to get upload progress in a browser. */
+function sendChunk(
+  url: string,
+  body: Blob,
+  onProgress: (sent: number) => void,
+  current: { xhr: XMLHttpRequest | null },
+): Promise<ChunkAnswer> {
+  return new Promise((resolve) => {
+    const request = new XMLHttpRequest();
+    current.xhr = request;
+    request.open("POST", url);
+    request.withCredentials = true;
+    // A connection that hangs gives no error of its own; this turns it into one.
+    request.timeout = CHUNK_TIMEOUT_MS;
+    request.setRequestHeader("Content-Type", "application/octet-stream");
+    request.upload.onprogress = (e) => onProgress(e.loaded);
+    request.onloadend = () => {
+      current.xhr = null;
+      let parsed: ChunkAnswer["body"] = {};
+      try {
+        parsed = JSON.parse(request.responseText) as ChunkAnswer["body"];
+      } catch {
+        parsed = { error: request.statusText || undefined };
+      }
+      resolve({ status: request.status, body: parsed });
+    };
+    request.send(body);
+  });
 }
 
 /** A file name the server takes: no spaces or odd characters. */
@@ -27,8 +69,8 @@ export function safeFilename(name: string): string {
 }
 
 /**
- * Uploads one file with progress. XHR rather than fetch, because fetch can't
- * report upload progress. The session cookie authenticates it like app.api.
+ * Uploads one file in chunks, with progress counted by what the node has.
+ * The session cookie authenticates it like app.api.
  */
 export function UploadButton({
   hostId,
@@ -46,47 +88,59 @@ export function UploadButton({
   const { t } = useTranslation();
   const toast = useToast();
   const input = useRef<HTMLInputElement>(null);
-  const xhr = useRef<XMLHttpRequest | null>(null);
+  const current = useRef<{ xhr: XMLHttpRequest | null; cancelled: boolean }>({
+    xhr: null,
+    cancelled: false,
+  });
   const [progress, setProgress] = useState<{
     name: string;
     sent: number;
     total: number;
   } | null>(null);
 
-  const start = (file: File) => {
+  const start = async (file: File) => {
     const name = safeFilename(file.name);
-    const request = new XMLHttpRequest();
-    xhr.current = request;
-    request.open("POST", uploadUrl(hostId, node, storage, content, name));
-    request.withCredentials = true;
-    request.setRequestHeader("Content-Type", "application/octet-stream");
-    request.upload.onprogress = (e) =>
-      setProgress({
-        name,
-        sent: e.loaded,
-        total: e.lengthComputable ? e.total : file.size,
+    const id = uploadId();
+    const state = { xhr: null as XMLHttpRequest | null, cancelled: false };
+    current.current = state;
+    const url = (offset: number) =>
+      uploadUrl(hostId, node, storage, content, name, {
+        offset,
+        total: file.size,
+        id,
       });
-    request.onloadend = () => {
-      xhr.current = null;
-      setProgress(null);
-      if (request.status === 200) {
-        toast.success(t("storage.upload.done", { name }));
-        onDone();
-        return;
-      }
-      if (request.status === 0) return; // cancelled or the connection dropped
-      let error = request.statusText;
-      try {
-        error =
-          (JSON.parse(request.responseText) as { error?: string }).error ??
-          error;
-      } catch {
-        // keep the status text
-      }
-      toast.error(t("storage.upload.failed", { name, error }));
-    };
     setProgress({ name, sent: 0, total: file.size });
-    request.send(file);
+    try {
+      await uploadInChunks({
+        total: file.size,
+        send: (offset, end, onChunk) =>
+          sendChunk(url(offset), file.slice(offset, end), onChunk, state),
+        onProgress: (sent) =>
+          setProgress({
+            name,
+            sent: Math.min(sent, file.size),
+            total: file.size,
+          }),
+        cancelled: () => state.cancelled,
+      });
+      toast.success(t("storage.upload.done", { name }));
+      onDone();
+    } catch (err) {
+      // Leave nothing half-written on the node.
+      void fetch(url(0), { method: "DELETE", credentials: "include" }).catch(
+        () => undefined,
+      );
+      if (!state.cancelled) {
+        toast.error(
+          t("storage.upload.failed", {
+            name,
+            error: err instanceof Error ? err.message : String(err),
+          }),
+        );
+      }
+    } finally {
+      setProgress(null);
+    }
   };
 
   if (progress) {
@@ -110,7 +164,10 @@ export function UploadButton({
           variant="ghost"
           className="h-6 px-1.5"
           aria-label={t("storage.upload.cancel")}
-          onClick={() => xhr.current?.abort()}
+          onClick={() => {
+            current.current.cancelled = true;
+            current.current.xhr?.abort();
+          }}
         >
           <X className="size-3.5" />
         </Button>
@@ -136,7 +193,7 @@ export function UploadButton({
         onChange={(e) => {
           const file = e.target.files?.[0];
           e.target.value = "";
-          if (file) start(file);
+          if (file) void start(file);
         }}
       />
     </>
