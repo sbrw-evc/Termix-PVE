@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.6
+
+### Fixed
+
+- Inputs side by side in a form sit level with each other, even when one label wraps onto two lines or one input has a hint under it
+
 ## 0.4.5
 
 ### Fixed

@@ -130,14 +130,22 @@ export function Field({
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1">
-      <Label className="text-xs">{label}</Label>
-      {children}
-      {error ? (
-        <span className="text-[11px] text-destructive">{error}</span>
-      ) : hint ? (
-        <span className="text-[11px] text-muted-foreground">{hint}</span>
-      ) : null}
+    // In a grid, a field spans two of its rows, the label's and the input's,
+    // and shares them with the fields beside it (subgrid): a label that wraps
+    // or a hint under one input still leaves the inputs of a row level.
+    <div
+      data-pve-field=""
+      className="grid gap-1 [.grid>&]:row-span-2 [.grid>&]:grid-rows-subgrid"
+    >
+      <Label className="self-end text-xs">{label}</Label>
+      <div className="flex flex-col gap-1">
+        {children}
+        {error ? (
+          <span className="text-[11px] text-destructive">{error}</span>
+        ) : hint ? (
+          <span className="text-[11px] text-muted-foreground">{hint}</span>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -215,7 +223,9 @@ export function CheckField({
   hint?: string;
 }) {
   return (
-    <label className="flex items-start gap-2 text-xs">
+    // Beside fields in a grid, it takes their two rows too and sits level
+    // with their inputs, or the grid would place the next field a row off.
+    <label className="flex items-start gap-2 text-xs [.grid:has(>[data-pve-field])>&]:row-span-2 [.grid:has(>[data-pve-field])>&]:min-h-8 [.grid:has(>[data-pve-field])>&]:items-center [.grid:has(>[data-pve-field])>&]:self-end">
       <Checkbox
         checked={checked}
         onCheckedChange={(value) => onChange(value === true)}
