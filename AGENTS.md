@@ -115,6 +115,10 @@ exec` over SSH, local node only; each answer starts with `+` so a failed exec re
   `cluster/ha/rules`, whose PUT needs `type` again.
 - Proxmox's notes templates use `{{guestname}}`, which is also i18next's syntax: never put it in a
   locale string.
+- The tree lives in `treeStore.ts` (outside React): the tab loads clusters into it and shows details,
+  the `pve-tree` panel (`TreePanel.tsx`) draws the tree in the left sidebar. `useSidebarTree` in
+  `PveTab.tsx` opens that panel while the tab is visible and restores the previous left view after,
+  only if the user hasn't switched it since. The tab draws its own tree whenever the panel isn't shown.
 - The tree holds every Proxmox host at once (`ClustersView` in `PveTab.tsx`), each under its own
   Datacenter row from `hostTree()`. Resource ids repeat between clusters (`node/proxmox`), so rows
   select `<hostId>|<id>` (`selectionId`/`parseSelection`); details, tasks and import follow the

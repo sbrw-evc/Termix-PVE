@@ -133,7 +133,8 @@
       "folder": "फ़ोल्डर व्यू",
       "server": "सर्वर व्यू"
     },
-    "datacenterOf": "डेटासेंटर ({{name}})"
+    "datacenterOf": "डेटासेंटर ({{name}})",
+    "openTab": "क्लस्टर लोड करने के लिए Proxmox टूल खोलें।"
   },
   "types": {
     "node": "नोड",

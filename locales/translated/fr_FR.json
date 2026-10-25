@@ -133,7 +133,8 @@
       "folder": "Vue par dossiers",
       "server": "Vue serveur"
     },
-    "datacenterOf": "Centre de données ({{name}})"
+    "datacenterOf": "Centre de données ({{name}})",
+    "openTab": "Ouvrez l'outil Proxmox pour charger les clusters."
   },
   "types": {
     "node": "Nœud",

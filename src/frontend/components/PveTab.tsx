@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   useHosts,
+  useShell,
   useTranslation,
+  type ShellApi,
   type TabProps,
 } from "@termix-ssh/plugin-sdk/frontend";
 import {
@@ -29,27 +31,11 @@ import {
   parseSelection,
   type TreeView,
 } from "../tree";
+import { setTreeState, useTreeState, type ClusterState } from "../treeStore";
+import { TREE_PANEL } from "./TreePanel";
 
 import { ImportDialog } from "./ImportDialog";
 
-const VIEW_KEY = "pve.treeView";
-
-/** The tree layout this browser last used; Folder View like Proxmox's by default. */
-function readView(): TreeView {
-  try {
-    return localStorage.getItem(VIEW_KEY) === "server" ? "server" : "folder";
-  } catch {
-    return "folder";
-  }
-}
-
-function saveView(view: TreeView) {
-  try {
-    localStorage.setItem(VIEW_KEY, view);
-  } catch {
-    // Storage off: the choice lasts until the tab closes.
-  }
-}
 import { errorText } from "../error-text";
 import { TaskProvider } from "../tasks";
 import { ResourceTree } from "./ResourceTree";
@@ -112,11 +98,6 @@ function Details({
   return null;
 }
 
-interface ClusterState {
-  resources: PveResource[] | null;
-  error: PveCallError | null;
-}
-
 /** /cluster/resources of every Proxmox host, kept fresh while the tab shows. */
 function useClusters(hostIds: number[], isVisible: boolean) {
   const [state, setState] = useState<Record<number, ClusterState>>({});
@@ -176,10 +157,16 @@ function ClustersView({
   const { t } = useTranslation();
   const hostIds = useMemo(() => hosts.map((h) => h.id), [hosts]);
   const { state, loading, loadAll, loadOne } = useClusters(hostIds, isVisible);
-  const [query, setQuery] = useState("");
-  const [selection, setSelection] = useState<string | null>(null);
+  const { query, selection, view, inSidebar } = useTreeState();
+  const setQuery = (next: string) => setTreeState({ query: next });
+  const setSelection = (next: string | null) =>
+    setTreeState({ selection: next });
   const [importing, setImporting] = useState(false);
-  const [view, setView] = useState<TreeView>(readView);
+
+  // The sidebar tree draws from what this tab loads.
+  useEffect(() => {
+    setTreeState({ hosts, clusters: state });
+  }, [hosts, state]);
 
   const picked = parseSelection(selection);
   // The host everything works on: the selection's, or the one the tab opened with.
@@ -262,25 +249,24 @@ function ClustersView({
           </>
         }
         toolbar={
-          <div className="flex w-full items-center gap-2">
-            <PanelSearch
-              value={query}
-              onChange={setQuery}
-              placeholder={t("app.search")}
-              fill
-            />
-            <Segmented
-              value={view}
-              onChange={(next) => {
-                setView(next as TreeView);
-                saveView(next as TreeView);
-              }}
-              options={[
-                { value: "folder", label: t("tree.views.folder") },
-                { value: "server", label: t("tree.views.server") },
-              ]}
-            />
-          </div>
+          inSidebar ? undefined : (
+            <div className="flex w-full items-center gap-2">
+              <PanelSearch
+                value={query}
+                onChange={setQuery}
+                placeholder={t("app.search")}
+                fill
+              />
+              <Segmented
+                value={view}
+                onChange={(next) => setTreeState({ view: next as TreeView })}
+                options={[
+                  { value: "folder", label: t("tree.views.folder") },
+                  { value: "server", label: t("tree.views.server") },
+                ]}
+              />
+            </div>
+          )
         }
       >
         {!loaded && failed.length === hosts.length ? (
@@ -318,13 +304,16 @@ function ClustersView({
               </div>
             ))}
             <div className="flex min-h-0 flex-1">
-              <ScrollArea className="w-72 shrink-0 border-r border-border">
-                <ResourceTree
-                  tree={tree}
-                  selectedId={selection}
-                  onSelect={setSelection}
-                />
-              </ScrollArea>
+              {/* In the left sidebar instead, while that panel shows. */}
+              {!inSidebar && (
+                <ScrollArea className="w-72 shrink-0 border-r border-border">
+                  <ResourceTree
+                    tree={tree}
+                    selectedId={selection}
+                    onSelect={setSelection}
+                  />
+                </ScrollArea>
+              )}
               {/* A plain scroller: Radix ScrollArea lays its content out as a
                   table, which grows past the pane instead of wrapping. */}
               <div className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
@@ -366,8 +355,34 @@ function ClustersView({
   );
 }
 
-export function PveTab({ host, isVisible }: TabProps) {
+/**
+ * Shows the tree in the left sidebar while the Proxmox tab is on screen, and
+ * gives the sidebar back to what it showed before when the tab is left. Phones
+ * keep the tree in the tab: their sidebar is a drawer over everything.
+ */
+function useSidebarTree(isVisible: boolean, shell: ShellApi) {
+  const live = useShell();
+  const mobile = live?.env.isMobile ?? false;
+  const leftView = live?.regions.left.view;
+  const leftRef = useRef(leftView);
+  leftRef.current = leftView;
+
+  useEffect(() => {
+    if (mobile || !isVisible) return;
+    const previous = leftRef.current;
+    if (previous !== TREE_PANEL) shell.openRailView(TREE_PANEL);
+    // Hidden or closed: only undo our own switch, not one the user made since.
+    return () => {
+      if (leftRef.current !== TREE_PANEL) return;
+      if (previous && previous !== TREE_PANEL) shell.openRailView(previous);
+      else shell.closeRailView(TREE_PANEL);
+    };
+  }, [isVisible, mobile, shell]);
+}
+
+export function PveTab({ host, isVisible, shell }: TabProps) {
   const { t } = useTranslation();
+  useSidebarTree(isVisible, shell);
   const { hosts, loaded } = useHosts();
   const pveHosts = useMemo(
     () =>

@@ -133,7 +133,8 @@
       "folder": "Tampilan folder",
       "server": "Tampilan server"
     },
-    "datacenterOf": "Datacenter ({{name}})"
+    "datacenterOf": "Datacenter ({{name}})",
+    "openTab": "Buka alat Proxmox untuk memuat cluster."
   },
   "types": {
     "node": "Node",

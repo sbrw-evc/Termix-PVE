@@ -133,7 +133,8 @@
       "folder": "Mapju skats",
       "server": "Serveru skats"
     },
-    "datacenterOf": "Datu centrs ({{name}})"
+    "datacenterOf": "Datu centrs ({{name}})",
+    "openTab": "Atveriet Proxmox rīku, lai ielādētu klasterus."
   },
   "types": {
     "node": "Mezgls",

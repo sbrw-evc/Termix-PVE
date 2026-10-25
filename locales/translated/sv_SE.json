@@ -133,7 +133,8 @@
       "folder": "Mappvy",
       "server": "Servervy"
     },
-    "datacenterOf": "Datacenter ({{name}})"
+    "datacenterOf": "Datacenter ({{name}})",
+    "openTab": "Öppna Proxmox-verktyget för att läsa in klustren."
   },
   "types": {
     "node": "Nod",

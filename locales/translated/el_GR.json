@@ -133,7 +133,8 @@
       "folder": "Προβολή φακέλων",
       "server": "Προβολή διακομιστών"
     },
-    "datacenterOf": "Datacenter ({{name}})"
+    "datacenterOf": "Datacenter ({{name}})",
+    "openTab": "Ανοίξτε το εργαλείο Proxmox για να φορτωθούν τα clusters."
   },
   "types": {
     "node": "Κόμβος",

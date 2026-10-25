@@ -133,7 +133,8 @@
       "folder": "Vizualizare pe foldere",
       "server": "Vizualizare pe servere"
     },
-    "datacenterOf": "Datacenter ({{name}})"
+    "datacenterOf": "Datacenter ({{name}})",
+    "openTab": "Deschideți instrumentul Proxmox pentru a încărca clusterele."
   },
   "types": {
     "node": "Nod",

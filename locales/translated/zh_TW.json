@@ -133,7 +133,8 @@
       "folder": "資料夾檢視",
       "server": "伺服器檢視"
     },
-    "datacenterOf": "資料中心（{{name}}）"
+    "datacenterOf": "資料中心（{{name}}）",
+    "openTab": "開啟 Proxmox 工具以載入叢集。"
   },
   "types": {
     "node": "節點",

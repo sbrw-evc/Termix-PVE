@@ -133,7 +133,8 @@
       "folder": "Prikaz mapa",
       "server": "Prikaz poslužitelja"
     },
-    "datacenterOf": "Podatkovni centar ({{name}})"
+    "datacenterOf": "Podatkovni centar ({{name}})",
+    "openTab": "Otvorite alat Proxmox kako biste učitali klastere."
   },
   "types": {
     "node": "Čvor",

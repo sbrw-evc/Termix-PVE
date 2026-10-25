@@ -133,7 +133,8 @@
       "folder": "Mappevisning",
       "server": "Servervisning"
     },
-    "datacenterOf": "Datacenter ({{name}})"
+    "datacenterOf": "Datacenter ({{name}})",
+    "openTab": "Åbn Proxmox-værktøjet for at indlæse klyngerne."
   },
   "types": {
     "node": "Node",

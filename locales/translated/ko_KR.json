@@ -133,7 +133,8 @@
       "folder": "폴더 보기",
       "server": "서버 보기"
     },
-    "datacenterOf": "데이터센터 ({{name}})"
+    "datacenterOf": "데이터센터 ({{name}})",
+    "openTab": "클러스터를 불러오려면 Proxmox 도구를 여세요."
   },
   "types": {
     "node": "노드",

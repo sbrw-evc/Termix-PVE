@@ -133,7 +133,8 @@
       "folder": "Kaustavaade",
       "server": "Serverivaade"
     },
-    "datacenterOf": "Andmekeskus ({{name}})"
+    "datacenterOf": "Andmekeskus ({{name}})",
+    "openTab": "Ava Proxmoxi tööriist, et klastrid laadida."
   },
   "types": {
     "node": "Sõlm",

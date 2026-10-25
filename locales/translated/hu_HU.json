@@ -133,7 +133,8 @@
       "folder": "Mappanézet",
       "server": "Szervernézet"
     },
-    "datacenterOf": "Adatközpont ({{name}})"
+    "datacenterOf": "Adatközpont ({{name}})",
+    "openTab": "Nyissa meg a Proxmox eszközt a fürtök betöltéséhez."
   },
   "types": {
     "node": "Csomópont",

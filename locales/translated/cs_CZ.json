@@ -133,7 +133,8 @@
       "folder": "Zobrazení složek",
       "server": "Zobrazení serverů"
     },
-    "datacenterOf": "Datové centrum ({{name}})"
+    "datacenterOf": "Datové centrum ({{name}})",
+    "openTab": "Otevřete nástroj Proxmox, aby se načetly clustery."
   },
   "types": {
     "node": "Uzel",

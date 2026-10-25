@@ -133,7 +133,8 @@
       "folder": "Gidsaansig",
       "server": "Bedieneraansig"
     },
-    "datacenterOf": "Datasentrum ({{name}})"
+    "datacenterOf": "Datasentrum ({{name}})",
+    "openTab": "Maak die Proxmox-hulpmiddel oop om die groeperings te laai."
   },
   "types": {
     "node": "Nodus",

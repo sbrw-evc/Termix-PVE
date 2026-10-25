@@ -133,7 +133,8 @@
       "folder": "Widok folderów",
       "server": "Widok serwerów"
     },
-    "datacenterOf": "Centrum danych ({{name}})"
+    "datacenterOf": "Centrum danych ({{name}})",
+    "openTab": "Otwórz narzędzie Proxmox, aby wczytać klastry."
   },
   "types": {
     "node": "Węzeł",

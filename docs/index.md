@@ -18,6 +18,8 @@ Proxmox now shows under Tools in the sidebar. It stays hidden until at least one
 
 Open Proxmox from Tools, or right-click a node in the host list and pick Open in Proxmox. Every host marked as a Proxmox node shows in the same tree under its own Datacenter row, named after the host, like separate clusters in Proxmox. What you select decides which one the details, tasks and Import to Termix work on.
 
+While the Proxmox tab is on screen, the tree sits in the left sidebar where the host list is, and the tab shows only the details; going to another tab brings the host list back. On a phone the tree stays in the tab.
+
 - The tree lists every node in the cluster with its VMs, containers and storage. Search filters it.
 - A node shows its use, version and charts, and has Create VM and Create CT.
 - A guest shows its use and charts, with buttons for what its state allows: Start, Shut down, Reboot, Suspend, Resume, Stop and Reset. Stop and Reset ask first, because they cut the power.

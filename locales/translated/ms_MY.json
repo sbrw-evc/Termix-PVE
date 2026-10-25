@@ -133,7 +133,8 @@
       "folder": "Paparan folder",
       "server": "Paparan pelayan"
     },
-    "datacenterOf": "Pusat data ({{name}})"
+    "datacenterOf": "Pusat data ({{name}})",
+    "openTab": "Buka alat Proxmox untuk memuatkan kluster."
   },
   "types": {
     "node": "Nod",

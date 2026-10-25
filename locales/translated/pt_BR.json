@@ -133,7 +133,8 @@
       "folder": "Visão de pastas",
       "server": "Visão de servidores"
     },
-    "datacenterOf": "Datacenter ({{name}})"
+    "datacenterOf": "Datacenter ({{name}})",
+    "openTab": "Abra a ferramenta Proxmox para carregar os clusters."
   },
   "types": {
     "node": "Nó",

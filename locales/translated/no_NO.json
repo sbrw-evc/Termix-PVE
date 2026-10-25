@@ -133,7 +133,8 @@
       "folder": "Mappevisning",
       "server": "Servervisning"
     },
-    "datacenterOf": "Datasenter ({{name}})"
+    "datacenterOf": "Datasenter ({{name}})",
+    "openTab": "Åpne Proxmox-verktøyet for å laste inn klyngene."
   },
   "types": {
     "node": "Node",

@@ -133,7 +133,8 @@
       "folder": "תצוגת תיקיות",
       "server": "תצוגת שרתים"
     },
-    "datacenterOf": "מרכז נתונים ({{name}})"
+    "datacenterOf": "מרכז נתונים ({{name}})",
+    "openTab": "פתח את כלי Proxmox כדי לטעון את האשכולות."
   },
   "types": {
     "node": "צומת",

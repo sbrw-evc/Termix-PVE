@@ -133,7 +133,8 @@
       "folder": "Mapweergave",
       "server": "Serverweergave"
     },
-    "datacenterOf": "Datacenter ({{name}})"
+    "datacenterOf": "Datacenter ({{name}})",
+    "openTab": "Open de Proxmox-tool om de clusters te laden."
   },
   "types": {
     "node": "Node",

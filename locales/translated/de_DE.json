@@ -133,7 +133,8 @@
       "folder": "Ordneransicht",
       "server": "Serveransicht"
     },
-    "datacenterOf": "Rechenzentrum ({{name}})"
+    "datacenterOf": "Rechenzentrum ({{name}})",
+    "openTab": "Öffnen Sie das Proxmox-Werkzeug, um die Cluster zu laden."
   },
   "types": {
     "node": "Knoten",

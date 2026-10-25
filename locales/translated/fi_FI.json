@@ -133,7 +133,8 @@
       "folder": "Kansionäkymä",
       "server": "Palvelinnäkymä"
     },
-    "datacenterOf": "Datakeskus ({{name}})"
+    "datacenterOf": "Datakeskus ({{name}})",
+    "openTab": "Avaa Proxmox-työkalu, jotta klusterit latautuvat."
   },
   "types": {
     "node": "Solmu",

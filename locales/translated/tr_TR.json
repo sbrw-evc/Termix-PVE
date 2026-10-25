@@ -133,7 +133,8 @@
       "folder": "Klasör görünümü",
       "server": "Sunucu görünümü"
     },
-    "datacenterOf": "Veri Merkezi ({{name}})"
+    "datacenterOf": "Veri Merkezi ({{name}})",
+    "openTab": "Kümeleri yüklemek için Proxmox aracını açın."
   },
   "types": {
     "node": "Düğüm",

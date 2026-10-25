@@ -133,7 +133,8 @@
       "folder": "Vista de carpetas",
       "server": "Vista de servidor"
     },
-    "datacenterOf": "Centro de datos ({{name}})"
+    "datacenterOf": "Centro de datos ({{name}})",
+    "openTab": "Abre la herramienta Proxmox para cargar los clústeres."
   },
   "types": {
     "node": "Nodo",

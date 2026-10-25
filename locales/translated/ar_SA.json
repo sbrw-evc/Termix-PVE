@@ -133,7 +133,8 @@
       "folder": "عرض المجلدات",
       "server": "عرض الخوادم"
     },
-    "datacenterOf": "مركز البيانات ({{name}})"
+    "datacenterOf": "مركز البيانات ({{name}})",
+    "openTab": "افتح أداة Proxmox لتحميل المجموعات."
   },
   "types": {
     "node": "عقدة",

@@ -7,6 +7,7 @@ import {
 } from "@termix-ssh/plugin-sdk/frontend";
 import { isPveHost, setApp } from "./api";
 import { PveTab } from "./components/PveTab";
+import { TREE_PANEL, TreePanel } from "./components/TreePanel";
 import { CONSOLE_TAB, ConsoleTab } from "./guests/console/ConsoleTab";
 
 const TAB_ID = "pve";
@@ -25,6 +26,9 @@ export function activate(app: TermixApp): void {
     hostless: true,
     singleton: true,
   });
+
+  // The tree, in the left sidebar while the Proxmox tab is on screen.
+  app.registerPanel(TREE_PANEL, TreePanel, { keepMounted: true });
 
   // Opened from a guest's Console button, bound to the node's Termix host.
   app.registerTab(CONSOLE_TAB, ConsoleTab, {
@@ -55,6 +59,20 @@ export function activate(app: TermixApp): void {
   };
   showRailItem(false);
   app.onDispose(() => removeRailItem?.());
+
+  // The sidebar tree has no rail button of its own (the Proxmox tab opens it),
+  // but the sidebar takes its header title from a rail item.
+  app.onDispose(
+    app.registerRailItem({
+      id: TREE_PANEL,
+      icon: Server,
+      titleKey: "nav.title",
+      kind: "panel",
+      hideable: false,
+      permission: "view",
+      hidden: true,
+    }),
+  );
 
   // Mounted once in the shell, so the rail follows the host list as it changes.
   function RailItemSync() {

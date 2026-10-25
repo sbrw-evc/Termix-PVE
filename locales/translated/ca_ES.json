@@ -133,7 +133,8 @@
       "folder": "Vista de carpetes",
       "server": "Vista de servidor"
     },
-    "datacenterOf": "Centre de dades ({{name}})"
+    "datacenterOf": "Centre de dades ({{name}})",
+    "openTab": "Obriu l'eina Proxmox per carregar els clústers."
   },
   "types": {
     "node": "Node",

@@ -133,7 +133,8 @@
       "folder": "文件夹视图",
       "server": "服务器视图"
     },
-    "datacenterOf": "数据中心（{{name}}）"
+    "datacenterOf": "数据中心（{{name}}）",
+    "openTab": "打开 Proxmox 工具以加载集群。"
   },
   "types": {
     "node": "节点",

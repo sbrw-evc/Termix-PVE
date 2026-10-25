@@ -133,7 +133,8 @@
       "folder": "ফোল্ডার ভিউ",
       "server": "সার্ভার ভিউ"
     },
-    "datacenterOf": "ডেটাসেন্টার ({{name}})"
+    "datacenterOf": "ডেটাসেন্টার ({{name}})",
+    "openTab": "ক্লাস্টারগুলো লোড করতে Proxmox টুলটি খুলুন।"
   },
   "types": {
     "node": "নোড",

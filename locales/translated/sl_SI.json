@@ -133,7 +133,8 @@
       "folder": "Pogled map",
       "server": "Pogled strežnikov"
     },
-    "datacenterOf": "Podatkovni center ({{name}})"
+    "datacenterOf": "Podatkovni center ({{name}})",
+    "openTab": "Odprite orodje Proxmox, da se naložijo gruče."
   },
   "types": {
     "node": "Vozlišče",

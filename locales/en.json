@@ -133,7 +133,8 @@
       "folder": "Folder view",
       "server": "Server view"
     },
-    "datacenterOf": "Datacenter ({{name}})"
+    "datacenterOf": "Datacenter ({{name}})",
+    "openTab": "Open the Proxmox tool to load the clusters."
   },
   "types": {
     "node": "Node",

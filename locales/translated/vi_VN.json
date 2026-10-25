@@ -133,7 +133,8 @@
       "folder": "Xem theo thư mục",
       "server": "Xem theo máy chủ"
     },
-    "datacenterOf": "Trung tâm dữ liệu ({{name}})"
+    "datacenterOf": "Trung tâm dữ liệu ({{name}})",
+    "openTab": "Mở công cụ Proxmox để tải các cụm."
   },
   "types": {
     "node": "Node",

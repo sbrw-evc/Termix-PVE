@@ -133,7 +133,8 @@
       "folder": "Zobrazenie priečinkov",
       "server": "Zobrazenie serverov"
     },
-    "datacenterOf": "Dátové centrum ({{name}})"
+    "datacenterOf": "Dátové centrum ({{name}})",
+    "openTab": "Otvorte nástroj Proxmox, aby sa načítali klastre."
   },
   "types": {
     "node": "Uzol",

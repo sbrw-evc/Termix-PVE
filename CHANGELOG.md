@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.5
+
+### Fixed
+
+- The sidebar tree's header reads "Proxmox" instead of "pve-tree"
+- Collapsing the left sidebar brings the tree back into the Proxmox tab instead of hiding it everywhere
+- Closing the Proxmox tab gives the left sidebar back to the host list, as switching away from it does
+
+## 0.4.3
+
+### Changed
+
+- While the Proxmox tab is on screen, its tree of datacenters, guests, nodes and storage sits in the left sidebar in place of the host list, and the tab shows the details; leaving the tab brings the host list back
+
 ## 0.4.2
 
 ### Fixed

@@ -1,7 +1,7 @@
 {
   "id": "pve",
   "name": "Proxmox VE",
-  "version": "0.4.2",
+  "version": "0.4.5",
   "description": "Manage Proxmox VE from Termix: virtual machines, containers, storage, network, backups, firewall, access and the cluster.",
   "author": {
     "name": "Дмитрий Ляхов"
@@ -33,7 +33,7 @@
   "env": [],
   "engine": {
     "termix": ">=26.10.0",
-    "api": "^1.2"
+    "api": "^1.4"
   },
   "capabilities": [
     "hosts:read",
@@ -225,7 +225,14 @@
           }
         ]
       }
-    }
+    },
+    "panels": [
+      {
+        "id": "pve-tree",
+        "titleKey": "nav.title",
+        "icon": "Server"
+      }
+    ]
   },
   "locales": "locales",
   "platforms": ["linux", "win32", "darwin"]

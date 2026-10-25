@@ -133,7 +133,8 @@
       "folder": "Vista cartelle",
       "server": "Vista server"
     },
-    "datacenterOf": "Datacenter ({{name}})"
+    "datacenterOf": "Datacenter ({{name}})",
+    "openTab": "Apri lo strumento Proxmox per caricare i cluster."
   },
   "types": {
     "node": "Nodo",

@@ -35,8 +35,11 @@ describe(`${manifest.id} activate`, () => {
   it("registers the tab, a Tools rail item and the host action", async () => {
     rendered = await renderWithApp(plugin, { manifest, locales });
     expect(rendered.registered.tabs()).toEqual(["pve", "pve-console"]);
+    expect(rendered.registered.panels()).toEqual(["pve-tree"]);
     expect(rendered.registered.railItems()).toEqual([
       expect.objectContaining({ id: "pve", permission: "pve.view" }),
+      // No button; it only names the sidebar tree's header.
+      expect.objectContaining({ id: "pve-tree", hidden: true }),
     ]);
     expect(rendered.registered.hostActions()).toEqual([
       expect.objectContaining({ id: "pve-open", tabType: "pve" }),
@@ -46,7 +49,8 @@ describe(`${manifest.id} activate`, () => {
 
   it("hides the rail item until a host is a Proxmox node", async () => {
     rendered = await renderWithApp(plugin, { manifest, locales });
-    expect(rendered.registered.railItems()[0].hidden).toBe(true);
+    const item = rendered.registered.railItems().find((i) => i.id === "pve");
+    expect(item?.hidden).toBe(true);
   });
 
   it("offers Open in Proxmox only on Proxmox hosts", async () => {
@@ -56,6 +60,14 @@ describe(`${manifest.id} activate`, () => {
       expect.objectContaining({ id: "pve-open", tray: false }),
     ]);
     expect(rendered.registered.hostActionsFor(plainHost)).toHaveLength(0);
+  });
+
+  it("shows the tree in the left sidebar while the tab is on screen", async () => {
+    rendered = await renderWithApp(plugin, { manifest, locales });
+    rendered.renderTab("pve", { isVisible: true });
+    expect(rendered.shellCalls).toContainEqual(
+      expect.objectContaining({ method: "openRailView", args: ["pve-tree"] }),
+    );
   });
 
   it("explains how to add a node when there is none", async () => {

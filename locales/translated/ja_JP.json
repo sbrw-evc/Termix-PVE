@@ -133,7 +133,8 @@
       "folder": "フォルダービュー",
       "server": "サーバービュー"
     },
-    "datacenterOf": "データセンター ({{name}})"
+    "datacenterOf": "データセンター ({{name}})",
+    "openTab": "クラスターを読み込むには Proxmox ツールを開いてください。"
   },
   "types": {
     "node": "ノード",

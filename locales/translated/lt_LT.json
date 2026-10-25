@@ -133,7 +133,8 @@
       "folder": "Aplankų rodinys",
       "server": "Serverių rodinys"
     },
-    "datacenterOf": "Duomenų centras ({{name}})"
+    "datacenterOf": "Duomenų centras ({{name}})",
+    "openTab": "Atidarykite Proxmox įrankį, kad būtų įkelti klasteriai."
   },
   "types": {
     "node": "Mazgas",
