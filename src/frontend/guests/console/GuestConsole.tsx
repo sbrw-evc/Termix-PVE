@@ -39,12 +39,16 @@ function vncCredentials(password: string) {
   return { username: "", target: "", password };
 }
 
+/** A guest's console, or a node-wide terminal session such as the Ceph install. */
+export type ConsoleKind = GuestType | "ceph-install";
+
 export function consolePath(
   hostId: number,
   node: string,
-  type: GuestType,
+  type: ConsoleKind,
   vmid: number,
   size?: { cols: number; rows: number },
+  extra?: Record<string, string>,
 ): string {
   const params = new URLSearchParams({
     hostId: String(hostId),
@@ -52,6 +56,7 @@ export function consolePath(
     type,
     vmid: String(vmid),
     ...(size ? { cols: String(size.cols), rows: String(size.rows) } : {}),
+    ...(extra ?? {}),
   });
   return `/console?${params}`;
 }
@@ -73,11 +78,17 @@ export function GuestConsole({
   fill,
   autoConnect,
   isVisible = true,
+  extra,
+  fallbackUrl,
 }: {
   hostId: number;
   node: string;
-  type: GuestType;
+  type: ConsoleKind;
   vmid: number;
+  /** More query params, such as the Ceph version to install. */
+  extra?: Record<string, string>;
+  /** Proxmox's own console page, offered when this one can't connect. */
+  fallbackUrl?: string;
   /** Unknown in a tab of its own: the node says so if the guest is off. */
   running?: boolean;
   /** Take the whole height of the parent, as in a console tab. */
@@ -150,10 +161,14 @@ export function GuestConsole({
     term.open(target);
     fit.fit();
     const ws = await openSocket(
-      consolePath(hostId, node, type, vmid, {
-        cols: term.cols,
-        rows: term.rows,
-      }),
+      consolePath(
+        hostId,
+        node,
+        type,
+        vmid,
+        { cols: term.cols, rows: term.rows },
+        extra,
+      ),
     );
     const decoder = new TextDecoder();
     ws.onmessage = (event) => {
@@ -269,6 +284,18 @@ export function GuestConsole({
           {!running ? t("console.notRunning") : t(`console.status.${status}`)}
         </span>
       </div>
+      {status === "error" && fallbackUrl && (
+        <Button
+          size="sm"
+          variant="outline"
+          className="self-start"
+          onClick={() =>
+            window.open(fallbackUrl, "_blank", "noopener,noreferrer")
+          }
+        >
+          {t("console.openInProxmox")}
+        </Button>
+      )}
       {message && (
         <p
           role="alert"

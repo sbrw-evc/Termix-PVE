@@ -119,4 +119,11 @@ exec` over SSH, local node only; each answer starts with `+` so a failed exec re
   Datacenter row from `hostTree()`. Resource ids repeat between clusters (`node/proxmox`), so rows
   select `<hostId>|<id>` (`selectionId`/`parseSelection`); details, tasks and import follow the
   selected row's host.
+- Params may be lists (`string[]`): every transport repeats the key (`a=1&a=2`, `--a 1 --a 2`), as
+  Proxmox's "array" params want. Webhook headers and secrets go as `name=<n>,value=<base64>`.
+- `console.ts` also runs `pveceph install` on a PTY (`type=ceph-install`, version and repository
+  checked against a list, needs `administer`). Hosts on `direct` have no SSH: `proxmoxWeb.ts` builds
+  Proxmox's own console URLs (`?console=kvm&novnc=1…`, `console=shell&cmd=ceph_install`).
+- SDN lists are read with `pending=1`; `withPending` shows pending values and `state` says what Apply
+  does. Metric servers are created at `cluster/metrics/server/<id>`, not by POST to the list.
 - Roadmap: `ROADMAP.md`.

@@ -55,26 +55,46 @@ import { FirewallPanel } from "../datacenter/FirewallPanel";
 import { useGuestIps } from "./ips";
 import { CONSOLE_TAB, type ConsoleTabData } from "./console/ConsoleTab";
 import { ImportDialog } from "../components/ImportDialog";
+import { TaskHistoryTab } from "../nodes/TaskHistoryTab";
+import {
+  openExternal,
+  proxmoxBaseUrl,
+  usesDirectApi,
+  webConsoleUrl,
+} from "../proxmoxWeb";
+import {
+  GuestPermissionsTab,
+  GuestReplicationTab,
+  MonitorTab,
+} from "./GuestExtras";
 
 type GuestTab =
   | "summary"
   | "hardware"
-  | "options"
   | "cloudinit"
+  | "options"
+  | "tasks"
+  | "monitor"
   | "backup"
+  | "replication"
   | "snapshots"
-  | "firewall";
+  | "firewall"
+  | "permissions";
 
 /** Cloud-init only exists for VMs; templates can't have snapshots. In Proxmox's order. */
 function tabsFor(guest: { type: GuestType; template?: number }): GuestTab[] {
   return [
     "summary",
     "hardware",
-    "options",
     ...(guest.type === "qemu" ? (["cloudinit"] as const) : []),
+    "options",
+    "tasks",
+    ...(guest.type === "qemu" && !guest.template ? (["monitor"] as const) : []),
     "backup",
+    "replication",
     ...(guest.template ? [] : (["snapshots"] as const)),
     "firewall",
+    "permissions",
   ];
 }
 
@@ -161,6 +181,19 @@ export function GuestView({
   // A tab of its own each time, as Proxmox opens a console window.
   const openProxmoxConsole = () => {
     if (!termixHost) return;
+    // Without SSH, Proxmox's own console page is the way in.
+    const base = usesDirectApi(termixHost) ? proxmoxBaseUrl(termixHost) : null;
+    if (base) {
+      openExternal(
+        webConsoleUrl(base, {
+          kind: guest.type,
+          node: guest.node,
+          vmid: guest.vmid,
+          name: guest.name,
+        }),
+      );
+      return;
+    }
     const data: ConsoleTabData = {
       node: guest.node,
       type: guest.type,
@@ -442,6 +475,21 @@ export function GuestView({
       )}
       {tab === "snapshots" && (
         <SnapshotsTab guest={ref} running={running} isVisible={isVisible} />
+      )}
+      {tab === "tasks" && (
+        <TaskHistoryTab
+          hostId={hostId}
+          node={guest.node}
+          vmid={guest.vmid}
+          isVisible={isVisible}
+        />
+      )}
+      {tab === "monitor" && <MonitorTab guest={ref} />}
+      {tab === "replication" && (
+        <GuestReplicationTab guest={ref} isVisible={isVisible} />
+      )}
+      {tab === "permissions" && (
+        <GuestPermissionsTab guest={ref} isVisible={isVisible} />
       )}
 
       {offerImport && (

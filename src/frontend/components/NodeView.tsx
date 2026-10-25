@@ -31,6 +31,7 @@ import { SystemTab } from "../nodes/SystemTab";
 import { RepositoriesSection } from "../nodes/RepositoriesSection";
 import { DiskStorage, type DiskStorageKind } from "../nodes/DiskStorage";
 import { TaskHistoryTab } from "../nodes/TaskHistoryTab";
+import { NodeReplicationTab, SubscriptionTab } from "../nodes/NodeExtras";
 
 interface NodeStatus {
   pveversion?: string;
@@ -50,8 +51,10 @@ type NodeTab =
   | "firewall"
   | "disks"
   | "ceph"
+  | "replication"
   | "tasks"
-  | "log";
+  | "log"
+  | "subscription";
 /** In the order of Proxmox's node menu. */
 const TABS: NodeTab[] = [
   "summary",
@@ -62,8 +65,10 @@ const TABS: NodeTab[] = [
   "firewall",
   "disks",
   "ceph",
+  "replication",
   "tasks",
   "log",
+  "subscription",
 ];
 type UpdatesView = "packages" | "repositories";
 type DisksView = "disks" | DiskStorageKind;
@@ -282,7 +287,8 @@ export function NodeView({
               <Fact label={t("summary.cpuModel")}>
                 {status.cpuinfo.model}
                 {status.cpuinfo.sockets
-                  ? ` (${status.cpuinfo.sockets} × ${t("summary.sockets")})`
+                  ? // A label, not "N × sockets": no plural forms to get wrong.
+                    ` (${t("guests.fields.sockets")}: ${status.cpuinfo.sockets})`
                   : ""}
               </Fact>
             )}
@@ -350,7 +356,9 @@ export function NodeView({
           )}
         </>
       )}
+      {tab === "replication" && <NodeReplicationTab {...tabProps} />}
       {tab === "tasks" && <TaskHistoryTab {...tabProps} />}
+      {tab === "subscription" && <SubscriptionTab {...tabProps} />}
       {tab === "log" && <LogTab {...tabProps} />}
 
       {dialog === "vm" && (

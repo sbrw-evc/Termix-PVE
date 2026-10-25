@@ -32,13 +32,18 @@ The tree has two views: Folder lists everything by kind, like Proxmox's Folder V
 
 Click Datacenter at the top of the tree. Its tabs follow Proxmox's Datacenter menu:
 
-- Summary: the cluster's name and quorum, its nodes, and Join information to paste into Proxmox's Join Cluster dialog on a new node. Creating and joining clusters stays in Proxmox, because joining needs the other node's root password.
+- Summary: the cluster's name and quorum, its nodes, and Join information to copy for a new node. A standalone node can Create cluster (name and corosync links) or Join cluster with the Join information of a cluster node and that node's root password, which Termix uses once and does not keep. Proxmox refuses to join a node that has guests.
+- Options: the datacenter's notes and its options: keyboard layout, language, console viewer, e-mail from address, HTTP proxy, MAC prefix, maximal workers, migration type and network, bandwidth limits, the next free VMID range, the HA shutdown policy and tag case.
 - Storage: the datacenter's storage list. Add or edit a Proxmox Backup Server (server, datastore, user, password or token secret, fingerprint). Removing an entry leaves the data where it is.
 - Backup: backup jobs with a schedule, storage, which guests (all, all except, listed, or a pool), mode, compression, notes and retention (keep last, hourly, daily, weekly, monthly, yearly). Run now starts a job on its nodes. Below are the guests no job includes.
 - Replication: jobs that copy a guest's ZFS disks to another node on a schedule, with their last sync and errors, and Run now. Needs a second node.
 - Permissions: users (with their first password and Change password), API tokens (the secret is shown once), two factor (TOTP with a secret for the authenticator app, recovery keys, enable, disable, remove), groups, pools and their members, roles (built-in ones are read only), realms (LDAP, Active Directory, OpenID Connect, with Sync) and permissions (path, user, group or token, role).
 - HA: the HA status, the guests HA manages (requested state, restart and relocation limits, Migrate to) and rules (node affinity with priorities, or keeping guests together or apart).
+- SDN: zones (simple, VLAN, QinQ, VXLAN, EVPN), VNets with their subnets (gateway, SNAT, DHCP ranges), controllers (EVPN, BGP, IS-IS), IPAMs (NetBox, phpIPAM) and DNS servers (PowerDNS). Changes show as new, changed or deleted until Apply writes them to every node.
 - Firewall: options, rules, security groups, aliases and IP sets. Turning the datacenter firewall on asks first: its rules apply to every node.
+- Metric Server: Graphite, InfluxDB (UDP or HTTP(S) with organization, bucket and token) and OpenTelemetry servers that receive the cluster's stats.
+- Resource Mappings: PCI devices, USB devices and directories, each named once with the device or path it is on every node, so guests using them can migrate.
+- Notifications: targets (SMTP, sendmail, Gotify, webhooks with headers, body and secrets), with Send a test, and matchers that route notifications by severity, field and time to targets. The built-in ones can be edited but not removed. Passwords, tokens and secrets are sent only when typed.
 
 ## Import to Termix
 
@@ -60,11 +65,15 @@ A guest has tabs:
 - Hardware: Edit changes processors and memory. Add disk (or Add mount point on a container) makes a new disk; a disk's menu grows it, moves it to another storage, or detaches it. A detached disk stays as unused until you delete it. Network adapters are added, edited and removed here too. Changes Proxmox can't make while the guest runs are marked Pending and apply when it restarts from Proxmox.
 - Options: name, tags, start on boot, protection, start order and notes, the QEMU guest agent for VMs and DNS for containers.
 - Console: the Console button next to a running guest's power buttons opens the guest's own Termix host, as clicking it in the host list does: its terminal, or the remote desktop it was imported with. A guest that is not a Termix host yet gets an offer to add it, and Console then connects to the new host.
-- Proxmox console, in the guest's ... menu, opens Proxmox's own console through the node in a new tab, for a guest with no network yet: a VM's screen through noVNC, with Ctrl+Alt+Del, or a container's terminal. It runs over SSH, so it needs an SSH transport and a root user or one with passwordless sudo, and the Console permission.
+- Proxmox console, in the guest's ... menu, opens Proxmox's own console through the node in a new tab, for a guest with no network yet: a VM's screen through noVNC, with Ctrl+Alt+Del, or a container's terminal. It runs over SSH, so it needs an SSH transport and a root user or one with passwordless sudo, and the Console permission. A host that reaches Proxmox through its API directly opens Proxmox's own console page in a new browser window instead, where you sign in to Proxmox.
 - Cloud-Init (VMs): user, password, SSH keys and network. Regenerate image writes them for the next boot. A VM without a cloud-init drive offers to add one.
 - Backup: back up now (storage, mode, compression, notes, protected), restore into a new guest or over this one (stopped first), edit notes, protect and delete. Lists the backups on every backup storage of the node.
 - Firewall: the guest's options, rules, aliases, IP sets and log. Rules only apply where the network adapter has Firewall ticked.
 - Snapshots: take one (a running VM can include its RAM), roll back to it after a confirmation, change its description or delete it. The list is a tree, with Now under the snapshot the guest runs from. Needs storage that supports snapshots, like LVM-Thin, ZFS or Ceph.
+- Task History: the guest's own tasks, filtered by type, user or failures, with each task's log.
+- Monitor (VMs): commands for the VM's QEMU human monitor, such as `info status`, with their answers. Needs the Administer permission.
+- Replication: the guest's replication jobs, added, edited and removed here.
+- Permissions: who may do what with the guest, the permissions on `/vms/<id>`.
 
 ## Storage
 
@@ -72,7 +81,9 @@ A storage has a tab for each kind of content it holds. ISO images and CT templat
 
 ## Nodes
 
-A node has tabs for Network, System, Services (start, stop, restart, reload), Updates, Firewall (options, rules and log), Disks, Ceph (health, monitors and pools when Ceph is installed; read only), Tasks and Log, in the order of Proxmox's node menu.
+A node has tabs for Network, System, Services (start, stop, restart, reload), Updates, Firewall (options, rules and log), Disks, Ceph, Replication, Tasks, Log and Subscription, in the order of Proxmox's node menu.
+
+Ceph installs Ceph (the version and repository you pick; `pveceph install` runs in a terminal where you answer its questions, or in Proxmox's own shell page for a host without SSH), initializes it (public and cluster network, replicas) with the first monitor and manager, then manages monitors, managers, OSDs (create on an unused disk with optional DB and WAL disks, device class and encryption; in, out, scrub, deep scrub, destroy once out and down), pools (replicas, placement groups, autoscale, application, CRUSH rule, as storage), metadata servers and CephFS, and restarts the node's Ceph services. Replication shows the jobs running from the node with their last and next sync, errors and log, and Run now. Subscription shows the node's subscription, uploads a key, checks it again or removes it.
 
 System shows and edits the node's Notes (Markdown, shown on its summary in Proxmox), its Options (how long to wait after boot before starting guests, and the Wake-on-LAN MAC), its DNS (search domain and up to three servers), its time zone and `/etc/hosts`, lists its certificates with their expiry, uploads a custom certificate (chain and key as PEM, pasted or read from a file) or removes it, and sets up ACME: register accounts, add DNS challenge plugins, pick the node's account and domains (HTTP or DNS challenge, up to six), then order or renew the certificate. ACME accounts and plugins need the Administer permission. Updates has Packages (refresh the package lists; install upgrades from the node's terminal) and Repositories (turn APT repositories on and off, add Proxmox's standard ones). Disks has the disks with health and SMART, Initialize GPT and Wipe (after typing the disk's path), and the LVM volume groups, LVM-Thin pools, directories and ZFS pools on them. Create makes one on unused disks (ZFS with its RAID level, compression and ashift) and can add it as storage; Remove takes it away, optionally with its storage entry and wiping its disks, after typing its name. Tasks is the node's task history, filtered by type, guest, user or failures, with each task's log.
 
@@ -84,7 +95,7 @@ Network lists the node's interfaces. Create makes a bridge, bond or VLAN; an int
 - Operate Proxmox guests: power guests on and off.
 - Open Proxmox consoles: VM and container consoles.
 - Configure Proxmox: create, clone, migrate, convert and delete guests, change their hardware and options, take, roll back and delete snapshots, back up and restore guests, change a guest's firewall, and manage storage content, including uploads.
-- Administer Proxmox: node notes and options, network, firewall, services, backup jobs, storage entries, replication, HA, the datacenter firewall, users, tokens, two factor, groups, pools, roles, realms and permissions, log, reboot and shutdown, and later access and cluster management.
+- Administer Proxmox: node notes and options, network, firewall, services, backup jobs, storage entries, replication, HA, the datacenter firewall and options, SDN, metric servers, resource mappings, notifications, creating and joining clusters, Ceph setup, subscriptions, a VM's monitor, users, tokens, two factor, groups, pools, roles, realms and permissions, log, reboot and shutdown.
 
 Anything beyond viewing also needs edit access to the Termix host. Every change is written to the audit log. Proxmox's own rights for the token or SSH user still apply on top.
 

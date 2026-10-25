@@ -18,6 +18,7 @@ import {
   type ClusterStatusEntry,
 } from "./cluster";
 import type { DatacenterProps } from "./DatacenterView";
+import { CreateClusterDialog, JoinClusterDialog } from "./ClusterDialogs";
 
 /** The cluster at a glance: quorum, nodes and what a new node needs to join. */
 export function SummaryPanel({
@@ -27,7 +28,7 @@ export function SummaryPanel({
 }: DatacenterProps) {
   const { t } = useTranslation();
   const toast = useToast();
-  const { data, error } = useApiList<ClusterStatusEntry[]>(
+  const { data, error, load } = useApiList<ClusterStatusEntry[]>(
     hostId,
     ["cluster", "status"],
     undefined,
@@ -35,6 +36,9 @@ export function SummaryPanel({
   );
   const [join, setJoin] = useState<string | null>(null);
   const [joinError, setJoinError] = useState<string | null>(null);
+  const [dialog, setDialog] = useState<"create" | "join" | null>(null);
+  const localIp =
+    (data ?? []).find((e) => e.type === "node" && e.local)?.ip ?? "";
   const cluster = data ? clusterOf(data) : null;
   const nodes = (data ?? []).filter((e) => e.type === "node");
   const counts = guestCounts(resources);
@@ -127,6 +131,25 @@ export function SummaryPanel({
               >
                 {t("datacenter.summary.showJoin")}
               </Button>
+            ) : data ? (
+              <div className="flex gap-1">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7"
+                  onClick={() => setDialog("create")}
+                >
+                  {t("cluster.create")}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7"
+                  onClick={() => setDialog("join")}
+                >
+                  {t("cluster.join")}
+                </Button>
+              </div>
             ) : null
           }
         />
@@ -165,6 +188,23 @@ export function SummaryPanel({
           </div>
         )}
       </section>
+      {dialog === "create" && (
+        <CreateClusterDialog
+          hostId={hostId}
+          nodeIp={localIp}
+          onClose={() => setDialog(null)}
+          onDone={load}
+        />
+      )}
+      {dialog === "join" && (
+        <JoinClusterDialog
+          hostId={hostId}
+          nodeIp={localIp}
+          hasGuests={counts.total > 0}
+          onClose={() => setDialog(null)}
+          onDone={load}
+        />
+      )}
     </div>
   );
 }

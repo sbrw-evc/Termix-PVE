@@ -27,7 +27,7 @@ export function isPveHost(host: Pick<PluginHostRecord, "pluginSettings">) {
 export type PveMethod = "GET" | "POST" | "PUT" | "DELETE";
 export type PveParams = Record<
   string,
-  string | number | boolean | null | undefined
+  string | number | boolean | string[] | null | undefined
 >;
 export type PveTransport = "tunnel" | "direct" | "pvesh";
 

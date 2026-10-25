@@ -6,6 +6,8 @@
  *   LC_PVE_TICKET, which it sets as the VM's VNC password for 30 seconds, so
  *   each session gets a fresh random one that only its browser learns.
  * - Containers: `pct enter` on a PTY, relayed to xterm.js.
+ * - Ceph install: `pveceph install` on a PTY, so apt's questions can be
+ *   answered, as Proxmox's own installer runs it in a terminal.
  *
  * Wire format on /plugin-ws/pve/console: the server's first message is a JSON
  * text frame, {t:"ready",kind,password?} or {t:"error",message}. After it a VM
@@ -32,14 +34,23 @@ export interface WsLike {
   on: (event: string, listener: (...args: never[]) => void) => void;
 }
 
+export type ConsoleType = "qemu" | "lxc" | "ceph-install";
+
 export interface ConsoleRequest {
   hostId: number;
   node: string;
-  type: "qemu" | "lxc";
+  type: ConsoleType;
+  /** 0 for a node-wide session such as the Ceph install. */
   vmid: number;
   cols: number;
   rows: number;
+  /** pveceph install --version and --repository. */
+  cephVersion?: string;
+  cephRepository?: string;
 }
+
+export const CEPH_VERSIONS = ["squid", "tentacle"];
+export const CEPH_REPOSITORIES = ["no-subscription", "enterprise", "test"];
 
 const OPEN = 1;
 // Proxmox node names: letters, digits, dots, dashes and underscores.
@@ -71,9 +82,26 @@ export function parseConsoleQuery(
     return Number.isInteger(n) ? Math.min(Math.max(n, min), max) : fallback;
   };
   if (!Number.isInteger(hostId) || hostId <= 0) return "Invalid hostId";
+  if (!NODE_RE.test(node)) return "Invalid node";
+  if (type === "ceph-install") {
+    const version = params.get("version") ?? "";
+    const repository = params.get("repository") ?? "";
+    if (!CEPH_VERSIONS.includes(version)) return "Invalid Ceph version";
+    if (!CEPH_REPOSITORIES.includes(repository))
+      return "Invalid Ceph repository";
+    return {
+      hostId,
+      node,
+      type,
+      vmid: 0,
+      cols: clamp(params.get("cols"), 10, 500, 80),
+      rows: clamp(params.get("rows"), 5, 200, 24),
+      cephVersion: version,
+      cephRepository: repository,
+    };
+  }
   if (!Number.isInteger(vmid) || vmid < 100 || vmid > 999999999)
     return "Invalid vmid";
-  if (!NODE_RE.test(node)) return "Invalid node";
   if (type !== "qemu" && type !== "lxc") return "Invalid guest type";
   return {
     hostId,
@@ -102,11 +130,23 @@ export function vncPassword(): string {
  * passwordless sudo, and `env` carries the ticket past sudo's cleanup.
  */
 export function consoleCommand(
-  type: "qemu" | "lxc",
+  type: ConsoleType,
   vmid: number,
   root: boolean,
   password?: string,
+  ceph?: { version?: string; repository?: string },
 ): string {
+  if (type === "ceph-install") {
+    const version = ceph?.version ?? "";
+    const repository = ceph?.repository ?? "";
+    if (
+      !CEPH_VERSIONS.includes(version) ||
+      !CEPH_REPOSITORIES.includes(repository)
+    )
+      throw new Error("Bad Ceph install options");
+    const command = `pveceph install --version ${version} --repository ${repository}`;
+    return root ? command : `sudo -n ${command}`;
+  }
   if (type === "qemu") {
     if (!password || !/^[A-Za-z0-9]{8}$/.test(password))
       throw new Error("Bad VNC password");
@@ -148,8 +188,9 @@ export async function runConsole(
   request: ConsoleRequest,
 ): Promise<void> {
   // Core sets the socket's user as the actor, as it does for routes.
-  if (!(await ctx.rbac.has("console"))) {
-    return fail(ws, "This needs the pve.console permission");
+  const needs = request.type === "ceph-install" ? "administer" : "console";
+  if (!(await ctx.rbac.has(needs))) {
+    return fail(ws, `This needs the pve.${needs} permission`);
   }
 
   const session = await (async () => {
@@ -197,17 +238,23 @@ export async function runConsole(
     const root =
       (await execCommand(client, "id -u", 10000)).stdout.trim() === "0";
     const password = request.type === "qemu" ? vncPassword() : undefined;
-    const command = consoleCommand(request.type, request.vmid, root, password);
+    const command = consoleCommand(request.type, request.vmid, root, password, {
+      version: request.cephVersion,
+      repository: request.cephRepository,
+    });
     stream = await exec(
       client,
       command,
-      request.type === "lxc" ? request : null,
+      request.type === "qemu" ? null : request,
     );
     await ctx.audit.record({
       action: "pve_console",
       resourceType: "host",
       resourceId: String(request.hostId),
-      details: `${request.type} ${request.vmid} on ${request.node}`,
+      details:
+        request.type === "ceph-install"
+          ? `ceph install ${request.cephVersion} (${request.cephRepository}) on ${request.node}`
+          : `${request.type} ${request.vmid} on ${request.node}`,
       success: true,
     });
 
@@ -222,8 +269,8 @@ export async function runConsole(
       if (ws.readyState === OPEN) ws.send(data, { binary: true });
     });
     stream.stderr.on("data", (data: Buffer) => {
-      // A container's PTY merges stderr; a VM's carries the reason it failed.
-      if (request.type === "lxc") {
+      // A PTY merges stderr; a VM's carries the reason it failed.
+      if (request.type !== "qemu") {
         if (ws.readyState === OPEN) ws.send(data, { binary: true });
       } else {
         stderr += data.toString("utf8");

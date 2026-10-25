@@ -9,24 +9,39 @@ import { ReplicationPanel } from "./ReplicationPanel";
 import { AccessPanel } from "./AccessPanel";
 import { HaPanel } from "./HaPanel";
 import { FirewallPanel } from "./FirewallPanel";
+import { OptionsPanel } from "./OptionsPanel";
+import { SdnPanel } from "./SdnPanel";
+import { MetricsPanel } from "./MetricsPanel";
+import { MappingsPanel } from "./MappingsPanel";
+import { NotificationsPanel } from "./NotificationsPanel";
 
 type DatacenterTab =
   | "summary"
+  | "options"
   | "storage"
   | "backup"
   | "replication"
   | "permissions"
   | "ha"
-  | "firewall";
+  | "sdn"
+  | "firewall"
+  | "metrics"
+  | "mappings"
+  | "notifications";
 /** In the order of Proxmox's Datacenter menu. */
 const TABS: DatacenterTab[] = [
   "summary",
+  "options",
   "storage",
   "backup",
   "replication",
   "permissions",
   "ha",
+  "sdn",
   "firewall",
+  "metrics",
+  "mappings",
+  "notifications",
 ];
 
 export interface DatacenterProps {
@@ -58,11 +73,13 @@ export function DatacenterView(props: DatacenterProps) {
         }))}
       />
       {tab === "summary" && <SummaryPanel {...props} />}
+      {tab === "options" && <OptionsPanel {...props} />}
       {tab === "storage" && <StoragePanel {...props} />}
       {tab === "backup" && <BackupPanel {...props} />}
       {tab === "replication" && <ReplicationPanel {...props} />}
       {tab === "permissions" && <AccessPanel {...props} />}
       {tab === "ha" && <HaPanel {...props} />}
+      {tab === "sdn" && <SdnPanel {...props} />}
       {tab === "firewall" && (
         <FirewallPanel
           hostId={props.hostId}
@@ -71,6 +88,9 @@ export function DatacenterView(props: DatacenterProps) {
           isVisible={props.isVisible}
         />
       )}
+      {tab === "metrics" && <MetricsPanel {...props} />}
+      {tab === "mappings" && <MappingsPanel {...props} />}
+      {tab === "notifications" && <NotificationsPanel {...props} />}
     </div>
   );
 }

@@ -38,6 +38,8 @@ export interface FieldSpec {
   /** The Proxmox parameter name. */
   key: string;
   labelKey: string;
+  /** Values the label's text takes, such as a node name. */
+  labelValues?: Record<string, string>;
   kind?: FieldKind;
   hintKey?: string;
   options?: Array<{ value: string; label?: string; labelKey?: string }>;
@@ -162,7 +164,7 @@ export function FieldInput({
   if (field.kind === "check") {
     return (
       <CheckField
-        label={t(field.labelKey)}
+        label={t(field.labelKey, field.labelValues)}
         hint={field.hintKey ? t(field.hintKey) : undefined}
         checked={value === true}
         onChange={(checked) => setValue(field.key, checked)}
@@ -211,7 +213,7 @@ export function FieldInput({
   }
   return (
     <Field
-      label={t(field.labelKey)}
+      label={t(field.labelKey, field.labelValues)}
       hint={field.hintKey ? t(field.hintKey) : undefined}
     >
       {input}
@@ -333,6 +335,8 @@ export interface CrudSectionProps<T> {
   hostId: number;
   isVisible: boolean;
   titleKey: string;
+  /** Values the title's text takes. */
+  titleValues?: Record<string, string>;
   hintKey?: string;
   emptyKey: string;
   listPath: Array<string | number>;
@@ -459,7 +463,7 @@ export function CrudSection<T extends Record<string, unknown>>(
   return (
     <section className="flex flex-col gap-1">
       <GroupHeading
-        title={t(props.titleKey)}
+        title={t(props.titleKey, props.titleValues)}
         count={list?.length}
         action={
           readOnly ? null : (
@@ -562,7 +566,9 @@ export function CrudSection<T extends Record<string, unknown>>(
           title={
             props.dialogTitle?.(!dialog.row, dialog.row) ??
             t(dialog.row ? "crud.editTitle" : "crud.createTitle", {
-              name: dialog.row ? props.rowId(dialog.row) : t(props.titleKey),
+              name: dialog.row
+                ? props.rowId(dialog.row)
+                : t(props.titleKey, props.titleValues),
             })
           }
           fields={fields}

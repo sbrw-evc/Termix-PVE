@@ -1,6 +1,7 @@
 import { useTranslation, type TabProps } from "@termix-ssh/plugin-sdk/frontend";
 import type { GuestType } from "../../api";
 import { GuestConsole } from "./GuestConsole";
+import { proxmoxBaseUrl, webConsoleUrl } from "../../proxmoxWeb";
 
 export const CONSOLE_TAB = "pve-console";
 
@@ -36,6 +37,10 @@ export function ConsoleTab({ tab, host, isVisible }: TabProps) {
       <p className="p-4 text-xs text-muted-foreground">{t("console.pick")}</p>
     );
   }
+  const base = proxmoxBaseUrl(host);
+  const fallback = base
+    ? webConsoleUrl(base, { kind: data.type, node: data.node, vmid: data.vmid })
+    : null;
   return (
     <div className="h-full p-2">
       <GuestConsole
@@ -46,6 +51,7 @@ export function ConsoleTab({ tab, host, isVisible }: TabProps) {
         fill
         autoConnect
         isVisible={isVisible}
+        fallbackUrl={fallback ?? undefined}
       />
     </div>
   );

@@ -244,3 +244,46 @@ describe("runConsole", () => {
     });
   });
 });
+
+describe("Ceph install session", () => {
+  it("takes a known version and repository only", () => {
+    expect(
+      parseConsoleQuery(
+        "/c?hostId=1&node=pve1&type=ceph-install&version=squid&repository=no-subscription&cols=100&rows=30",
+      ),
+    ).toMatchObject({
+      type: "ceph-install",
+      vmid: 0,
+      cephVersion: "squid",
+      cephRepository: "no-subscription",
+      cols: 100,
+      rows: 30,
+    });
+    expect(
+      parseConsoleQuery(
+        "/c?hostId=1&node=pve1&type=ceph-install&version=$(reboot)&repository=test",
+      ),
+    ).toBe("Invalid Ceph version");
+    expect(
+      parseConsoleQuery(
+        "/c?hostId=1&node=pve1&type=ceph-install&version=squid&repository=manual",
+      ),
+    ).toBe("Invalid Ceph repository");
+  });
+
+  it("runs pveceph install, through sudo for other users", () => {
+    const options = { version: "tentacle", repository: "no-subscription" };
+    expect(consoleCommand("ceph-install", 0, true, undefined, options)).toBe(
+      "pveceph install --version tentacle --repository no-subscription",
+    );
+    expect(consoleCommand("ceph-install", 0, false, undefined, options)).toBe(
+      "sudo -n pveceph install --version tentacle --repository no-subscription",
+    );
+    expect(() =>
+      consoleCommand("ceph-install", 0, true, undefined, {
+        version: "x; rm -rf /",
+        repository: "test",
+      }),
+    ).toThrow();
+  });
+});

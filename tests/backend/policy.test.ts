@@ -257,3 +257,55 @@ describe("node system rules", () => {
     ).toBe(true);
   });
 });
+
+describe("datacenter, cluster and Ceph rules", () => {
+  it("reads with view and changes with administer", () => {
+    const view = [
+      ["GET", "cluster/options"],
+      ["GET", "cluster/sdn/zones"],
+      ["GET", "cluster/sdn/vnets/v1/subnets"],
+      ["GET", "cluster/mapping/pci"],
+      ["GET", "nodes/pve1/hardware/usb"],
+      ["GET", "nodes/pve1/subscription"],
+      ["GET", "nodes/pve1/ceph/rules"],
+    ] as const;
+    for (const [method, path] of view) {
+      expect(findRule(method, split(path))?.permission).toBe("view");
+    }
+    const administer = [
+      ["PUT", "cluster/options"],
+      ["PUT", "cluster/sdn"],
+      ["POST", "cluster/sdn/zones"],
+      ["DELETE", "cluster/sdn/vnets/v1/subnets/z1-10.0.0.0-24"],
+      ["GET", "cluster/metrics/server"],
+      ["POST", "cluster/metrics/server/influx"],
+      ["POST", "cluster/mapping/usb"],
+      ["GET", "cluster/notifications/targets"],
+      ["POST", "cluster/notifications/endpoints/smtp"],
+      ["PUT", "cluster/notifications/matchers/m1"],
+      ["POST", "cluster/notifications/targets/mail-to-root/test"],
+      ["POST", "cluster/config"],
+      ["POST", "cluster/config/join"],
+      ["POST", "nodes/pve1/qemu/101/monitor"],
+      ["PUT", "nodes/pve1/subscription"],
+      ["POST", "nodes/pve1/ceph/init"],
+      ["POST", "nodes/pve1/ceph/mon/pve1"],
+      ["DELETE", "nodes/pve1/ceph/mgr/pve1"],
+      ["POST", "nodes/pve1/ceph/osd"],
+      ["DELETE", "nodes/pve1/ceph/osd/3"],
+      ["POST", "nodes/pve1/ceph/osd/3/out"],
+      ["POST", "nodes/pve1/ceph/pool"],
+      ["PUT", "nodes/pve1/ceph/pool/rbd"],
+      ["POST", "nodes/pve1/ceph/fs/cephfs"],
+      ["POST", "nodes/pve1/ceph/restart"],
+    ] as const;
+    for (const [method, path] of administer) {
+      expect(
+        findRule(method, split(path))?.permission,
+        `${method} ${path}`,
+      ).toBe("administer");
+    }
+    expect(findRule("POST", split("nodes/pve1/ceph/osd/3/destroy"))).toBeNull();
+    expect(findRule("DELETE", split("cluster/config/nodes/pve2"))).toBeNull();
+  });
+});

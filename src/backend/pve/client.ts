@@ -23,7 +23,9 @@ import type { PveshRunner } from "./pvesh-runner.js";
 
 export type PveTransport = "tunnel" | "direct" | "pvesh";
 export type PveMethod = "GET" | "POST" | "PUT" | "DELETE";
-export type PveParamValue = string | number | boolean | null | undefined;
+/** An array goes out as the key repeated, as PVE takes its "array" params. */
+export type PveParamValue =
+  string | number | boolean | string[] | null | undefined;
 export type PveParams = Record<string, PveParamValue>;
 
 export interface PveRequest {
@@ -130,10 +132,12 @@ export function pveParamEntries(
         400,
       );
     }
-    entries.push([
-      key,
-      typeof value === "boolean" ? (value ? "1" : "0") : String(value),
-    ]);
+    for (const one of Array.isArray(value) ? value : [value]) {
+      entries.push([
+        key,
+        typeof one === "boolean" ? (one ? "1" : "0") : String(one),
+      ]);
+    }
   }
   return entries;
 }

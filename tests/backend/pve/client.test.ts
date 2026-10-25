@@ -180,6 +180,20 @@ describe("pvesh transport", () => {
     ).toBe(
       "pvesh create '/nodes/pve1/qemu/100/snapshot' --snapname 'pre-upgrade' --description 'it'\\''s fine' --vmstate '1' --output-format json",
     );
+    // Array params repeat the key, as PVE takes them.
+    expect(
+      buildPveshCommand({
+        method: "POST",
+        path: ["cluster", "notifications", "matchers"],
+        params: { name: "m", target: ["mail-to-root", "gotify"] },
+      }),
+    ).toBe(
+      "pvesh create '/cluster/notifications/matchers' --name 'm' --target 'mail-to-root' --target 'gotify' --output-format json",
+    );
+    expect(pveParamEntries({ mailto: ["a@x", "b@x"], empty: [] })).toEqual([
+      ["mailto", "a@x"],
+      ["mailto", "b@x"],
+    ]);
     expect(buildPveshCommand({ method: "PUT", path: ["a"] })).toMatch(
       /^pvesh set /,
     );

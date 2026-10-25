@@ -1046,12 +1046,18 @@ function RealmsSection({
   );
 }
 
-function AclSection({
+/**
+ * Permissions. With `fixedPath` (a guest's /vms/<id>), only the entries on
+ * that path, and new ones go there.
+ */
+export function AclSection({
   hostId,
   isVisible,
+  fixedPath,
 }: {
   hostId: number;
   isVisible: boolean;
+  fixedPath?: string;
 }) {
   const { t } = useTranslation();
   const roles = useApiList<Array<{ roleid: string }>>(
@@ -1060,7 +1066,7 @@ function AclSection({
     undefined,
     isVisible,
   );
-  const fields: FieldSpec[] = [
+  const allFields: FieldSpec[] = [
     {
       key: "path",
       labelKey: "access.acl.path",
@@ -1103,6 +1109,9 @@ function AclSection({
       default: true,
     },
   ];
+  const fields = fixedPath
+    ? allFields.filter((f) => f.key !== "path")
+    : allFields;
   return (
     <CrudSection<AclEntry>
       hostId={hostId}
@@ -1112,10 +1121,12 @@ function AclSection({
       emptyKey="access.acl.none"
       listPath={["access", "acl"]}
       rows={(data) =>
-        [...(data as AclEntry[])].sort(
-          (a, b) =>
-            a.path.localeCompare(b.path) || a.ugid.localeCompare(b.ugid),
-        )
+        [...(data as AclEntry[])]
+          .filter((a) => !fixedPath || a.path === fixedPath)
+          .sort(
+            (a, b) =>
+              a.path.localeCompare(b.path) || a.ugid.localeCompare(b.ugid),
+          )
       }
       rowId={(a) => `${a.path}|${a.type}|${a.ugid}|${a.roleid}`}
       view={(a) => ({
@@ -1134,7 +1145,7 @@ function AclSection({
       createMethod="PUT"
       toParams={(values) =>
         aclParams({
-          path: String(values.path),
+          path: fixedPath ?? String(values.path),
           type: String(values.type),
           ugid: String(values.ugid),
           roleid: String(values.roleid),

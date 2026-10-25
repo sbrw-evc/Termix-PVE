@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.4.2
+
+### Fixed
+
+- A node's CPU shows its sockets as "Sockets: 1", which reads right in every language, instead of "1 × sockets"
+
+## 0.4.1
+
+### Fixed
+
+- The datacenter summary no longer says creating and joining clusters stays in Proxmox; it points at Create cluster and Join cluster
+
+## 0.4.0
+
+### Added
+
+- Datacenter Options: notes, keyboard, language, console viewer, e-mail from address, HTTP proxy, MAC prefix, workers, migration network, bandwidth limits, next free VMID range, HA shutdown policy
+- SDN: zones, VNets and subnets, controllers, IPAM and DNS servers, with pending changes marked and Apply
+- Metric servers: Graphite, InfluxDB and OpenTelemetry
+- Resource mappings for PCI devices, USB devices and directories, with the device picked on each node
+- Notifications: SMTP, sendmail, Gotify and webhook targets with Send a test, and matchers
+- Create a cluster, or join one with its Join information
+- Ceph setup: install in a terminal, initialize, monitors, managers, OSDs (create, in, out, scrub, destroy), pools, metadata servers and CephFS, and restart Ceph services
+- Guests get Task History, Monitor (VMs), Replication and Permissions tabs
+- Nodes get Replication and Subscription tabs
+- Hosts that reach Proxmox through the API directly open Proxmox's own console page for guests and the Ceph installer
+
+### Changed
+
+- API calls can send list parameters, as Proxmox takes them for recipients, targets and mappings
+
 ## 0.3.2
 
 ### Changed

@@ -21,12 +21,20 @@ const BADGE = {
 } as const;
 
 /** Every task the node ran, newest first, with filters and the log of each. */
-export function TaskHistoryTab({ hostId, node, isVisible }: NodeTabProps) {
+export function TaskHistoryTab({
+  hostId,
+  node,
+  isVisible,
+  vmid,
+}: NodeTabProps & {
+  /** A guest's own history: the filter stays on it and its field is hidden. */
+  vmid?: number;
+}) {
   const { t } = useTranslation();
   const [filter, setFilter] = useState<TaskFilter>({
     errorsOnly: false,
     type: "",
-    vmid: "",
+    vmid: vmid ? String(vmid) : "",
     user: "",
   });
   const [tasks, setTasks] = useState<NodeTask[] | null>(null);
@@ -72,17 +80,21 @@ export function TaskHistoryTab({ hostId, node, isVisible }: NodeTabProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-[1fr_6rem_1fr_auto] items-center gap-2">
+      <div
+        className={`grid items-center gap-2 ${vmid ? "grid-cols-[1fr_1fr_auto]" : "grid-cols-[1fr_6rem_1fr_auto]"}`}
+      >
         <TextInput
           value={filter.type}
           onChange={(type) => set({ type })}
           placeholder={t("nodes.taskHistory.type")}
         />
-        <TextInput
-          value={filter.vmid}
-          onChange={(vmid) => set({ vmid })}
-          placeholder={t("nodes.taskHistory.vmid")}
-        />
+        {vmid ? null : (
+          <TextInput
+            value={filter.vmid}
+            onChange={(vmid) => set({ vmid })}
+            placeholder={t("nodes.taskHistory.vmid")}
+          />
+        )}
         <TextInput
           value={filter.user}
           onChange={(user) => set({ user })}

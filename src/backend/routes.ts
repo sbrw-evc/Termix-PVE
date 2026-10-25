@@ -61,12 +61,15 @@ export function parseCallBody(body: unknown): CallBody | string {
     return "params must be an object";
   }
   for (const value of Object.values(params as Record<string, unknown>)) {
-    if (
-      value !== null &&
-      value !== undefined &&
-      !["string", "number", "boolean"].includes(typeof value)
-    ) {
-      return "params values must be strings, numbers or booleans";
+    const scalar = (v: unknown) =>
+      v === null ||
+      v === undefined ||
+      ["string", "number", "boolean"].includes(typeof v);
+    const ok = Array.isArray(value)
+      ? value.every((v) => typeof v === "string")
+      : scalar(value);
+    if (!ok) {
+      return "params values must be strings, numbers, booleans or lists of strings";
     }
   }
   return {

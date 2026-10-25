@@ -48,14 +48,22 @@ Ceph is shown read only since 0.3.0.
 - Access: users, groups, roles, pools, 2FA, API tokens, realms, permissions (`administer`)
 - Ceph: health, monitors and pools per node, read only
 
+## 0.4: the rest of Proxmox's menus (done in 0.4.0)
+
+- Datacenter: options and notes, SDN (zones, VNets, subnets, controllers, IPAM, DNS, apply),
+  metric servers, resource mappings (PCI, USB, directories), notifications (targets and matchers)
+- Clusters: create, and join with the Join information and the peer's root password
+- Ceph setup: install, initialize, monitors, managers, OSDs, pools, metadata servers, CephFS
+- Guests: task history, QEMU monitor, replication, permissions
+- Nodes: replication, subscription
+- Hosts on the API directly open Proxmox's own console page
+
 ## Later
 
-- Ceph setup: install, monitors, OSDs, pools
-- Creating and joining clusters (needs a root password, so it stays in Proxmox for now)
-- SDN, metric servers, notifications and resource mappings
-- The console over API directly
+- Removing nodes from a cluster and removing a CephFS stay in Proxmox's own tools
 
 ## Open questions
 
 - The console runs `qm vncproxy` / `pct enter` over SSH, so it needs an SSH transport and a user that
-  is root or has passwordless sudo. API directly has no console yet.
+  is root or has passwordless sudo. A host on the API directly opens Proxmox's own console page
+  instead: plugins have no raw sockets for Proxmox's VNC websocket, only `ctx.fetch`.

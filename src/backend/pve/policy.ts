@@ -405,6 +405,14 @@ export const RULES: PveRule[] = [
 
   // Cluster and high availability.
   { method: "GET", pattern: "cluster/config/join", permission: "administer" },
+  // Creating a cluster, and joining one with its root password.
+  { method: "POST", pattern: "cluster/config", permission: "administer" },
+  {
+    method: "POST",
+    pattern: "cluster/config/join",
+    permission: "administer",
+  },
+  { method: "GET", pattern: "cluster/config/totem", permission: "view" },
   { method: "GET", pattern: "cluster/config/nodes", permission: "view" },
   {
     method: "GET",
@@ -450,6 +458,92 @@ export const RULES: PveRule[] = [
   { method: "PUT", pattern: "pools", permission: "administer" },
   { method: "DELETE", pattern: "pools", permission: "administer" },
 
+  // A VM's QEMU monitor can stop or reconfigure it outright.
+  {
+    method: "POST",
+    pattern: "nodes/:node/qemu/:vmid/monitor",
+    permission: "administer",
+  },
+  // Subscription: reading it is harmless, changing the key needs administer.
+  { method: "GET", pattern: "nodes/:node/subscription", permission: "view" },
+  {
+    method: "PUT",
+    pattern: "nodes/:node/subscription",
+    permission: "administer",
+  },
+  {
+    method: "POST",
+    pattern: "nodes/:node/subscription",
+    permission: "administer",
+  },
+  {
+    method: "DELETE",
+    pattern: "nodes/:node/subscription",
+    permission: "administer",
+  },
+
+  // Datacenter options and notes (description). Reading is harmless.
+  { method: "GET", pattern: "cluster/options", permission: "view" },
+  { method: "PUT", pattern: "cluster/options", permission: "administer" },
+
+  // Metric servers carry tokens, so even reading them needs administer.
+  ...crud("cluster/metrics/server", "administer", "administer", ":id"),
+  // A metric server is created at its own id, not by POST to the list.
+  {
+    method: "POST",
+    pattern: "cluster/metrics/server/:id",
+    permission: "administer",
+  },
+
+  // Resource mappings and the node hardware they point at.
+  ...crud("cluster/mapping/{pci|usb|dir}", "view", "administer", ":id"),
+  { method: "GET", pattern: "cluster/mapping", permission: "view" },
+  {
+    method: "GET",
+    pattern: "nodes/:node/hardware/{pci|usb}",
+    permission: "view",
+  },
+
+  // Notifications: endpoints hold passwords and tokens.
+  {
+    method: "GET",
+    pattern: "cluster/notifications/{endpoints|targets}",
+    permission: "administer",
+  },
+  ...crud(
+    "cluster/notifications/endpoints/{sendmail|gotify|smtp|webhook}",
+    "administer",
+    "administer",
+    ":name",
+  ),
+  ...crud(
+    "cluster/notifications/matchers",
+    "administer",
+    "administer",
+    ":name",
+  ),
+  {
+    method: "POST",
+    pattern: "cluster/notifications/targets/:name/test",
+    permission: "administer",
+  },
+  {
+    method: "GET",
+    pattern: "cluster/notifications/{matcher-fields|matcher-field-values}",
+    permission: "view",
+  },
+
+  // SDN: changes wait as pending until PUT cluster/sdn applies them.
+  { method: "GET", pattern: "cluster/sdn", permission: "view" },
+  { method: "PUT", pattern: "cluster/sdn", permission: "administer" },
+  ...crud(
+    "cluster/sdn/{zones|vnets|controllers|ipams|dns}",
+    "view",
+    "administer",
+    ":id",
+  ),
+  ...crud("cluster/sdn/vnets/:vnet/subnets", "view", "administer", ":subnet"),
+
   // Ceph, read only: status, monitors, OSDs, pools and file systems.
   {
     method: "GET",
@@ -457,6 +551,28 @@ export const RULES: PveRule[] = [
     permission: "view",
   },
   { method: "GET", pattern: "cluster/ceph/status", permission: "view" },
+  {
+    method: "GET",
+    pattern: "nodes/:node/ceph/{crush|log|rules|releases|cmd-safety}",
+    permission: "view",
+  },
+  {
+    method: "GET",
+    pattern: "nodes/:node/ceph/cfg/{raw|db}",
+    permission: "view",
+  },
+  { method: "GET", pattern: "nodes/:node/ceph/pool/:name", permission: "view" },
+
+  // Ceph setup: every change needs administer.
+  ...each(["POST"], "nodes/:node/ceph/init"),
+  ...each(["POST", "DELETE"], "nodes/:node/ceph/{mon|mgr|mds}/:id"),
+  ...each(["POST"], "nodes/:node/ceph/osd"),
+  ...each(["DELETE"], "nodes/:node/ceph/osd/:osdid"),
+  ...each(["POST"], "nodes/:node/ceph/osd/:osdid/{in|out|scrub}"),
+  ...each(["POST"], "nodes/:node/ceph/pool"),
+  ...each(["PUT", "DELETE"], "nodes/:node/ceph/pool/:name"),
+  ...each(["POST"], "nodes/:node/ceph/fs/:name"),
+  ...each(["POST"], "nodes/:node/ceph/{start|stop|restart}"),
 ];
 
 /** One administer rule per method. */
